@@ -3,7 +3,7 @@ package ch.uzh.ifi.hase.soprafs21.controller;
 import ch.uzh.ifi.hase.soprafs21.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.UserPostDTO;
-import ch.uzh.ifi.hase.soprafs21.service.UserService;
+import ch.uzh.ifi.hase.soprafs21.service.LoginService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -33,14 +33,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * This is a WebMvcTest which allows to test the UserController i.e. GET/POST request without actually sending them over the network.
  * This tests if the UserController works.
  */
-@WebMvcTest(UserController.class)
-public class UserControllerTest {
+@WebMvcTest(LoginController.class)
+public class LoginControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
-    private UserService userService;
+    private LoginService loginService;
 
     @Test
     public void givenUsers_whenGetUsers_thenReturnJsonArray() throws Exception {
@@ -53,7 +53,7 @@ public class UserControllerTest {
         List<User> allUsers = Collections.singletonList(user);
 
         // this mocks the UserService -> we define above what the userService should return when getUsers() is called
-        given(userService.getUsers()).willReturn(allUsers);
+        given(loginService.getUsers()).willReturn(allUsers);
 
         // when
         MockHttpServletRequestBuilder getRequest = get("/users").contentType(MediaType.APPLICATION_JSON);
@@ -80,7 +80,7 @@ public class UserControllerTest {
         userPostDTO.setName("Test User");
         userPostDTO.setUsername("testUsername");
 
-        given(userService.createUser(Mockito.any())).willReturn(user);
+        given(loginService.createUser(Mockito.any())).willReturn(user);
 
         // when/then -> do the request + validate the result
         MockHttpServletRequestBuilder postRequest = post("/users")

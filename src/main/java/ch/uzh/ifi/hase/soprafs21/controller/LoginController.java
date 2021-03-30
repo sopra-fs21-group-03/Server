@@ -4,7 +4,7 @@ import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
-import ch.uzh.ifi.hase.soprafs21.service.UserService;
+import ch.uzh.ifi.hase.soprafs21.service.LoginService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,12 +17,12 @@ import java.util.List;
  * The controller will receive the request and delegate the execution to the UserService and finally return the result.
  */
 @RestController
-public class UserController {
+public class LoginController {
 
-    private final UserService userService;
+    private final LoginService loginService;
 
-    UserController(UserService userService) {
-        this.userService = userService;
+    LoginController(LoginService loginService) {
+        this.loginService = loginService;
     }
 
     @GetMapping("/users")
@@ -30,7 +30,7 @@ public class UserController {
     @ResponseBody
     public List<UserGetDTO> getAllUsers() {
         // fetch all users in the internal representation
-        List<User> users = userService.getUsers();
+        List<User> users = loginService.getUsers();
         List<UserGetDTO> userGetDTOs = new ArrayList<>();
 
         // convert each user to the API representation
@@ -48,7 +48,7 @@ public class UserController {
         User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
 
         // create user
-        User createdUser = userService.createUser(userInput);
+        User createdUser = loginService.createUser(userInput);
 
         // convert internal representation of user back to API
         return DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);

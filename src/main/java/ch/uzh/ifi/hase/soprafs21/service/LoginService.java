@@ -22,14 +22,14 @@ import java.util.UUID;
  */
 @Service
 @Transactional
-public class UserService {
+public class LoginService {
 
-    private final Logger log = LoggerFactory.getLogger(UserService.class);
+    private final Logger log = LoggerFactory.getLogger(LoginService.class);
 
     private final UserRepository userRepository;
 
     @Autowired
-    public UserService(@Qualifier("userRepository") UserRepository userRepository) {
+    public LoginService(@Qualifier("userRepository") UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
