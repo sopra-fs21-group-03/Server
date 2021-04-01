@@ -1,7 +1,7 @@
 package ch.uzh.ifi.hase.soprafs21.service;
 
 
-import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
+
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,9 +31,14 @@ public class GameService {
 
     public void userFolds(Long id){
         User returnUser=userRepository.findByid(id);
-        returnUser.setGamestatus(GameStatus.FOLDED);
+
         /*
-        Here, more stuff should happen I guess. But I am going to eat lunch now
+        1. there is the collection of Users that joined the Lobby in the first place
+
+        2. there is the collection of Users that are still in the gameround
+
+        if a User folds, he should still be in (1.) but not in (2.) anymore
          */
+
     }
 }
