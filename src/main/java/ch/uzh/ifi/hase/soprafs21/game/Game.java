@@ -13,9 +13,17 @@ public class Game {
 
     }
 
-    public void removeUser(){
-
-
+    /**
+     * If a player folds, he should get removed?
+     * @param id
+     */
+    public void removeUser(Long id){
+        for (User arrayuser : ActiveUsers) {
+            if (arrayuser.getId().equals(id)){
+                ActiveUsers.remove(arrayuser);
+                break;
+            }
+        }
     }
 
 
