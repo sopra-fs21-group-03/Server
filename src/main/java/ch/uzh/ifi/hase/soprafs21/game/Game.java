@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 public class Game {
     //private Dealer dealer;
+    private ArrayList<User> AllUsers;
     private ArrayList<User> ActiveUsers;
 
     public Game(){
@@ -13,10 +14,7 @@ public class Game {
 
     }
 
-    /**
-     * If a player folds, he should get removed? But where is he then when a new round starts? 2 ArrayLists?
-     * @param id
-     */
+
     public void removeUser(Long id){
         for (User arrayuser : ActiveUsers) {
             if (arrayuser.getId().equals(id)){
