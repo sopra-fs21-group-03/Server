@@ -1,20 +1,27 @@
 package ch.uzh.ifi.hase.soprafs21.game;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import ch.uzh.ifi.hase.soprafs21.entity.User;
 
-@Entity
-@Table(name="GAME")
+import java.util.ArrayList;
+
 public class Game {
-    private Long id;
+    //private Dealer dealer;
+    private ArrayList<User> AllUsers;
+    private ArrayList<User> ActiveUsers;
 
-    public void setId(Long id) {
-        this.id = id;
+    public Game(){
+
+
     }
 
-    @Id
-    public Long getId() {
-        return id;
+
+    public void removeUser(Long id){
+        for (User arrayuser : ActiveUsers) {
+            if (arrayuser.getId().equals(id)){
+                ActiveUsers.remove(arrayuser);
+                break;
+            }
+        }
     }
+
 }
