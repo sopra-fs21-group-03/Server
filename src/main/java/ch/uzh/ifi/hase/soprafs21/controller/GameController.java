@@ -1,4 +1,5 @@
 package ch.uzh.ifi.hase.soprafs21.controller;
+import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.UserPutDTO;
 import ch.uzh.ifi.hase.soprafs21.service.GameService;
 import org.springframework.http.HttpStatus;
@@ -13,7 +14,9 @@ public class GameController {
     @PutMapping("/games/{UserID}/fold")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
-    public void userfolds(@PathVariable("UserID") Long id, @RequestBody UserPutDTO userPutDTO){
+    public void userfolds(@PathVariable("UserID") Long userid, @RequestBody UserPutDTO userPutDTO){
+        User folderuser = gameService.getUserById(userid);
+
 
 
     }
