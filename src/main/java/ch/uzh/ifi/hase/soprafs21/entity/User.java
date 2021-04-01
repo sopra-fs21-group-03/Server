@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs21.entity;
 
+import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs21.constant.UserStatus;
 
 import javax.persistence.*;
@@ -33,6 +34,18 @@ public class User implements Serializable {
 
     @Column(nullable = false)
     private UserStatus status;
+
+    @Column
+    private GameStatus gamestatus;
+
+    public GameStatus getGamestatus() {
+        return gamestatus;
+    }
+
+    public void setGamestatus(GameStatus gamestatus) {
+        this.gamestatus = gamestatus;
+    }
+
 
     public Long getId() {
         return id;

@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs21.service;
 
 
+import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,5 +27,13 @@ public class GameService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The User could not be found...");
         } else{
             return returnUser;}
+    }
+
+    public void userFolds(Long id){
+        User returnUser=userRepository.findByid(id);
+        returnUser.setGamestatus(GameStatus.FOLDED);
+        /*
+        Here, more stuff should happen I guess. But I am going to eat lunch now
+         */
     }
 }
