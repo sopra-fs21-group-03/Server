@@ -14,7 +14,7 @@ public class Game {
     }
 
     /**
-     * If a player folds, he should get removed?
+     * If a player folds, he should get removed? But where is he then when a new round starts? 2 ArrayLists?
      * @param id
      */
     public void removeUser(Long id){
