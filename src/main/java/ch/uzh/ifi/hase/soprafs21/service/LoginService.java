@@ -39,7 +39,7 @@ public class LoginService {
 
     public User createUser(User newUser) {
         newUser.setToken(UUID.randomUUID().toString());
-        newUser.setStatus(UserStatus.OFFLINE);
+        newUser.setStatus(UserStatus.ONLINE);
 
         checkIfUserExists(newUser);
 
@@ -62,9 +62,9 @@ public class LoginService {
     private void checkIfUserExists(User userToBeCreated) {
         User userByUsername = userRepository.findByUsername(userToBeCreated.getUsername());
 
-        String baseErrorMessage = "The %s provided %s not unique. Therefore, the user could not be created!";
+        String baseErrorMessage = "The %s provided is not unique. Therefore, the user could not be created!";
         if (userByUsername != null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format(baseErrorMessage, "username", "is"));
+            throw new ResponseStatusException(HttpStatus.CONFLICT, String.format(baseErrorMessage, "username"));
         }
     }
 }
