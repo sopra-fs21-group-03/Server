@@ -23,10 +23,9 @@ public class GameController {
      * @param userPutDTO
     **/
 
-    @PutMapping("/games/{UserID}/fold")
+    /*@PutMapping("/games/{UserID}/fold")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
-
     public void userfolds(@PathVariable("UserID") Long userid, @RequestBody UserPutDTO userPutDTO){
         User folderuserinput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
         User folderuserfound = gameService.getUserById(userid);
@@ -38,7 +37,7 @@ public class GameController {
         }
 
 
-    }
+    }*/
 
 
 
