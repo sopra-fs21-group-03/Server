@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs21.entity;
 
+import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs21.constant.UserStatus;
 
 import javax.persistence.*;
@@ -23,7 +24,7 @@ public class User implements Serializable {
     private Long id;
 
     @Column(nullable = false)
-    private String name;
+    private String password;
 
     @Column(nullable = false, unique = true)
     private String username;
@@ -34,6 +35,41 @@ public class User implements Serializable {
     @Column(nullable = false)
     private UserStatus status;
 
+    @Column(nullable = false)
+    private int money;
+
+    @Column(nullable = false)
+    private GameStatus gamestatus;
+
+    public GameStatus getGamestatus() {
+        return gamestatus;
+    }
+
+    public void setGamestatus(GameStatus gamestatus) {
+        this.gamestatus = gamestatus;
+    }
+    public int getMoney() {
+        return money;
+    }
+
+    public void setMoney(int money) {
+        this.money = money;
+    }
+
+    public void addMoney(int amount) {
+        this.money += amount;
+    }
+
+    public void removeMoney(int amount) throws Exception{
+        /** Should not be below 0!*/
+        if (this.money - amount >= 0) {
+            this.money -= amount;
+        }
+        else {
+            throw new Exception();
+        }
+    }
+
     public Long getId() {
         return id;
     }
@@ -42,12 +78,12 @@ public class User implements Serializable {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getPassword() {
+        return password;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setPassword(String name) {
+        this.password = name;
     }
 
     public String getUsername() {

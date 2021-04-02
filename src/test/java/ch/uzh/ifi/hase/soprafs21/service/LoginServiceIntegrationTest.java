@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs21.service;
 
+import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs21.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.repository.UserRepository;
@@ -40,15 +41,17 @@ public class LoginServiceIntegrationTest {
         assertNull(userRepository.findByUsername("testUsername"));
 
         User testUser = new User();
-        testUser.setName("testName");
+        testUser.setPassword("testName");
         testUser.setUsername("testUsername");
+        testUser.setMoney(0);
+        testUser.setGamestatus(GameStatus.NOTREADY);
 
         // when
         User createdUser = loginService.createUser(testUser);
 
         // then
         assertEquals(testUser.getId(), createdUser.getId());
-        assertEquals(testUser.getName(), createdUser.getName());
+        assertEquals(testUser.getPassword(), createdUser.getPassword());
         assertEquals(testUser.getUsername(), createdUser.getUsername());
         assertNotNull(createdUser.getToken());
         assertEquals(UserStatus.OFFLINE, createdUser.getStatus());
@@ -59,15 +62,17 @@ public class LoginServiceIntegrationTest {
         assertNull(userRepository.findByUsername("testUsername"));
 
         User testUser = new User();
-        testUser.setName("testName");
+        testUser.setPassword("testName");
         testUser.setUsername("testUsername");
+        testUser.setMoney(0);
+        testUser.setGamestatus(GameStatus.NOTREADY);
         User createdUser = loginService.createUser(testUser);
 
         // attempt to create second user with same username
         User testUser2 = new User();
 
         // change the name but forget about the username
-        testUser2.setName("testName2");
+        testUser2.setPassword("testName2");
         testUser2.setUsername("testUsername");
 
         // check that an error is thrown

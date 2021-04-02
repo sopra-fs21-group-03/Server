@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs21.repository;
 
+import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs21.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import org.junit.jupiter.api.Test;
@@ -25,20 +26,22 @@ public class UserRepositoryIntegrationTest {
     public void findByName_success() {
         // given
         User user = new User();
-        user.setName("Firstname Lastname");
+        user.setPassword("Firstname Lastname");
         user.setUsername("firstname@lastname");
         user.setStatus(UserStatus.OFFLINE);
         user.setToken("1");
+        user.setMoney(0);
+        user.setGamestatus(GameStatus.NOTREADY);
 
         entityManager.persist(user);
         entityManager.flush();
 
         // when
-        User found = userRepository.findByName(user.getName());
+        User found = userRepository.findByUsername(user.getUsername());
 
         // then
         assertNotNull(found.getId());
-        assertEquals(found.getName(), user.getName());
+        assertEquals(found.getPassword(), user.getPassword());
         assertEquals(found.getUsername(), user.getUsername());
         assertEquals(found.getToken(), user.getToken());
         assertEquals(found.getStatus(), user.getStatus());

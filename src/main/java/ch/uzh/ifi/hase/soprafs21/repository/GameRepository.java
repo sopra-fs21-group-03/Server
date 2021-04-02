@@ -1,9 +1,12 @@
 package ch.uzh.ifi.hase.soprafs21.repository;
 
-import ch.uzh.ifi.hase.soprafs21.game.Game;
+import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository("gameRepository")
-public interface GameRepository extends JpaRepository<Game, Long>  {
+public interface GameRepository extends JpaRepository<GameEntity, Long>  {
+    Optional<GameEntity> findById(Long id);
 }
