@@ -41,16 +41,19 @@ public class Pot {
         userContribution.remove(user);
     }
 
+    //function receives an ordered array sorted by user with best cards to user with worst cards
     public void distribute(ArrayList<User> ranking) {
         ArrayList<User> enemies = (ArrayList<User>) ranking.clone();
 
+        //gets next best user and gets all the money it is allowed to get, until no money is left in pot
         for(User user: ranking) {
             int invested = userContribution.get(user);
             int receives = 0;
+            //user collects money for all users - including himself - from the pot
             for(User enemy: enemies) {
                 receives += collect(enemy, invested);
             }
-            //user.addMoney(receives);
+            user.addMoney(receives);
             if(total == 0) {
                 break;
             }
