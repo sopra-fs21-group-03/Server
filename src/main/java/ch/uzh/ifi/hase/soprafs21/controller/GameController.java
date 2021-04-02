@@ -22,7 +22,7 @@ public class GameController {
      * @param userid
      * @param userPutDTO
     **/
-    /*
+
     @PutMapping("/games/{UserID}/fold")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -38,7 +38,7 @@ public class GameController {
         }
 
 
-    } */
+    }
 
 
 
