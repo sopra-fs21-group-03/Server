@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs21.repository;
 
+import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs21.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,8 @@ public class UserRepositoryIntegrationTest {
         user.setUsername("firstname@lastname");
         user.setStatus(UserStatus.OFFLINE);
         user.setToken("1");
+        user.setMoney(0);
+        user.setGamestatus(GameStatus.NOTREADY);
 
         entityManager.persist(user);
         entityManager.flush();

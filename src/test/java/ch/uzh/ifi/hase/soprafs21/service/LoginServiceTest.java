@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs21.service;
 
+import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs21.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.repository.UserRepository;
@@ -32,6 +33,8 @@ public class LoginServiceTest {
         testUser.setId(1L);
         testUser.setPassword("testName");
         testUser.setUsername("testUsername");
+        testUser.setMoney(0);
+        testUser.setGamestatus(GameStatus.NOTREADY);
 
         // when -> any object is being save in the userRepository -> return the dummy testUser
         Mockito.when(userRepository.save(Mockito.any())).thenReturn(testUser);
