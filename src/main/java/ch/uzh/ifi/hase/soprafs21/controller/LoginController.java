@@ -9,7 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * User Controller
@@ -40,17 +42,23 @@ public class LoginController {
         return userGetDTOs;
     }
 
+    /**
+     * This Mapping is used to register a user.
+     * Throws a "Conflict" exception if username is already taken
+     * @param userPostDTO Data of the user that wants to register
+     * @return String containing the token of the registered user
+     */
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public UserGetDTO createUser(@RequestBody UserPostDTO userPostDTO) {
+    public Map createUser(@RequestBody UserPostDTO userPostDTO) {
         // convert API user to internal representation
         User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
 
         // create user
         User createdUser = loginService.createUser(userInput);
 
-        // convert internal representation of user back to API
-        return DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
+        // Return String
+        return Collections.singletonMap("token", createdUser.getToken());
     }
 }
