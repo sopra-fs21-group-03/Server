@@ -29,7 +29,6 @@ public class GameController {
     public void userfolds(@PathVariable("GameID") Long gameid, @PathVariable("UserID") Long userid, @RequestBody UserPutDTO userPutDTO){
         User folderuserinput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
         User folderuserfound = gameService.getUserById(gameid, userid);
-
         if (folderuserfound.getToken().equals(folderuserinput.getToken())){
             gameService.userFolds(gameid, userid);
         }
