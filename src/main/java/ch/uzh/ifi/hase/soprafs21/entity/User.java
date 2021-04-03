@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs21.entity;
 
+import ch.uzh.ifi.hase.soprafs21.constant.Blind;
 import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs21.constant.UserStatus;
 
@@ -41,6 +42,17 @@ public class User implements Serializable {
     @Column(nullable = false)
     private GameStatus gamestatus;
 
+    @Column
+    private Blind blind;
+
+    public Blind getBlind() {
+        return blind;
+    }
+
+    public void setBlind(Blind blind) {
+        this.blind = blind;
+    }
+
     public GameStatus getGamestatus() {
         return gamestatus;
     }
@@ -48,6 +60,7 @@ public class User implements Serializable {
     public void setGamestatus(GameStatus gamestatus) {
         this.gamestatus = gamestatus;
     }
+
     public int getMoney() {
         return money;
     }
