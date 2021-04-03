@@ -52,10 +52,15 @@ public class GameService {
 
 
     public void userFolds(Long gameid, Long userid) {
+        /**
+         * What if a User is a Big/Small Blind? In the first round in the first turn, they should not be able to fold, but afterwards they still can fold!
+         */
         GameEntity theGame = findGameEntity(gameid);
         for (User user : theGame.getAllUsers()) {
             if (userid.equals(user.getId())) {
                 theGame.getActiveUsers().remove(user);
+                gameRepository.save(theGame);
+                return;
                 /**
                  *  User folds -> he gets removed from the ActiveUsers List, not from the AllUsers List
                  */
