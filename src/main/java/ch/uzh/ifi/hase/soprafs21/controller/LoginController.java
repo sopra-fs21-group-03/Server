@@ -51,7 +51,7 @@ public class LoginController {
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public Map createUser(@RequestBody UserPostDTO userPostDTO) {
+    public Map<String, String> createUser(@RequestBody UserPostDTO userPostDTO) {
         // convert API user to internal representation
         User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
 
@@ -60,5 +60,23 @@ public class LoginController {
 
         // Return String
         return Collections.singletonMap("token", createdUser.getToken());
+    }
+
+    /**
+     * This mapping is used to login a user, if successful his token gets returned
+     * and he is set to online.
+     * @param userPostDTO Data of the user that wants to login
+     * @return String containing the token of the registered user
+     */
+    @PutMapping("/users")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public Map<String, String> loginUser(@RequestBody UserPostDTO userPostDTO){
+        User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
+
+        // If successful userStatus is set to online
+        String token = loginService.checkLoginCredentials(userInput);
+
+        return Collections.singletonMap("token", token);
     }
 }
