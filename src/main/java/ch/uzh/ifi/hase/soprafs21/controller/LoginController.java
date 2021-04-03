@@ -9,7 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * User Controller
@@ -40,17 +42,41 @@ public class LoginController {
         return userGetDTOs;
     }
 
+    /**
+     * This Mapping is used to register a user.
+     * Throws a "Conflict" exception if username is already taken
+     * @param userPostDTO Data of the user that wants to register
+     * @return String containing the token of the registered user
+     */
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public UserGetDTO createUser(@RequestBody UserPostDTO userPostDTO) {
+    public Map<String, String> createUser(@RequestBody UserPostDTO userPostDTO) {
         // convert API user to internal representation
         User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
 
         // create user
         User createdUser = loginService.createUser(userInput);
 
-        // convert internal representation of user back to API
-        return DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
+        // Return String
+        return Collections.singletonMap("token", createdUser.getToken());
+    }
+
+    /**
+     * This mapping is used to login a user, if successful his token gets returned
+     * and he is set to online.
+     * @param userPostDTO Data of the user that wants to login
+     * @return String containing the token of the registered user
+     */
+    @PutMapping("/users")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public Map<String, String> loginUser(@RequestBody UserPostDTO userPostDTO){
+        User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
+
+        // If successful userStatus is set to online
+        String token = loginService.checkLoginCredentials(userInput);
+
+        return Collections.singletonMap("token", token);
     }
 }

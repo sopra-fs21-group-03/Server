@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs21.service;
 
+import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs21.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.repository.UserRepository;
@@ -42,6 +43,8 @@ public class LoginServiceIntegrationTest {
         User testUser = new User();
         testUser.setPassword("testName");
         testUser.setUsername("testUsername");
+        testUser.setMoney(0);
+        testUser.setGamestatus(GameStatus.NOTREADY);
 
         // when
         User createdUser = loginService.createUser(testUser);
@@ -51,7 +54,7 @@ public class LoginServiceIntegrationTest {
         assertEquals(testUser.getPassword(), createdUser.getPassword());
         assertEquals(testUser.getUsername(), createdUser.getUsername());
         assertNotNull(createdUser.getToken());
-        assertEquals(UserStatus.OFFLINE, createdUser.getStatus());
+        assertEquals(UserStatus.ONLINE, createdUser.getStatus());
     }
 
     @Test
@@ -61,6 +64,8 @@ public class LoginServiceIntegrationTest {
         User testUser = new User();
         testUser.setPassword("testName");
         testUser.setUsername("testUsername");
+        testUser.setMoney(0);
+        testUser.setGamestatus(GameStatus.NOTREADY);
         User createdUser = loginService.createUser(testUser);
 
         // attempt to create second user with same username

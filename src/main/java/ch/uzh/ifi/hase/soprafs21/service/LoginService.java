@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs21.service;
 
+import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs21.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.repository.UserRepository;
@@ -39,8 +40,9 @@ public class LoginService {
 
     public User createUser(User newUser) {
         newUser.setToken(UUID.randomUUID().toString());
-        newUser.setStatus(UserStatus.OFFLINE);
+        newUser.setStatus(UserStatus.ONLINE);
 
+        newUser.setGamestatus(GameStatus.NOTREADY);
         checkIfUserExists(newUser);
 
         // saves the given entity but data is only persisted in the database once flush() is called
@@ -49,6 +51,29 @@ public class LoginService {
 
         log.debug("Created Information for User: {}", newUser);
         return newUser;
+    }
+
+    /**
+     * This function checks the login credentials of a user,
+     * throws a 401 UNAUTHORIZED error if the password or username is false
+     * @param userToLogin Converted UserInput of the user who wants to login
+     * @return Token of the found user if credentials are checked successfully
+     */
+    public String checkLoginCredentials(User userToLogin){
+        User fetched = userRepository.findByUsername(userToLogin.getUsername());
+
+        // Check if password and username match
+        boolean valid = fetched != null && fetched.getPassword().equals(userToLogin.getPassword());
+
+        // throw new Exception if they don't match
+        if (!valid){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Username or Password false");
+        }
+
+        fetched.setStatus(UserStatus.ONLINE);
+        userRepository.save(fetched);
+
+        return fetched.getToken();
     }
 
     /**
@@ -62,9 +87,9 @@ public class LoginService {
     private void checkIfUserExists(User userToBeCreated) {
         User userByUsername = userRepository.findByUsername(userToBeCreated.getUsername());
 
-        String baseErrorMessage = "The %s provided %s not unique. Therefore, the user could not be created!";
+        String baseErrorMessage = "The %s provided is not unique. Therefore, the user could not be created!";
         if (userByUsername != null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format(baseErrorMessage, "username", "is"));
+            throw new ResponseStatusException(HttpStatus.CONFLICT, String.format(baseErrorMessage, "username"));
         }
     }
 }

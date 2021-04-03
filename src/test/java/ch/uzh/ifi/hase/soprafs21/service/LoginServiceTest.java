@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs21.service;
 
+import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs21.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.repository.UserRepository;
@@ -30,13 +31,17 @@ public class LoginServiceTest {
         // given
         testUser = new User();
         testUser.setId(1L);
-        testUser.setPassword("testName");
+        testUser.setPassword("testPassword");
         testUser.setUsername("testUsername");
+        testUser.setToken("1");
+        testUser.setMoney(0);
+        testUser.setGamestatus(GameStatus.NOTREADY);
 
         // when -> any object is being save in the userRepository -> return the dummy testUser
         Mockito.when(userRepository.save(Mockito.any())).thenReturn(testUser);
     }
 
+    /* Tests for registering a user */
     @Test
     public void createUser_validInputs_success() {
         // when -> any object is being save in the userRepository -> return the dummy testUser
@@ -49,7 +54,7 @@ public class LoginServiceTest {
         assertEquals(testUser.getPassword(), createdUser.getPassword());
         assertEquals(testUser.getUsername(), createdUser.getUsername());
         assertNotNull(createdUser.getToken());
-        assertEquals(UserStatus.OFFLINE, createdUser.getStatus());
+        assertEquals(UserStatus.ONLINE, createdUser.getStatus());
     }
 
     @Test
@@ -76,5 +81,38 @@ public class LoginServiceTest {
         assertThrows(ResponseStatusException.class, () -> loginService.createUser(testUser));
     }
 
+    /* Tests for logging in a user */
+    @Test
+    public void loginUser_validInputs_success(){
+
+        //given -> a user has already been created
+        loginService.createUser(testUser);
+
+        User userInputs = new User();
+        userInputs.setUsername("testUsername");
+        userInputs.setPassword("testPassword");
+
+        // when -> setup additional mocks for UserRepository
+        Mockito.when(userRepository.findByUsername(Mockito.any())).thenReturn(testUser);
+
+        String loggedInToken = loginService.checkLoginCredentials(userInputs);
+
+        assertEquals(loggedInToken, testUser.getToken());
+    }
+
+    @Test
+    public void loginUser_invalidInputs_errorThrown(){
+        //given -> a user has already been created
+        loginService.createUser(testUser);
+
+        User userInputs = new User();
+        userInputs.setUsername("falseUsername");
+        userInputs.setPassword("falsePassword");
+
+        // when -> setup additional mocks for UserRepository
+        Mockito.when(userRepository.findByUsername(Mockito.any())).thenReturn(testUser);
+
+        assertThrows(ResponseStatusException.class, () -> loginService.checkLoginCredentials(userInputs));
+    }
 
 }
