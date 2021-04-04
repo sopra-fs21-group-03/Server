@@ -170,9 +170,13 @@ class PotTest {
     @Test
     void distributeDrawPartial() {
         User user1 = new User();
+        user1.setId(1L);
         User user2 = new User();
+        user2.setId(2L);
         User user3 = new User();
+        user3.setId(3L);
         User user4 = new User();
+        user4.setId(4L);
         Pot pot = new Pot();
         pot.addUser(user1);
         pot.addUser(user2);
