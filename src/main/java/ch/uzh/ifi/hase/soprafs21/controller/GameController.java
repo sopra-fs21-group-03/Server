@@ -23,21 +23,21 @@ public class GameController {
      * @param userPutDTO
     **/
 
-    /*@PutMapping("/games/{UserID}/fold")
+    @PutMapping("/games/{GameID}/{UserID}/fold")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
-    public void userfolds(@PathVariable("UserID") Long userid, @RequestBody UserPutDTO userPutDTO){
+    public void userfolds(@PathVariable("GameID") Long gameid, @PathVariable("UserID") Long userid, @RequestBody UserPutDTO userPutDTO){
         User folderuserinput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
-        User folderuserfound = gameService.getUserById(userid);
+        User folderuserfound = gameService.getUserById(gameid, userid);
         if (folderuserfound.getToken().equals(folderuserinput.getToken())){
-            gameService.userFolds(folderuserfound.getId());
+            gameService.userFolds(gameid, userid);
         }
         else{
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The User could not be found... (In Fold process)");
         }
 
 
-    }*/
+    }
 
 
 
