@@ -22,9 +22,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 
 
 @WebMvcTest(GameController.class)
@@ -56,13 +56,14 @@ class GameControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(userPutDTO));
 
-        try{
+        try {
             MvcResult result = mockMvc.perform(putRequest)
                     .andExpect(status().isNoContent())
                     .andReturn();
 
-            assertEquals( "", result.getResponse().getContentAsString());}
-        catch(Exception e){
+            assertEquals("", result.getResponse().getContentAsString());
+        }
+        catch (Exception e) {
             /**
              * Here, the Exception should not occur. If an Exception gets caught, the Test should fail.
              */
@@ -73,10 +74,34 @@ class GameControllerTest {
 
     @Test
     void userfolds_notallowed() {
-        /**
-         * This Test still needs to be improved
-         */
+        UserPutDTO userPutDTO = new UserPutDTO();
+        userPutDTO.setToken("1");
 
+        //given() doesn't work with a void function
+        given(gameService.getUserById(Mockito.any(), Mockito.any())).willThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED,"The User is not found... (In Fold process)"));
+
+
+        MockHttpServletRequestBuilder putRequest = put("/games/1/1/fold")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(userPutDTO));
+
+        try {
+            mockMvc.perform(putRequest)
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(result -> assertTrue(result.getResolvedException() instanceof ResponseStatusException))
+                    .andExpect(result -> assertEquals("401 UNAUTHORIZED \"The User is not found... (In Fold process)\"", result.getResolvedException().getMessage()))
+                    ;
+        }
+        catch (Exception e) {
+            /**
+             * Here, the Exception should not occur. If an Exception gets caught, the Test should fail.*/
+
+            fail();
+        }
+    }
+
+    @Test
+    void userraises_success(){
         testUser = new User();
         testUser.setId(1L);
         testUser.setPassword("testName");
@@ -84,37 +109,66 @@ class GameControllerTest {
         testUser.setToken("1");
         testUser.setMoney(10);
         testUser.setGamestatus(GameStatus.READY);
-        testUser.setBlind(Blind.BIG);
 
         UserPutDTO userPutDTO = new UserPutDTO();
         userPutDTO.setToken("1");
+        userPutDTO.setRaiseamount(10);
 
         given(gameService.getUserById(Mockito.any(), Mockito.any())).willReturn(testUser);
-        //given() doesn't work with a void function
-        /**
-        //given(gameService.userFolds(Mockito.any(), Mockito.any())).willThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The User has a Blind role and is therefore not allowed to fold in the first round at his first turn!"));
 
-        MockHttpServletRequestBuilder putRequest = put("/games/1/1/fold")
+        MockHttpServletRequestBuilder putRequest = put("/games/1/1/raise")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(userPutDTO));
+                .content(asJsonString(userPutDTO))
+                ;
 
-        try{
+        try {
             MvcResult result = mockMvc.perform(putRequest)
                     .andExpect(status().isNoContent())
                     .andReturn();
 
-            assertEquals( "", result.getResponse().getContentAsString());}
-        catch(Exception e){
+            assertEquals("", result.getResponse().getContentAsString());
+        }
+        catch (Exception e) {
             /**
              * Here, the Exception should not occur. If an Exception gets caught, the Test should fail.
-
+             */
             fail();
         }
-    }*/
+
     }
+
+    @Test
+    void userraises_notallowed(){
+        UserPutDTO userPutDTO = new UserPutDTO();
+        userPutDTO.setToken("1");
+        userPutDTO.setRaiseamount(10);
+
+        //given() doesn't work with a void function
+        given(gameService.getUserById(Mockito.any(), Mockito.any())).willThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED,"The User is not found... (In Raise process)"));
+
+
+        MockHttpServletRequestBuilder putRequest = put("/games/1/1/raise")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(userPutDTO));
+
+        try {
+            mockMvc.perform(putRequest)
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(result -> assertTrue(result.getResolvedException() instanceof ResponseStatusException))
+                    .andExpect(result -> assertEquals("401 UNAUTHORIZED \"The User is not found... (In Raise process)\"", result.getResolvedException().getMessage()))
+            ;
+        }
+        catch (Exception e) {
+            /**
+             * Here, the Exception should not occur. If an Exception gets caught, the Test should fail.*/
+
+            fail();
+        }}
+
     /**
      * Helper Method to convert userPostDTO into a JSON string such that the input can be processed
      * Input will look like this: {"name": "Test User", "username": "testUsername"}
+     *
      * @param object
      * @return string
      */

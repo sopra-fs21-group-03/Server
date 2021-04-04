@@ -29,7 +29,7 @@ public class Pot {
         total += amount;
     }
 
-    private int sum() {
+    public int sum() {
         return total;
     }
 
