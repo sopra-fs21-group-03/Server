@@ -169,6 +169,24 @@ public class LoginControllerTest {
         mockMvc.perform(putRequest).andExpect(status().isUnauthorized());
     }
 
+    /* Tests for logging out a User (PUT-Mapping)*/
+
+    @Test
+    public void logoutUser_validInput_userLoggedOut() throws Exception{
+
+    }
+
+    @Test
+    public void logOutUser_invalidInput_notFound() throws Exception{
+
+    }
+
+    @Test
+    public void logOutUser_invalidInput_unauthorized() throws Exception{
+
+    }
+
+
     /**
      * Helper Method to convert userPostDTO into a JSON string such that the input can be processed
      * Input will look like this: {"name": "Test User", "username": "testUsername"}

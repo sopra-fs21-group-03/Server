@@ -115,4 +115,20 @@ public class LoginServiceTest {
         assertThrows(ResponseStatusException.class, () -> loginService.checkLoginCredentials(userInputs));
     }
 
+    /* Tests for logging out a user */
+
+    @Test
+    public void logoutUser_validInputs_success(){
+
+    }
+
+    @Test
+    public void logoutUser_invalidInputs_notFound(){
+
+    }
+
+    @Test
+    public void logoutUser_invalidInputs_unauthorized(){
+
+    }
 }
