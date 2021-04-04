@@ -3,10 +3,12 @@ package ch.uzh.ifi.hase.soprafs21.game;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.helper.UserDraw;
 
+import javax.persistence.Embeddable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
+@Embeddable
 public class Pot {
 
     private HashMap<User, Integer> userContribution = new HashMap<>();
