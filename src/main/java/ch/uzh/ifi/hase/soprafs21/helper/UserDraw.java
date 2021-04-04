@@ -37,9 +37,11 @@ public class UserDraw {
         Set<User> users = usersInDraw.keySet();
         int size = users.size();
         int share = amount / size;
+        int minimum = getMinimum();
         for(User user: users) {
             user.addMoney(share);
-            usersInDraw.put(user, usersInDraw.get(user) - getMinimum());
+            //int oldValue = usersInDraw.get(user);
+            //usersInDraw.put(user, oldValue - minimum);
         }
         List<User> toBeRemoved = new ArrayList<>();
         for(User user: users) {
@@ -54,7 +56,8 @@ public class UserDraw {
 
     public void subtract(int amount) {
         for(User user: usersInDraw.keySet()) {
-            usersInDraw.put(user, usersInDraw.get(user) - amount);
+            int oldValue = usersInDraw.get(user);
+            usersInDraw.put(user, oldValue - amount);
         }
         List<User> usersToBeRemoved = new ArrayList<>();
         for(User user: usersInDraw.keySet()) {
