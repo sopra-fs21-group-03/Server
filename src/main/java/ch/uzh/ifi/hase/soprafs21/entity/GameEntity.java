@@ -1,5 +1,7 @@
 package ch.uzh.ifi.hase.soprafs21.entity;
 
+import ch.uzh.ifi.hase.soprafs21.game.Pot;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 
@@ -19,6 +21,9 @@ public class GameEntity {
 
     @Column(nullable = false)
     private ArrayList<User> AllUsers;
+
+    @Column
+    private Pot pot;
 
     public ArrayList<User> getAllUsers() {
         return AllUsers;
@@ -44,6 +49,9 @@ public class GameEntity {
         return gameID;
     }
 
+    public void setPot(Pot pot) {
+        this.pot = pot;
+    }
 
     public void removeUser(Long id) {
         for (User arrayuser : ActiveUsers) {
@@ -55,5 +63,8 @@ public class GameEntity {
     }
 
 
+    public Pot getPot() {
+        return pot;
+    }
 }
 
