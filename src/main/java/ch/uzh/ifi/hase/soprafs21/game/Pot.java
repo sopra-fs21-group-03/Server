@@ -1,13 +1,17 @@
 package ch.uzh.ifi.hase.soprafs21.game;
 
 import ch.uzh.ifi.hase.soprafs21.entity.User;
+import ch.uzh.ifi.hase.soprafs21.helper.UserDraw;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 
 public class Pot {
 
     private HashMap<User, Integer> userContribution = new HashMap<>();
+
+    private ArrayList<UserDraw> usersInDraw = new ArrayList<>();
 
     private int total;
 
@@ -42,21 +46,27 @@ public class Pot {
     }
 
     //function receives an ordered array sorted by user with best cards to user with worst cards
-    public void distribute(ArrayList<User> ranking) {
-        ArrayList<User> enemies = (ArrayList<User>) ranking.clone();
+    public void distribute(ArrayList<UserDraw> ranking) {
+        Set<User> enemies = userContribution.keySet();
 
         //gets next best user and gets all the money it is allowed to get, until no money is left in pot
-        for(User user: ranking) {
-            int invested = userContribution.get(user);
-            int receives = 0;
-            //user collects money for all users - including himself - from the pot
-            for(User enemy: enemies) {
-                receives += collect(enemy, invested);
+        for(UserDraw user: ranking) {
+            while(!user.empty()) {
+                int invested = user.getMinimum();
+                int receives = 0;
+                //user collects money for all users - including himself - from the pot
+                for (User enemy : enemies) {
+                    receives += collect(enemy, invested);
+                }
+                user.addMoneyAndDistribute(receives);
+                for(UserDraw userDraw: ranking) {
+                    userDraw.subtract(invested);
+                }
             }
-            user.addMoney(receives);
             if(total == 0) {
                 break;
             }
+
         }
     }
 
