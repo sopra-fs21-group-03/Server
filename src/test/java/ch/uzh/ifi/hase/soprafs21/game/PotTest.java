@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs21.game;
 
 import ch.uzh.ifi.hase.soprafs21.entity.User;
+import ch.uzh.ifi.hase.soprafs21.helper.UserDraw;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -76,10 +77,17 @@ class PotTest {
         pot.addMoney(user1,100);
         pot.addMoney(user2, 100);
         pot.addMoney(user3, 100);
-        ArrayList<User> ranking = new ArrayList<>();
-        ranking.add(user2);
-        ranking.add(user1);
-        ranking.add(user3);
+        ArrayList<UserDraw> ranking = new ArrayList<>();
+        UserDraw userD1 = new UserDraw();
+        userD1.addUser(user1, pot.getUserContribution().get(user1));
+        UserDraw userD2 = new UserDraw();
+        userD2.addUser(user2, pot.getUserContribution().get(user2));
+        UserDraw userD3 = new UserDraw();
+        userD3.addUser(user3, pot.getUserContribution().get(user3));
+
+        ranking.add(userD2);
+        ranking.add(userD1);
+        ranking.add(userD3);
 
         pot.distribute(ranking);
         assertEquals(0, user1.getMoney());
@@ -107,11 +115,20 @@ class PotTest {
         pot.addMoney(user2, 50);
         pot.addMoney(user3, 150);
         pot.addMoney(user4, 150);
-        ArrayList<User> ranking = new ArrayList<>();
-        ranking.add(user2);
-        ranking.add(user1);
-        ranking.add(user3);
-        ranking.add(user4);
+        ArrayList<UserDraw> ranking = new ArrayList<>();
+        UserDraw userD1 = new UserDraw();
+        userD1.addUser(user1, pot.getUserContribution().get(user1));
+        UserDraw userD2 = new UserDraw();
+        userD2.addUser(user2, pot.getUserContribution().get(user2));
+        UserDraw userD3 = new UserDraw();
+        userD3.addUser(user3, pot.getUserContribution().get(user3));
+        UserDraw userD4 = new UserDraw();
+        userD4.addUser(user4, pot.getUserContribution().get(user4));
+
+        ranking.add(userD2);
+        ranking.add(userD1);
+        ranking.add(userD3);
+        ranking.add(userD4);
 
         pot.distribute(ranking);
         assertEquals(150, user1.getMoney());
@@ -119,4 +136,72 @@ class PotTest {
         assertEquals(100, user3.getMoney());
         assertEquals(0, user4.getMoney());
     }
+
+    @Test
+    void distributeDraw() {
+        User user1 = new User();
+        User user2 = new User();
+        User user3 = new User();
+        Pot pot = new Pot();
+        pot.addUser(user1);
+        pot.addUser(user2);
+        pot.addUser(user3);
+
+        pot.addMoney(user1,100);
+        pot.addMoney(user2, 100);
+        pot.addMoney(user3, 100);
+        ArrayList<UserDraw> ranking = new ArrayList<>();
+        UserDraw userD1 = new UserDraw();
+        userD1.addUser(user1, pot.getUserContribution().get(user1));
+        userD1.addUser(user2, pot.getUserContribution().get(user2));
+        UserDraw userD3 = new UserDraw();
+        userD3.addUser(user3, pot.getUserContribution().get(user3));
+
+        ranking.add(userD1);
+        ranking.add(userD3);
+
+        pot.distribute(ranking);
+        assertEquals(150, user1.getMoney());
+        assertEquals(150, user2.getMoney());
+        assertEquals(0, user3.getMoney());
+
+    }
+
+    @Test
+    void distributeDrawPartial() {
+        User user1 = new User();
+        User user2 = new User();
+        User user3 = new User();
+        User user4 = new User();
+        Pot pot = new Pot();
+        pot.addUser(user1);
+        pot.addUser(user2);
+        pot.addUser(user3);
+        pot.addUser(user4);
+
+        pot.addMoney(user1,50);
+        pot.addMoney(user2, 100);
+        pot.addMoney(user3, 200);
+        pot.addMoney(user4, 200);
+        ArrayList<UserDraw> ranking = new ArrayList<>();
+        UserDraw userD1 = new UserDraw();
+        userD1.addUser(user1, pot.getUserContribution().get(user1));
+        UserDraw userD2 = new UserDraw();
+        userD2.addUser(user2, pot.getUserContribution().get(user2));
+        userD2.addUser(user4, pot.getUserContribution().get(user4));
+        UserDraw userD3 = new UserDraw();
+        userD3.addUser(user3, pot.getUserContribution().get(user3));
+
+        ranking.add(userD1);
+        ranking.add(userD2);
+        ranking.add(userD3);
+
+        pot.distribute(ranking);
+        assertEquals(200, user1.getMoney());
+        assertEquals(75, user2.getMoney());
+        assertEquals(0, user3.getMoney());
+        assertEquals(275, user4.getMoney());
+
+    }
+
 }
