@@ -35,9 +35,26 @@ public class GameController {
         else{
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The User could not be found... (In Fold process)");
         }
+    }
+
+    @PutMapping("/games/{GameID}/{UserID}/raise")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseBody
+    public void userraises(@PathVariable("GameID") Long gameid, @PathVariable("UserID") Long userid, @RequestBody UserPutDTO userPutDTO){
+        int raiseamount = userPutDTO.getRaiseamount();
+        User raiserUserInput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
+        User raiserUserFound = gameService.getUserById(gameid, userid);
+        if (raiserUserInput.getToken().equals(raiserUserFound.getToken())){
+            gameService.userRaises(gameid, userid, raiseamount);
+        }
+        else{
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The User is not authorized... (In Raise process)");
+        }
 
 
     }
+
+
 
 
 

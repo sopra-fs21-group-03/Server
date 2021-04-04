@@ -3,8 +3,8 @@ package ch.uzh.ifi.hase.soprafs21.service;
 import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
+import ch.uzh.ifi.hase.soprafs21.game.Pot;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
-import ch.uzh.ifi.hase.soprafs21.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -31,7 +31,10 @@ class GameServiceTest {
     private User testUser3;
 
     private GameEntity testGame;
-    //private Optional<GameEntity> option;
+    private Pot testPot;
+
+    int raiseamountpossible;
+    int raiseamounttoomuch;
 
     @BeforeEach
     public void setup() {
@@ -79,6 +82,17 @@ class GameServiceTest {
         testGame.setActiveUsers(testActiveUsers);
         testGame.setAllUsers(testAllUsers);
 
+        testPot = new Pot();
+        testPot.addUser(testUser);
+        testPot.addUser(testUser2);
+        testPot.addUser(testUser3);
+
+        testGame.setPot(testPot);
+
+
+        raiseamountpossible = 5;
+        raiseamounttoomuch = 14;
+
         // when -> any object is being save in the gameRepository -> return the dummy testGame
         Mockito.when(gameRepository.save(Mockito.any())).thenReturn(testGame);
         Mockito.when(gameRepository.findById(Mockito.any())).thenReturn(Optional.ofNullable(testGame));
@@ -112,6 +126,48 @@ class GameServiceTest {
 
         gameService.userFolds(1L,1L);
         assertEquals(2, testGame.getActiveUsers().size());
+
+        for(User  user: testGame.getActiveUsers()){
+            if(user == testUser){
+                fail();
+            }
+        }
+
+    }
+
+    @Test
+    void userRaises_success(){
+        gameService.userRaises(testGame.getGameID(), testUser.getId(), raiseamountpossible);
+        assertEquals(5, testUser.getMoney());
+        assertEquals(testUser, testGame.getUserThatRaisedLast());
+        assertEquals(5, testGame.getPot().sum());
+
+        gameService.userRaises(testGame.getGameID(), testUser2.getId(), raiseamountpossible);
+        assertEquals(5, testUser2.getMoney());
+        assertEquals(testUser2, testGame.getUserThatRaisedLast());
+        assertEquals(10, testGame.getPot().sum());
+
+    }
+
+    @Test
+    void userRaises_toohighamount(){
+        assertThrows(ResponseStatusException.class, () -> gameService.userRaises(testGame.getGameID(), testUser.getId(), raiseamounttoomuch));
+        assertNotEquals(testUser, testGame.getUserThatRaisedLast());
+        assertEquals(0, testGame.getPot().sum());
+
+    }
+
+    @Test
+    void userRaises_butwasplayerthatraisedlast(){
+        gameService.userRaises(testGame.getGameID(), testUser.getId(), raiseamountpossible);
+        assertEquals(5, testUser.getMoney());
+        assertEquals(testUser, testGame.getUserThatRaisedLast());
+        assertEquals(5, testGame.getPot().sum());
+
+        assertThrows(ResponseStatusException.class, () -> gameService.userRaises(testGame.getGameID(), testUser.getId(), raiseamountpossible));
+        assertEquals(5, testUser.getMoney());
+        assertEquals(testUser, testGame.getUserThatRaisedLast());
+        assertEquals(5, testGame.getPot().sum());
 
     }
 }

@@ -28,13 +28,14 @@ public class GameService {
         this.gameRepository = gameRepository;
     }
 
-    private GameEntity findGameEntity(Long gameid){
+    private GameEntity findGameEntity(Long gameid) {
         Optional<GameEntity> potentialGame = gameRepository.findById(gameid);
         GameEntity theGame = null;
-        if(potentialGame.isPresent()){
+        if (potentialGame.isPresent()) {
             theGame = potentialGame.get();
             return theGame;
-        } else{
+        }
+        else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The GameSession could not be found...");
         }
     }
@@ -66,8 +67,43 @@ public class GameService {
                  */
             }
         }
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The User could not be found...");
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The User could not be found...");
 
+    }
+
+
+    public void userRaises(Long gameid, Long userid, int amount) {
+        GameEntity theGame = findGameEntity(gameid);
+
+        for (User user : theGame.getAllUsers()) {
+            if (userid.equals(user.getId())) {
+                if ( theGame.getUserThatRaisedLast() == null || !theGame.getUserThatRaisedLast().getId().equals(user.getId())) {
+                /*
+                User was found and he is not the User that raised last
+                 */
+                    if (user.getMoney() >= amount) {
+                        theGame.getPot().addMoney(user, amount);
+                        theGame.setUserThatRaisedLast(user);
+                        try {
+                            user.removeMoney(amount);
+                        }
+                        catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        gameRepository.save(theGame);
+                        return;
+                    }
+                    else {
+                        throw new ResponseStatusException(HttpStatus.CONFLICT, "The User doesn't have enough money to raise with such an amount!");
+                    }
+
+                } else{
+                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This User was the User that raised last! Therefore, he cannot raise a second time in a row!");
+                }
+            }
+        }
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The User could not be found...");
 
     }
 
