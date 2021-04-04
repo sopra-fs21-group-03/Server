@@ -68,7 +68,28 @@ public class GameService {
         }
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The User could not be found...");
 
+    }
 
+
+    public void userRaises(Long gameid, Long userid, int amount){
+    /*    GameEntity theGame = findGameEntity(gameid);
+
+        for (User user : theGame.getAllUsers()) {
+            if (userid.equals(user.getId()) && (theGame.getIdOfUserThatRaisedLast() != user.getId())) {
+                /*
+                User was found and he is not the User that raised last
+
+
+
+
+
+                gameRepository.save(theGame);
+                return;
+
+            }
+        }
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The User could not be found...");
+*/
     }
 
 }
