@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -74,6 +75,33 @@ public class LoginService {
         userRepository.save(fetched);
 
         return fetched.getToken();
+    }
+
+    /**
+     * This method checks if the token matches the found user
+     * If matching it logs the user out
+     * If it doesn't find a user with this ID it throws the NOT_FOUND exception
+     * If the token does not match, it throws an UNAUTHORIZED exception
+     * @param userToLogout used to get the token of the user who wants to log out
+     */
+    public void getUserToLogout(User userToLogout, Long userID){
+        Optional<User> fetched = userRepository.findById(userID);
+
+        // If no user is found in the repo
+        if (fetched.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        User fetchedEntity = fetched.get();
+
+        // If the tokens do not match
+        if (!fetchedEntity.getToken().equals(userToLogout.getToken())){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        }
+
+        fetchedEntity.setStatus(UserStatus.OFFLINE);
+        userRepository.save(fetchedEntity);
+
     }
 
     /**

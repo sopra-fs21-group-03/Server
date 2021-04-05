@@ -3,6 +3,7 @@ package ch.uzh.ifi.hase.soprafs21.controller;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.UserPostDTO;
+import ch.uzh.ifi.hase.soprafs21.rest.dto.UserPutDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs21.service.LoginService;
 import org.springframework.http.HttpStatus;
@@ -14,9 +15,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * User Controller
- * This class is responsible for handling all REST request that are related to the user.
- * The controller will receive the request and delegate the execution to the UserService and finally return the result.
+ * Login Controller
+ * This class is responsible for handling all REST request that are related to the registration/login/logout.
+ * The controller will receive the request and delegate the execution to the LoginService and finally return the result.
  */
 @RestController
 public class LoginController {
@@ -27,6 +28,11 @@ public class LoginController {
         this.loginService = loginService;
     }
 
+    /**
+     * template mapping, nice to have for debugging
+     * May get removed later on if not needed
+     * @return List of all users stored in the userRepository
+     */
     @GetMapping("/users")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -78,5 +84,21 @@ public class LoginController {
         String token = loginService.checkLoginCredentials(userInput);
 
         return Collections.singletonMap("token", token);
+    }
+
+    /**
+     * This mapping is used to logout a user, if successful NO_CONTENT gets returned as status code
+     * If unsuccessful either NOT_FOUND or UNAUTHORIZED gets returned
+     * @param userPutDTO The token of the user who wants to logout
+     * @param userID The ID of the user who wants to logout
+     */
+    @PutMapping("/users/{userID}/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void logoutUser(@RequestBody UserPutDTO userPutDTO, @PathVariable(value="userID") Long userID){
+        User toLogout = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
+
+        loginService.getUserToLogout(toLogout, userID);
+
+
     }
 }
