@@ -4,6 +4,8 @@ import ch.qos.logback.core.encoder.EchoEncoder;
 import ch.uzh.ifi.hase.soprafs21.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.UserPostDTO;
+import ch.uzh.ifi.hase.soprafs21.rest.dto.UserPutDTO;
+import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs21.service.LoginService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,6 +26,9 @@ import java.util.List;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -173,16 +178,75 @@ public class LoginControllerTest {
 
     @Test
     public void logoutUser_validInput_userLoggedOut() throws Exception{
+        // given
+        User user = new User();
+        user.setId(1L);
+        user.setPassword("TestPassword");
+        user.setUsername("testUsername");
+        user.setToken("1");
+        user.setStatus(UserStatus.OFFLINE);
 
+        UserPutDTO userPutDTO = new UserPutDTO();
+        userPutDTO.setToken("1");
+
+        MockHttpServletRequestBuilder putRequest = put("/users/" + user.getId() + "/logout")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(userPutDTO));
+
+        mockMvc.perform(putRequest).andExpect(status().isNoContent());
     }
 
     @Test
     public void logOutUser_invalidInput_notFound() throws Exception{
 
+        // given
+        User user = new User();
+        user.setId(1L);
+        user.setPassword("TestPassword");
+        user.setUsername("testUsername");
+        user.setToken("1");
+        user.setStatus(UserStatus.OFFLINE);
+
+
+        UserPutDTO userPutDTO = new UserPutDTO();
+        userPutDTO.setToken("1");
+
+        long falseID = user.getId()+1;
+
+        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND)).when(loginService).getUserToLogout(Mockito.any(), Mockito.any());
+
+        MockHttpServletRequestBuilder putRequest = put("/users/" + falseID + "/logout")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(userPutDTO));
+
+        mockMvc.perform(putRequest).andExpect(status().isNotFound());
     }
 
     @Test
     public void logOutUser_invalidInput_unauthorized() throws Exception{
+
+
+        // given
+        User user = new User();
+        user.setId(1L);
+        user.setPassword("TestPassword");
+        user.setUsername("testUsername");
+        user.setToken("1");
+        user.setStatus(UserStatus.OFFLINE);
+
+
+        UserPutDTO userPutDTO = new UserPutDTO();
+        userPutDTO.setToken("2");
+
+        long falseID = user.getId()+1;
+
+        doThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED)).when(loginService).getUserToLogout(Mockito.any(), Mockito.any());
+
+        MockHttpServletRequestBuilder putRequest = put("/users/" + falseID + "/logout")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(userPutDTO));
+
+        mockMvc.perform(putRequest).andExpect(status().isUnauthorized());
 
     }
 
