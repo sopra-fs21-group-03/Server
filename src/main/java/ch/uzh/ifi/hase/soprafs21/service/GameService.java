@@ -186,7 +186,7 @@ public class GameService {
         User thisUser = getUserByIdInActiveUsers(gameid, userid);
 
         for (User user : theGame.getActiveUsers()) {
-            if (theGame.getPot().getUserContributionOfAUser(user) != theGame.getPot().getUserContributionOfAUser(thisUser)) {
+            if (theGame.getPot().getUserContributionOfAUser(user) > theGame.getPot().getUserContributionOfAUser(thisUser)) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "This User cannot check, since a different User has a different amount of money in the pot!");
             }
         }
