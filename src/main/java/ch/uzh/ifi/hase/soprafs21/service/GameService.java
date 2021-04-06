@@ -84,7 +84,7 @@ public class GameService {
 
 
     public void userRaises(Long gameid, Long userid, int amount) {
-        if(amount < 0){
+        if (amount < 0) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "The raise amount always has to be above 0!");
         }
         GameEntity theGame = findGameEntity(gameid);
@@ -136,10 +136,8 @@ public class GameService {
     /**
      * @param gameid -> Id of the GameSession
      * @param userid -> Id of User that wants to call
-     *
+     *               <p>
      *               In this function, "All-In" will also be handeled
-     *
-     *
      */
     public void userCalls(Long gameid, Long userid) {
         GameEntity theGame = findGameEntity(gameid);
@@ -149,7 +147,7 @@ public class GameService {
         //In the function call, we got a userid. Give me this User
         User thisUser = getUserByIdInActiveUsers(gameid, userid);
 
-        if(thisUser.getMoney() <= 0){
+        if (thisUser.getMoney() <= 0) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "The User cannot call, since he has no money!");
         }
 
@@ -179,5 +177,18 @@ public class GameService {
         }
 
         gameRepository.save(theGame);
+    }
+
+    public void userChecks(Long gameid, Long userid) {
+        GameEntity theGame = findGameEntity(gameid);
+
+        //In the function call, we got a userid. Give me this User
+        User thisUser = getUserByIdInActiveUsers(gameid, userid);
+
+        for (User user : theGame.getActiveUsers()) {
+            if (theGame.getPot().getUserContributionOfAUser(user) != theGame.getPot().getUserContributionOfAUser(thisUser)) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "This User cannot check, since a different User has a different amount of money in the pot!");
+            }
+        }
     }
 }
