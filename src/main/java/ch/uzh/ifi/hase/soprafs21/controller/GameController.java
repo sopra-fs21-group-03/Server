@@ -68,12 +68,21 @@ public class GameController {
         else{
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The User is not authorized... (In Call process)");
         }
-
-
-
     }
 
-
+    @PutMapping("/games/{GameID}/{UserID}/check")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseBody
+    public void userchecks(@PathVariable("GameID") Long gameid, @PathVariable("UserID") Long userid, @RequestBody UserPutDTO userPutDTO){
+        User checkerUserInput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
+        User checkerUserFound = gameService.getUserByIdInActiveUsers(gameid, userid);
+        if (checkerUserInput.getToken().equals(checkerUserFound.getToken())){
+            gameService.userChecks(gameid, userid);
+        }
+        else{
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The User is not authorized... (In Call process)");
+        }
+    }
 
 
 
