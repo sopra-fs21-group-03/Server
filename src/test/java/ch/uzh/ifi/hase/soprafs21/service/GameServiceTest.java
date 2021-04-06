@@ -200,6 +200,43 @@ class GameServiceTest {
         assertEquals(testUser, testGame.getUserThatRaisedLast());
         assertEquals(55, testGame.getPot().sum());
     }
+
+    @Test
+    void userchecks_success(){
+        gameService.userRaises(testGame.getGameID(), testUser.getId(), 2);
+        gameService.userCalls(testGame.getGameID(), testUser2.getId());
+        gameService.userCalls(testGame.getGameID(), testUser3.getId());
+
+        gameService.userChecks(testGame.getGameID(),testUser.getId() );
+        gameService.userChecks(testGame.getGameID(),testUser2.getId() );
+        gameService.userChecks(testGame.getGameID(),testUser3.getId() );
+
+        assertEquals(8, testUser.getMoney());
+        assertEquals(8, testUser2.getMoney());
+        assertEquals(8, testUser3.getMoney());
+
+        assertEquals(6, testGame.getPot().sum());
+        assertEquals(testUser, testGame.getUserThatRaisedLast());
+
+
+    }
+
+    @Test
+    void userchecks_youshallnotcheck(){
+        gameService.userRaises(testGame.getGameID(), testUser.getId(), 2);
+
+        assertThrows(ResponseStatusException.class, () -> gameService.userChecks(testGame.getGameID(),testUser2.getId() ));
+        assertThrows(ResponseStatusException.class, () -> gameService.userChecks(testGame.getGameID(),testUser3.getId()) );
+
+        assertEquals(8, testUser.getMoney());
+        assertEquals(10, testUser2.getMoney());
+        assertEquals(10, testUser3.getMoney());
+
+        assertEquals(2, testGame.getPot().sum());
+        assertEquals(testUser, testGame.getUserThatRaisedLast());
+
+
+    }
 }
 
 
