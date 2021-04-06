@@ -94,7 +94,7 @@ public class Pot {
         return userContribution;
     }
 
-    int getTotal() {
-        return total;
+    public int getUserContributionOfAUser(User user) {
+        return userContribution.get(user);
     }
 }

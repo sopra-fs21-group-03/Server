@@ -100,7 +100,7 @@ class GameServiceTest {
 
     @Test
     void getUserById_success() {
-        User myUser = gameService.getUserById(1L,1L);
+        User myUser = gameService.getUserByIdInAllUsers(1L,1L);
 
         assertEquals(myUser.getBlind(), testUser.getBlind());
         assertEquals(myUser.getMoney(), testUser.getMoney());
@@ -113,7 +113,7 @@ class GameServiceTest {
     @Test
     void getUserById_fails_userNotFound() {
         //User myUser = gameService.getUserById(1L,4L);
-        assertThrows(ResponseStatusException.class, () -> gameService.getUserById(1L,4L));
+        assertThrows(ResponseStatusException.class, () -> gameService.getUserByIdInAllUsers(1L,4L));
 
     }
 
@@ -169,6 +169,36 @@ class GameServiceTest {
         assertEquals(testUser, testGame.getUserThatRaisedLast());
         assertEquals(5, testGame.getPot().sum());
 
+    }
+
+    @Test
+    void userCalls_success(){
+        gameService.userRaises(testGame.getGameID(), testUser.getId(), raiseamountpossible);
+        assertEquals(5, testUser.getMoney());
+        assertEquals(testUser, testGame.getUserThatRaisedLast());
+        assertEquals(5, testGame.getPot().sum());
+
+        gameService.userCalls(testGame.getGameID(), testUser2.getId());
+        assertEquals(5, testUser2.getMoney());
+        assertEquals(testUser, testGame.getUserThatRaisedLast());
+        assertEquals(10, testGame.getPot().sum());
+    }
+
+    @Test
+    void userCalls_allin_oneplayerhasmoremoney(){
+        //testUser is super rich
+        testUser.setMoney(50);
+
+        gameService.userRaises(testGame.getGameID(), testUser.getId(), 45);
+        assertEquals(5, testUser.getMoney());
+        assertEquals(testUser, testGame.getUserThatRaisedLast());
+        assertEquals(45, testGame.getPot().sum());
+
+        gameService.userCalls(testGame.getGameID(), testUser2.getId());
+        //testUser2 has to go all-in in order to still be in the game
+        assertEquals(0, testUser2.getMoney());
+        assertEquals(testUser, testGame.getUserThatRaisedLast());
+        assertEquals(55, testGame.getPot().sum());
     }
 }
 

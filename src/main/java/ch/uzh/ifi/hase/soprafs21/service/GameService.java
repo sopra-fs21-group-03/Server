@@ -40,10 +40,21 @@ public class GameService {
         }
     }
 
-    public User getUserById(Long gameid, Long userid) {
+    public User getUserByIdInAllUsers(Long gameid, Long userid) {
         GameEntity theGame = findGameEntity(gameid);
 
         for (User user : theGame.getAllUsers()) {
+            if (userid.equals(user.getId())) {
+                return user;
+            }
+        }
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The User could not be found...");
+    }
+
+    public User getUserByIdInActiveUsers(Long gameid, Long userid) {
+        GameEntity theGame = findGameEntity(gameid);
+
+        for (User user : theGame.getActiveUsers()) {
             if (userid.equals(user.getId())) {
                 return user;
             }
@@ -57,7 +68,7 @@ public class GameService {
          * What if a User is a Big/Small Blind? In the first round in the first turn, they should not be able to fold, but afterwards they still can fold!
          */
         GameEntity theGame = findGameEntity(gameid);
-        for (User user : theGame.getAllUsers()) {
+        for (User user : theGame.getActiveUsers()) {
             if (userid.equals(user.getId())) {
                 theGame.getActiveUsers().remove(user);
                 gameRepository.save(theGame);
@@ -73,15 +84,18 @@ public class GameService {
 
 
     public void userRaises(Long gameid, Long userid, int amount) {
+        if(amount < 0){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "The raise amount always has to be above 0!");
+        }
         GameEntity theGame = findGameEntity(gameid);
 
-        for (User user : theGame.getAllUsers()) {
+        for (User user : theGame.getActiveUsers()) {
             if (userid.equals(user.getId())) {
-                if ( theGame.getUserThatRaisedLast() == null || !theGame.getUserThatRaisedLast().getId().equals(user.getId())) {
+                if (theGame.getUserThatRaisedLast() == null || !theGame.getUserThatRaisedLast().getId().equals(user.getId())) {
                 /*
                 User was found and he is not the User that raised last
                  */
-                    if (user.getMoney() >= amount) {
+                    if (user.getMoney() > amount) {
                         theGame.getPot().addMoney(user, amount);
                         theGame.setUserThatRaisedLast(user);
                         try {
@@ -94,11 +108,23 @@ public class GameService {
                         gameRepository.save(theGame);
                         return;
                     }
+                    else if (user.getMoney() == amount) {
+                        /**
+                         This is the All-In Case
+                         */
+                        theGame.getPot().addMoney(user, amount);
+                        theGame.setUserThatRaisedLast(user);
+                        user.setMoney(0);
+                        gameRepository.save(theGame);
+                        return;
+
+                    }
                     else {
                         throw new ResponseStatusException(HttpStatus.CONFLICT, "The User doesn't have enough money to raise with such an amount!");
                     }
 
-                } else{
+                }
+                else {
                     throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This User was the User that raised last! Therefore, he cannot raise a second time in a row!");
                 }
             }
@@ -107,4 +133,51 @@ public class GameService {
 
     }
 
+    /**
+     * @param gameid -> Id of the GameSession
+     * @param userid -> Id of User that wants to call
+     *
+     *               In this function, "All-In" will also be handeled
+     *
+     *
+     */
+    public void userCalls(Long gameid, Long userid) {
+        GameEntity theGame = findGameEntity(gameid);
+
+        //first: give me the player that raise last
+        User lastRaiser = theGame.getUserThatRaisedLast();
+        //In the function call, we got a userid. Give me this User
+        User thisUser = getUserByIdInActiveUsers(gameid, userid);
+
+        if(thisUser.getMoney() <= 0){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "The User cannot call, since he has no money!");
+        }
+
+        //if someone wants to call -> he wants to have the same amount of money in the pot as the user that raised last
+        int totalPotContributionOfPlayerThatRaisedLast = theGame.getPot().getUserContributionOfAUser(lastRaiser);
+        int amountThisUserAlreadyHasInThePot = theGame.getPot().getUserContributionOfAUser(thisUser);
+
+        if (thisUser.getMoney() + amountThisUserAlreadyHasInThePot >= totalPotContributionOfPlayerThatRaisedLast) {
+            int difference = totalPotContributionOfPlayerThatRaisedLast - amountThisUserAlreadyHasInThePot;
+
+            try {
+                thisUser.removeMoney(difference);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            theGame.getPot().addMoney(thisUser, difference);
+
+        }
+        else {
+            /**
+             * This is the All-In Case
+             */
+            theGame.getPot().addMoney(thisUser, thisUser.getMoney());
+            thisUser.setMoney(0);
+        }
+
+        gameRepository.save(theGame);
+    }
 }
