@@ -25,6 +25,17 @@ public class GameEntity {
     @Column
     private Pot pot;
 
+    @Column
+    private User userThatRaisedLast;
+
+    public User getUserThatRaisedLast() {
+        return userThatRaisedLast;
+    }
+
+    public void setUserThatRaisedLast(User userThatRaisedLast) {
+        this.userThatRaisedLast = userThatRaisedLast;
+    }
+
     public ArrayList<User> getAllUsers() {
         return AllUsers;
     }

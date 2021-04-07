@@ -115,4 +115,58 @@ public class LoginServiceTest {
         assertThrows(ResponseStatusException.class, () -> loginService.checkLoginCredentials(userInputs));
     }
 
+    /* Tests for logging out a user */
+
+    @Test
+    public void logoutUser_validInputs_success(){
+        //given -> a user has already been created
+        loginService.createUser(testUser);
+
+        User userInputs = new User();
+        userInputs.setToken(testUser.getToken());
+
+        // when -> setup additional mocks for UserRepository
+        Mockito.when(userRepository.findById(Mockito.any())).thenReturn(java.util.Optional.ofNullable(testUser));
+
+        // Method call
+        loginService.getUserToLogout(userInputs, testUser.getId());
+
+        // Check if status was changed
+        assertEquals(UserStatus.OFFLINE, testUser.getStatus());
+    }
+
+    @Test
+    public void logoutUser_invalidInputs_notFound(){
+        //given -> a user has already been created
+        loginService.createUser(testUser);
+
+        User userInputs = new User();
+        userInputs.setToken(testUser.getToken());
+
+        //intentionally give false ID
+        long falseID = testUser.getId()+1;
+
+        // when -> setup additional mocks for UserRepository
+        Mockito.when(userRepository.findById(falseID)).thenReturn(java.util.Optional.empty());
+
+        assertThrows(ResponseStatusException.class, () -> loginService.getUserToLogout(userInputs, falseID));
+    }
+
+    @Test
+    public void logoutUser_invalidInputs_unauthorized(){
+
+        //given -> a user has already been created
+        loginService.createUser(testUser);
+
+        User userInputs = new User();
+
+        // intentionally give false token
+        userInputs.setToken("falseToken");
+
+        // when -> setup additional mocks for UserRepository
+        Mockito.when(userRepository.findById(Mockito.any())).thenReturn(java.util.Optional.ofNullable(testUser));
+
+        assertThrows(ResponseStatusException.class, () -> loginService.getUserToLogout(userInputs, testUser.getId()));
+
+    }
 }

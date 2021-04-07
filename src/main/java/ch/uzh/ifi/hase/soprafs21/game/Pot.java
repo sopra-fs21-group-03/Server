@@ -29,7 +29,7 @@ public class Pot {
         total += amount;
     }
 
-    private int sum() {
+    public int sum() {
         return total;
     }
 
@@ -94,7 +94,7 @@ public class Pot {
         return userContribution;
     }
 
-    int getTotal() {
-        return total;
+    public int getUserContributionOfAUser(User user) {
+        return userContribution.get(user);
     }
 }
