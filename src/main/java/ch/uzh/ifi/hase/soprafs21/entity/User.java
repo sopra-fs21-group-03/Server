@@ -3,6 +3,7 @@ package ch.uzh.ifi.hase.soprafs21.entity;
 import ch.uzh.ifi.hase.soprafs21.constant.Blind;
 import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs21.constant.UserStatus;
+import ch.uzh.ifi.hase.soprafs21.game.cards.Card;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -44,6 +45,9 @@ public class User implements Serializable {
 
     @Column
     private Blind blind;
+
+    @Column
+    private Card[] cards;
 
     public Blind getBlind() {
         return blind;
@@ -121,5 +125,13 @@ public class User implements Serializable {
 
     public void setStatus(UserStatus status) {
         this.status = status;
+    }
+
+    public void addCard(Card card, int index) {
+        this.cards[index] = card;
+    }
+
+    public Card[] getCards() {
+        return cards;
     }
 }

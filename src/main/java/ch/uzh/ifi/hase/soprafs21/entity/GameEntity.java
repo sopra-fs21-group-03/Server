@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs21.entity;
 
 import ch.uzh.ifi.hase.soprafs21.game.Pot;
+import ch.uzh.ifi.hase.soprafs21.game.cards.River;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -27,6 +28,9 @@ public class GameEntity {
 
     @Column
     private User userThatRaisedLast;
+
+    @Column
+    private River river;
 
     public User getUserThatRaisedLast() {
         return userThatRaisedLast;
