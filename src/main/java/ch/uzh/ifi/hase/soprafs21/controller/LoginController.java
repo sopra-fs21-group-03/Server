@@ -64,6 +64,11 @@ public class LoginController {
         // create user
         User createdUser = loginService.createUser(userInput);
 
+        /*
+           TO DO
+           Create Game and add User to the GameList
+         */
+
         // Return String
         return Collections.singletonMap("token", createdUser.getToken());
     }
@@ -82,6 +87,12 @@ public class LoginController {
 
         // If successful userStatus is set to online
         String token = loginService.checkLoginCredentials(userInput);
+
+        /*
+           TO DO
+           Create Game and add User to the GameList
+         */
+
 
         return Collections.singletonMap("token", token);
     }
