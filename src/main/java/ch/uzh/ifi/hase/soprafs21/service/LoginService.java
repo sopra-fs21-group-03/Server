@@ -2,7 +2,9 @@ package ch.uzh.ifi.hase.soprafs21.service;
 
 import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs21.constant.UserStatus;
+import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
+import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs21.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,10 +31,12 @@ public class LoginService {
     private final Logger log = LoggerFactory.getLogger(LoginService.class);
 
     private final UserRepository userRepository;
+    private final GameRepository gameRepository;
 
     @Autowired
-    public LoginService(@Qualifier("userRepository") UserRepository userRepository) {
+    public LoginService(@Qualifier("userRepository") UserRepository userRepository, @Qualifier("gameRepository") GameRepository gameRepository) {
         this.userRepository = userRepository;
+        this.gameRepository = gameRepository;
     }
 
     public List<User> getUsers() {
@@ -102,6 +106,30 @@ public class LoginService {
         fetchedEntity.setStatus(UserStatus.OFFLINE);
         userRepository.save(fetchedEntity);
 
+    }
+
+    /**
+     * Temporary function to create a GameEntity and save it in the GameRepository
+     * Since no Lobby is implemented in Milestone 3, a base game gets created as soon as a user registers/logs in
+     */
+    public void createGame(){
+        GameEntity game = new GameEntity();
+
+    }
+
+    /**
+     * Used to add a registered/logged in user to a GameEntity
+     */
+    public void addUserToGame(){
+
+    }
+
+    /**
+     * Checks if a game was already created, is called on every log in/register
+     * @return bool if game already exists
+     */
+    private boolean checkIfGameEntityExists(){
+        return false;
     }
 
     /**
