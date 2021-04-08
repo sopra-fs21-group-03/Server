@@ -47,7 +47,7 @@ public class User implements Serializable {
     private Blind blind;
 
     @Column
-    private Card[] cards;
+    private Card[] cards = new Card[2];
 
     public Blind getBlind() {
         return blind;
@@ -133,5 +133,13 @@ public class User implements Serializable {
 
     public Card[] getCards() {
         return cards;
+    }
+
+    public void addCard(Card card) {
+        if(cards[0] == null) {
+            cards[0] = card;
+        }else if(cards[1] == null) {
+            cards[1] = card;
+        }
     }
 }
