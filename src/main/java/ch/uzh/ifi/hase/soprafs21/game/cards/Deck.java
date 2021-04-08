@@ -5,6 +5,7 @@ import ch.uzh.ifi.hase.soprafs21.constant.Suit;
 
 import javax.persistence.Embeddable;
 import java.util.ArrayList;
+import java.util.Collections;
 
 @Embeddable
 public class Deck {
@@ -18,10 +19,26 @@ public class Deck {
                 theDeck.add(newCard);
             }
         }
+        shuffle();
     }
 
-    public ArrayList<Card> giveDeck(){
-        return theDeck;
+    public int size(){
+        return theDeck.size();
+    }
+
+    public Card draw() throws Exception {
+        if(size() > 0){
+        Card drawCard = new Card(theDeck.get(0).getRank(), theDeck.get(0).getSuit());
+        theDeck.remove(0);
+        return drawCard;}
+        else{
+            throw new Exception("No Cards are left!");
+        }
+    }
+
+
+    public void shuffle(){
+        Collections.shuffle(theDeck);
     }
 
 
