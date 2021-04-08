@@ -129,9 +129,14 @@ public class LoginService {
          */
         optionalGame.ifPresentOrElse(
                 (value)
-                    -> {addUserToGame(userToBeAdded, value);},
+                    -> {addUserToGame(userToBeAdded, value);
+                        // Check if there are already five players in the game
+                        if (value.getAllUsers().size() == 5) {
+                            value.setup();
+                        }
+                            },
                 ()
-                    -> {createGame(userToBeAdded);}
+                    -> createGame(userToBeAdded)
         );
 
     }
@@ -147,6 +152,9 @@ public class LoginService {
 
         game.addUserToAll(firstUserInGame);
         game.addUserToActive(firstUserInGame);
+
+        //Set default gameName
+        game.setGameName("default");
 
         gameRepository.save(game);
 

@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs21.entity;
 
 import ch.uzh.ifi.hase.soprafs21.game.Pot;
+import ch.uzh.ifi.hase.soprafs21.game.cards.River;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -16,10 +17,16 @@ public class GameEntity {
     //private Dealer dealer; maybe not necessary?!
 
     @Column
+    private String gameName;
+
+    @Column
     private ArrayList<User> ActiveUsers;
 
-    @Column(nullable = false)
+    @Column
     private ArrayList<User> AllUsers;
+
+    @Column
+    private River river;
 
     @Column
     private Pot pot;
@@ -28,7 +35,7 @@ public class GameEntity {
     private User userThatRaisedLast;
 
     @Column // Maybe don't needed idk
-    private User currentTurn;
+    private User onTurn;
 
     @Column
     private boolean showdown;
@@ -67,6 +74,23 @@ public class GameEntity {
         return gameID;
     }
 
+    public String getGameName() {
+        return gameName;
+    }
+
+    public void setGameName(String gameName) {
+        this.gameName = gameName;
+    }
+
+    public River getRiver() {
+        return river;
+    }
+
+    public void setRiver(River river) {
+        this.river = river;
+    }
+
+
     public void setPot(Pot pot) {
         this.pot = pot;
     }
@@ -75,12 +99,12 @@ public class GameEntity {
         return pot;
     }
 
-    public void setCurrentTurn(User current){
-        this.currentTurn = current;
+    public void setOnTurn(User current){
+        this.onTurn = current;
     }
 
-    public User getCurrentTurn(){
-        return currentTurn;
+    public User getOnTurn(){
+        return onTurn;
     }
 
     public void setShowdown(boolean bool){
@@ -89,6 +113,14 @@ public class GameEntity {
 
     public boolean getShowdown(){
         return showdown;
+    }
+
+    /**
+     * Setup function
+     * Gets called when all players are in the game
+     */
+    public void setup(){
+
     }
 
     /* Helper functions to set up a game */
@@ -143,7 +175,7 @@ public class GameEntity {
      * Currently sets it to 20'000.
      * @throws Exception lobby is not full
      */
-    public void setStartingPot() throws Exception {
+    private void setStartingPot() throws Exception {
         if (AllUsers.size() != 5){
             throw new Exception();
         }
@@ -159,7 +191,7 @@ public class GameEntity {
      * Used to randomly distribute the small and big blind.
      * ... to be further implemented
      */
-    public void distributeBlinds(){
+    private void distributeBlinds(){
 
     }
 }
