@@ -51,16 +51,16 @@ public class GameEntity {
     }
 
     public void setDeck(Deck deck) {
-        this.deck = deck;
+        this.deck = deck;}
 
     /* Constructor */
     public GameEntity(){
         AllUsers = new ArrayList<>();
         ActiveUsers = new ArrayList<>();
         gameID = 1L;
-
+        gameName = "TestGame";
+        deck = new Deck();
         pot = new Pot();
-
     }
 
     /* Getter and setter */
