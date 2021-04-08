@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository("gameRepository")
 public interface GameRepository extends JpaRepository<GameEntity, Long>  {
-    Optional<GameEntity> findById(Long id);
+    Optional<GameEntity> findByGameID(Long id);
 }

@@ -15,7 +15,6 @@ public class GameEntity {
 
     //private Dealer dealer; maybe not necessary?!
 
-
     @Column
     private ArrayList<User> ActiveUsers;
 
@@ -95,6 +94,7 @@ public class GameEntity {
     /* Helper functions to set up a game */
 
     // Add/Remove users to/from the game
+
     /**
      * This function is used to add a user to the active list
      * @param userToAdd user that should be added

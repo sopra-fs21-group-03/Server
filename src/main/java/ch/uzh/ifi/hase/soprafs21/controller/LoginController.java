@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs21.controller;
 
+import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.UserPostDTO;
@@ -9,10 +10,7 @@ import ch.uzh.ifi.hase.soprafs21.service.LoginService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Login Controller
@@ -64,11 +62,6 @@ public class LoginController {
         // create user
         User createdUser = loginService.createUser(userInput);
 
-        /*
-           TO DO
-           Create Game and add User to the GameList
-         */
-
         // Return String
         return Collections.singletonMap("token", createdUser.getToken());
     }
@@ -112,4 +105,5 @@ public class LoginController {
 
 
     }
+
 }

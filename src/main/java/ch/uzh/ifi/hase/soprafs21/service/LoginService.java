@@ -54,6 +54,12 @@ public class LoginService {
         newUser = userRepository.save(newUser);
         userRepository.flush();
 
+        /*
+           Create Game and add User to the GameList
+           or just add user to the GameList if game already exists
+         */
+        setUpGame(newUser);
+
         log.debug("Created Information for User: {}", newUser);
         return newUser;
     }
@@ -77,6 +83,12 @@ public class LoginService {
 
         fetched.setStatus(UserStatus.ONLINE);
         userRepository.save(fetched);
+
+        /*
+         if game already exists, simply add the user
+         if game does not exist, create new game and add the user
+        */
+        setUpGame(fetched);
 
         return fetched.getToken();
     }
@@ -108,28 +120,49 @@ public class LoginService {
 
     }
 
+    public void setUpGame(User userToBeAdded){
+        Optional<GameEntity> optionalGame = gameRepository.findByGameID(1L);
+
+        /*
+         if game already exists, simply add the user
+         if game does not exist, create new game and add the user
+         */
+        optionalGame.ifPresentOrElse(
+                (value)
+                    -> {addUserToGame(userToBeAdded, value);},
+                ()
+                    -> {createGame(userToBeAdded);}
+        );
+
+    }
+
     /**
+     * Helper Function
      * Temporary function to create a GameEntity and save it in the GameRepository
      * Since no Lobby is implemented in Milestone 3, a base game gets created as soon as a user registers/logs in
+     * @param firstUserInGame first user to join the game
      */
-    public void createGame(){
+    private void createGame(User firstUserInGame){
         GameEntity game = new GameEntity();
 
+        game.addUserToAll(firstUserInGame);
+        game.addUserToActive(firstUserInGame);
+
+        gameRepository.save(game);
+
     }
 
     /**
+     * Helper Function
      * Used to add a registered/logged in user to a GameEntity
+     * @param userToBeAdded user that should be added to the game list
      */
-    public void addUserToGame(){
+    private void addUserToGame(User userToBeAdded, GameEntity gameEntity){
 
-    }
+        gameEntity.addUserToAll(userToBeAdded);
+        gameEntity.addUserToActive(userToBeAdded);
 
-    /**
-     * Checks if a game was already created, is called on every log in/register
-     * @return bool if game already exists
-     */
-    private boolean checkIfGameEntityExists(){
-        return false;
+        gameRepository.save(gameEntity);
     }
 
     /**
