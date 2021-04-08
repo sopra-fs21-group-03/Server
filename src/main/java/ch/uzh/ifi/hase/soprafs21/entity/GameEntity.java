@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs21.entity;
 
 import ch.uzh.ifi.hase.soprafs21.game.Pot;
+import ch.uzh.ifi.hase.soprafs21.game.cards.Deck;
 import ch.uzh.ifi.hase.soprafs21.game.cards.River;
 
 import javax.persistence.*;
@@ -42,6 +43,16 @@ public class GameEntity {
     @Column
     private boolean showdown;
 
+    @Column
+    private Deck deck;
+
+    public Deck getDeck() {
+        return deck;
+    }
+
+    public void setDeck(Deck deck) {
+        this.deck = deck;
+
     /* Constructor */
     public GameEntity(){
         AllUsers = new ArrayList<>();
@@ -49,6 +60,7 @@ public class GameEntity {
         gameID = 1L;
 
         pot = new Pot();
+
     }
 
     /* Getter and setter */
