@@ -14,7 +14,6 @@ import java.io.Serializable;
  * - nullable = false -> this cannot be left empty
  * - unique = true -> this value must be unqiue across the database -> composes the primary key
  */
-@Embeddable
 @Entity
 @Table(name = "USER")
 public class User implements Serializable {

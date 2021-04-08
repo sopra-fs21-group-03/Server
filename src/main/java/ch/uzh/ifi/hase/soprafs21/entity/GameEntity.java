@@ -5,13 +5,15 @@ import ch.uzh.ifi.hase.soprafs21.game.cards.River;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "GAME")
 public class GameEntity {
 
+    private static final long serialVersionUID = 1L;
+
     @Id
-    @GeneratedValue
     private Long gameID;
 
     //private Dealer dealer; maybe not necessary?!
@@ -19,11 +21,11 @@ public class GameEntity {
     @Column
     private String gameName;
 
-    @Column
-    private ArrayList<User> ActiveUsers;
+    @ElementCollection
+    private List<User> ActiveUsers;
 
-    @Column
-    private ArrayList<User> AllUsers;
+    @ElementCollection
+    private List<User> AllUsers;
 
     @Column
     private River river;
@@ -40,6 +42,15 @@ public class GameEntity {
     @Column
     private boolean showdown;
 
+    /* Constructor */
+    public GameEntity(){
+        AllUsers = new ArrayList<>();
+        ActiveUsers = new ArrayList<>();
+        gameID = 1L;
+
+        pot = new Pot();
+    }
+
     /* Getter and setter */
 
     public User getUserThatRaisedLast() {
@@ -50,7 +61,7 @@ public class GameEntity {
         this.userThatRaisedLast = userThatRaisedLast;
     }
 
-    public ArrayList<User> getAllUsers() {
+    public List<User> getAllUsers() {
         return AllUsers;
     }
 
@@ -58,7 +69,7 @@ public class GameEntity {
         AllUsers = allUsers;
     }
 
-    public ArrayList<User> getActiveUsers() {
+    public List<User> getActiveUsers() {
         return ActiveUsers;
     }
 
@@ -132,7 +143,9 @@ public class GameEntity {
      * @param userToAdd user that should be added
      */
     public void addUserToActive(User userToAdd){
-        ActiveUsers.add(userToAdd);
+        if (!ActiveUsers.contains(userToAdd)){
+            ActiveUsers.add(userToAdd);
+        }
     }
 
     /**
@@ -153,7 +166,9 @@ public class GameEntity {
      * @param userToAdd user to be added
      */
     public void addUserToAll(User userToAdd){
-        AllUsers.add(userToAdd);
+        if (!AllUsers.contains(userToAdd)){
+            AllUsers.add(userToAdd);
+        }
     }
 
     /**
