@@ -67,17 +67,18 @@ public class LoginService {
     /**
      * This function checks the login credentials of a user,
      * throws a 401 UNAUTHORIZED error if the password or username is false
+     *
      * @param userToLogin Converted UserInput of the user who wants to login
      * @return Token of the found user if credentials are checked successfully
      */
-    public String checkLoginCredentials(User userToLogin){
+    public String checkLoginCredentials(User userToLogin) {
         User fetched = userRepository.findByUsername(userToLogin.getUsername());
 
         // Check if password and username match
         boolean valid = fetched != null && fetched.getPassword().equals(userToLogin.getPassword());
 
         // throw new Exception if they don't match
-        if (!valid){
+        if (!valid) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Username or Password false");
         }
 
@@ -98,56 +99,66 @@ public class LoginService {
      * If matching it logs the user out
      * If it doesn't find a user with this ID it throws the NOT_FOUND exception
      * If the token does not match, it throws an UNAUTHORIZED exception
+     *
      * @param userToLogout used to get the token of the user who wants to log out
      */
-    public void getUserToLogout(User userToLogout, Long userID){
+    public void getUserToLogout(User userToLogout, Long userID) {
         Optional<User> fetched = userRepository.findById(userID);
 
         // If no user is found in the repo
-        if (fetched.isEmpty()){
+        if (fetched.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
         User fetchedEntity = fetched.get();
 
         // If the tokens do not match
-        if (!fetchedEntity.getToken().equals(userToLogout.getToken())){
+        if (!fetchedEntity.getToken().equals(userToLogout.getToken())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
 
+        Optional<GameEntity> optionalGame = gameRepository.findByGameID(1L);
+
+        // Try to delete user if game is still running
+        optionalGame.ifPresent(gameEntity -> deleteUserFromGame(userID, gameEntity));
+
         fetchedEntity.setStatus(UserStatus.OFFLINE);
         userRepository.save(fetchedEntity);
-
     }
 
-    public void setUpGame(User userToBeAdded){
+    public void setUpGame(User userToBeAdded) {
         Optional<GameEntity> optionalGame = gameRepository.findByGameID(1L);
 
         /*
          if game already exists, simply add the user
          if game does not exist, create new game and add the user
          */
-        optionalGame.ifPresentOrElse(
-                (value)
-                    -> {addUserToGame(userToBeAdded, value);
-                        // Check if there are already five players in the game
-                        if (value.getAllUsers().size() == 5) {
-                            value.setup();
-                        }
-                            },
-                ()
-                    -> createGame(userToBeAdded)
-        );
+        optionalGame.ifPresent((game) -> {
+            addUserToGame(userToBeAdded, game);
+            // Check if there are already five players in the game
+            if (game.getAllUsers().size() == 5) {
+                game.setup();
+            }
+        });
 
+        if (optionalGame.isEmpty()){
+            createGame(userToBeAdded);
+        }
+    }
+
+    private void deleteUserFromGame(Long UserID, GameEntity gameEntity) {
+        gameEntity.removeUserFromAll(UserID);
+        gameEntity.removeUserFromActive(UserID);
     }
 
     /**
      * Helper Function
      * Temporary function to create a GameEntity and save it in the GameRepository
      * Since no Lobby is implemented in Milestone 3, a base game gets created as soon as a user registers/logs in
+     *
      * @param firstUserInGame first user to join the game
      */
-    private void createGame(User firstUserInGame){
+    private void createGame(User firstUserInGame) {
         GameEntity game = new GameEntity();
 
         game.addUserToAll(firstUserInGame);
@@ -157,20 +168,23 @@ public class LoginService {
         game.setGameName("default");
 
         gameRepository.save(game);
+        gameRepository.flush();
 
     }
 
     /**
      * Helper Function
      * Used to add a registered/logged in user to a GameEntity
+     *
      * @param userToBeAdded user that should be added to the game list
      */
-    private void addUserToGame(User userToBeAdded, GameEntity gameEntity){
+    private void addUserToGame(User userToBeAdded, GameEntity gameEntity) {
 
         gameEntity.addUserToAll(userToBeAdded);
         gameEntity.addUserToActive(userToBeAdded);
 
         gameRepository.save(gameEntity);
+        gameRepository.flush();
     }
 
     /**

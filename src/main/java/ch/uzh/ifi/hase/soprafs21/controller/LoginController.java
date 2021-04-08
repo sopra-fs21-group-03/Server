@@ -1,6 +1,5 @@
 package ch.uzh.ifi.hase.soprafs21.controller;
 
-import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.UserPostDTO;
