@@ -117,7 +117,7 @@ public class LoginService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
 
-        Optional<GameEntity> optionalGame = gameRepository.findByGameID(1L);
+        Optional<GameEntity> optionalGame = gameRepository.findById(1L);
 
         // Try to delete user if game is still running
         optionalGame.ifPresent(gameEntity -> deleteUserFromGame(userID, gameEntity));
@@ -127,7 +127,7 @@ public class LoginService {
     }
 
     public void setUpGame(User userToBeAdded) {
-        Optional<GameEntity> optionalGame = gameRepository.findByGameID(1L);
+        Optional<GameEntity> optionalGame = gameRepository.findById((long)1);
 
         /*
          if game already exists, simply add the user

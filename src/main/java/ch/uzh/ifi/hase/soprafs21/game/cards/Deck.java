@@ -3,13 +3,16 @@ package ch.uzh.ifi.hase.soprafs21.game.cards;
 import ch.uzh.ifi.hase.soprafs21.constant.Rank;
 import ch.uzh.ifi.hase.soprafs21.constant.Suit;
 
+import javax.persistence.ElementCollection;
 import javax.persistence.Embeddable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 @Embeddable
 public class Deck {
-    private ArrayList<Card> theDeck;
+    @ElementCollection
+    private final List<Card> theDeck;
 
     public Deck() {
         theDeck = new ArrayList<Card>();

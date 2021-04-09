@@ -3,6 +3,7 @@ package ch.uzh.ifi.hase.soprafs21.entity;
 import ch.uzh.ifi.hase.soprafs21.game.Pot;
 import ch.uzh.ifi.hase.soprafs21.game.cards.Deck;
 import ch.uzh.ifi.hase.soprafs21.game.cards.River;
+import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -15,7 +16,7 @@ public class GameEntity {
     private static final long serialVersionUID = 1L;
 
     @Id
-    private Long gameID;
+    private Long Id;
 
     //private Dealer dealer; maybe not necessary?!
 
@@ -23,10 +24,13 @@ public class GameEntity {
     private String gameName;
 
     @ElementCollection
-    private List<User> ActiveUsers;
+    private List<User> activeUsers;
 
     @ElementCollection
-    private List<User> AllUsers;
+    private List<User> allUsers;
+
+    @ElementCollection
+    private List<OpponentInGameGetDTO> opponents;
 
     @Column
     private River river;
@@ -55,10 +59,10 @@ public class GameEntity {
 
     /* Constructor */
     public GameEntity(){
-        AllUsers = new ArrayList<>();
-        ActiveUsers = new ArrayList<>();
-        gameID = 1L;
-        gameName = "TestGame";
+        allUsers = new ArrayList<>();
+        activeUsers = new ArrayList<>();
+        opponents = new ArrayList<>();
+        Id = 1L;
         deck = new Deck();
         pot = new Pot();
     }
@@ -74,27 +78,35 @@ public class GameEntity {
     }
 
     public List<User> getAllUsers() {
-        return AllUsers;
+        return allUsers;
     }
 
     public void setAllUsers(ArrayList<User> allUsers) {
-        AllUsers = allUsers;
+        this.allUsers = allUsers;
     }
 
     public List<User> getActiveUsers() {
-        return ActiveUsers;
+        return activeUsers;
     }
 
     public void setActiveUsers(ArrayList<User> activeUsers) {
-        ActiveUsers = activeUsers;
+        this.activeUsers = activeUsers;
     }
 
-    public void setGameID(Long gameID) {
-        this.gameID = gameID;
+    public List<OpponentInGameGetDTO> getOpponents() {
+        return opponents;
     }
 
-    public Long getGameID() {
-        return gameID;
+    public void setOpponents(List<OpponentInGameGetDTO> opponents) {
+        this.opponents = opponents;
+    }
+
+    public void setId(Long gameID) {
+        this.Id = gameID;
+    }
+
+    public Long getId() {
+        return Id;
     }
 
     public String getGameName() {
@@ -155,8 +167,8 @@ public class GameEntity {
      * @param userToAdd user that should be added
      */
     public void addUserToActive(User userToAdd){
-        if (!ActiveUsers.contains(userToAdd)){
-            ActiveUsers.add(userToAdd);
+        if (!activeUsers.contains(userToAdd)){
+            activeUsers.add(userToAdd);
         }
     }
 
@@ -165,9 +177,9 @@ public class GameEntity {
      * @param id id of the user that has to be removed
      */
     public void removeUserFromActive(Long id) {
-        for (User arrayuser : ActiveUsers) {
+        for (User arrayuser : activeUsers) {
             if (arrayuser.getId().equals(id)) {
-                ActiveUsers.remove(arrayuser);
+                activeUsers.remove(arrayuser);
                 break;
             }
         }
@@ -178,8 +190,8 @@ public class GameEntity {
      * @param userToAdd user to be added
      */
     public void addUserToAll(User userToAdd){
-        if (!AllUsers.contains(userToAdd)){
-            AllUsers.add(userToAdd);
+        if (!allUsers.contains(userToAdd)){
+            allUsers.add(userToAdd);
         }
     }
 
@@ -187,9 +199,9 @@ public class GameEntity {
      * Used to remove a user from an active list
      */
     public void removeUserFromAll(long id){
-        for (User arrayUser : AllUsers){
+        for (User arrayUser : allUsers){
             if (arrayUser.getId().equals(id)){
-                AllUsers.remove(arrayUser);
+                allUsers.remove(arrayUser);
                 break;
             }
         }
@@ -203,11 +215,11 @@ public class GameEntity {
      * @throws Exception lobby is not full
      */
     private void setStartingPot() throws Exception {
-        if (AllUsers.size() != 5){
+        if (allUsers.size() != 5){
             throw new Exception();
         }
 
-        for (User user : ActiveUsers){
+        for (User user : activeUsers){
             user.setMoney(20000);
         }
     }

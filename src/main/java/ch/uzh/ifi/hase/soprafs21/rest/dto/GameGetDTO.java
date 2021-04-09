@@ -4,6 +4,9 @@ import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.game.Pot;
 import ch.uzh.ifi.hase.soprafs21.game.cards.River;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GameGetDTO {
 
     private String gameName;
@@ -11,6 +14,8 @@ public class GameGetDTO {
     private Pot pot;
     private boolean showdown;
     private User onTurn;
+
+    private List<OpponentInGameGetDTO> opponents;
 
     public String getGameName() {
         return gameName;
@@ -52,4 +57,11 @@ public class GameGetDTO {
         this.onTurn = onTurn;
     }
 
+    public List<OpponentInGameGetDTO> getOpponents() {
+        return opponents;
+    }
+
+    public void setOpponents(List<OpponentInGameGetDTO> opponents) {
+        this.opponents = opponents;
+    }
 }

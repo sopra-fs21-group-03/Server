@@ -2,10 +2,7 @@ package ch.uzh.ifi.hase.soprafs21.rest.mapper;
 
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
-import ch.uzh.ifi.hase.soprafs21.rest.dto.GameGetDTO;
-import ch.uzh.ifi.hase.soprafs21.rest.dto.UserGetDTO;
-import ch.uzh.ifi.hase.soprafs21.rest.dto.UserPostDTO;
-import ch.uzh.ifi.hase.soprafs21.rest.dto.UserPutDTO;
+import ch.uzh.ifi.hase.soprafs21.rest.dto.*;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 
@@ -39,4 +36,9 @@ public interface DTOMapper {
     @Mapping(source = "pot", target = "pot")
     @Mapping(source = "onTurn", target = "onTurn")
     GameGetDTO convertEntityToGameGetDTO(GameEntity gameEntity);
+
+    @Mapping(source = "username", target = "username")
+    @Mapping(source = "money", target = "money")
+    @Mapping(source = "blind", target = "blind")
+    OpponentInGameGetDTO convertEntityToOpponentInGameGetDTO(User opponent);
 }

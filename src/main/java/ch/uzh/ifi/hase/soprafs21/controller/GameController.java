@@ -1,4 +1,5 @@
 package ch.uzh.ifi.hase.soprafs21.controller;
+import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.UserPostDTO;
@@ -97,11 +98,16 @@ public class GameController {
      * @param userPutDTO get the token
      * @return gameData and List of opponents
      */
-    /*
+
     @GetMapping("/games/{GameID}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public Map<GameGetDTO, String> getGameData(@PathVariable Long GameID, @RequestBody UserPutDTO userPutDTO){
+    public GameGetDTO getGameData(@PathVariable Long GameID, @RequestBody UserPutDTO userPutDTO){
+        User userWhoWantsToFetch = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
 
-    } */
+        GameEntity game = gameService.getGameData(GameID, userWhoWantsToFetch);
+
+        return DTOMapper.INSTANCE.convertEntityToGameGetDTO(game);
+
+    }
 }
