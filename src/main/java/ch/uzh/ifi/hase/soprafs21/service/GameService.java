@@ -235,6 +235,7 @@ public class GameService {
 
     public User getOwnGameData(Long gameID, Long userID, User userWhoWantsToFetch) {
         Optional<GameEntity> optionalGame = gameRepository.findById(gameID);
+        boolean valid = false;
 
         if (optionalGame.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The game you requested was not found");
@@ -245,14 +246,21 @@ public class GameService {
 
         List<User> players = new ArrayList<>(game.getAllUsers());
         for (User user: players){
-            if (user.getToken().equals(userWhoWantsToFetch.getToken())) {
+            if (user.getId().equals(userID)) {
                 player = user;
+                if (player.getToken().equals(userWhoWantsToFetch.getToken())){
+                    valid = true;
+                }
                 break;
             }
         }
 
         if (player == null){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not logged in");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found");
+        }
+
+        if (!valid){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Player not logged in");
         }
 
         return player;
