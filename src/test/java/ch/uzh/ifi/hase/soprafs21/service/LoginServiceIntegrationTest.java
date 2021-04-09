@@ -3,6 +3,7 @@ package ch.uzh.ifi.hase.soprafs21.service;
 import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs21.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
+import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs21.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,11 +28,16 @@ public class LoginServiceIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Qualifier("gameRepository")
+    @Autowired
+    private GameRepository gameRepository;
+
     @Autowired
     private LoginService loginService;
 
     @BeforeEach
     public void setup() {
+        gameRepository.deleteAll();
         userRepository.deleteAll();
     }
 
@@ -59,21 +65,24 @@ public class LoginServiceIntegrationTest {
 
     @Test
     public void createUser_duplicateUsername_throwsException() {
+        //given
         assertNull(userRepository.findByUsername("testUsername"));
 
         User testUser = new User();
-        testUser.setPassword("testName");
-        testUser.setUsername("testUsername");
+        testUser.setPassword("testName2");
+        testUser.setUsername("testUsername2");
         testUser.setMoney(0);
         testUser.setGamestatus(GameStatus.NOTREADY);
-        User createdUser = loginService.createUser(testUser);
+        loginService.createUser(testUser);
 
         // attempt to create second user with same username
         User testUser2 = new User();
 
         // change the name but forget about the username
         testUser2.setPassword("testName2");
-        testUser2.setUsername("testUsername");
+        testUser2.setUsername("testUsername2");
+        testUser2.setMoney(0);
+        testUser2.setGamestatus(GameStatus.NOTREADY);
 
         // check that an error is thrown
         assertThrows(ResponseStatusException.class, () -> loginService.createUser(testUser2));

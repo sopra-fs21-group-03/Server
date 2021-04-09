@@ -37,7 +37,7 @@ class GameRepositoryIntegrationTest {
 
         // when
         GameEntity foundGame;
-        Optional<GameEntity> found = gameRepository.findById(game.getGameID());
+        Optional<GameEntity> found = gameRepository.findById(game.getId());
         if(found.isPresent()) {
             foundGame = found.get();
         } else {
@@ -45,7 +45,7 @@ class GameRepositoryIntegrationTest {
         }
 
         // then
-        assertNotNull(foundGame.getGameID());
+        assertNotNull(foundGame.getId());
         assertEquals(foundGame.getAllUsers(), game.getAllUsers());
         assertEquals(foundGame.getPot(), game.getPot());
     }
