@@ -221,7 +221,7 @@ public class GameService {
         }
 
         if (!valid){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not logged in");
         }
 
         for (User player : players){
@@ -231,5 +231,30 @@ public class GameService {
         game.setOpponents(opponents);
 
         return game;
+    }
+
+    public User getOwnGameData(Long gameID, Long userID, User userWhoWantsToFetch) {
+        Optional<GameEntity> optionalGame = gameRepository.findById(gameID);
+
+        if (optionalGame.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The game you requested was not found");
+        }
+
+        GameEntity game = optionalGame.get();
+        User player = null;
+
+        List<User> players = new ArrayList<>(game.getAllUsers());
+        for (User user: players){
+            if (user.getToken().equals(userWhoWantsToFetch.getToken())) {
+                player = user;
+                break;
+            }
+        }
+
+        if (player == null){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not logged in");
+        }
+
+        return player;
     }
 }

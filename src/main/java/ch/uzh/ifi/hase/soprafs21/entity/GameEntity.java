@@ -6,12 +6,13 @@ import ch.uzh.ifi.hase.soprafs21.game.cards.River;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "GAME")
-public class GameEntity {
+public class GameEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

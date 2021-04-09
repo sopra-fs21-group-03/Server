@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs21.controller;
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.GameGetDTO;
+import ch.uzh.ifi.hase.soprafs21.rest.dto.PlayerInGameGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.UserPutDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
@@ -98,7 +99,6 @@ public class GameController {
      * @param userPutDTO get the token
      * @return gameData and List of opponents
      */
-
     @GetMapping("/games/{GameID}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -109,5 +109,26 @@ public class GameController {
 
         return DTOMapper.INSTANCE.convertEntityToGameGetDTO(game);
 
+    }
+
+    /**
+     * Get Mapping to get own gameData
+     * Code: - 200 if own gameData could be fetched
+     *       - 404 if own gameData was not found
+     *       - 401 if the gameData does not belong to the user requesting it
+     * @param GameID Id of the game
+     * @param UserID Id of the user
+     * @param userPutDTO used to get the token of the user
+     * @return own gameData
+     */
+    @GetMapping("/games/{GameID}/{UserID}")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public PlayerInGameGetDTO getOwnGameData(@PathVariable Long GameID, @PathVariable Long UserID, @RequestBody UserPutDTO userPutDTO){
+        User userWhoWantsToFetch = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
+
+        User player = gameService.getOwnGameData(GameID, UserID, userWhoWantsToFetch);
+
+        return DTOMapper.INSTANCE.convertEntityToPlayerInGameGetDTO(player);
     }
 }
