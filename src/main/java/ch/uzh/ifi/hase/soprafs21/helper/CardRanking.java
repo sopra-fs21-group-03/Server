@@ -9,6 +9,7 @@ import ch.uzh.ifi.hase.soprafs21.game.cards.Card;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 public class CardRanking {
 
@@ -144,7 +145,15 @@ public class CardRanking {
                 for (Card card : finalCards) {
                     ranks.add(card.getRank());
                 }
-                for (Rank rank : Rank.values()) {
+                ArrayList<Rank> ranksInRoyal = new ArrayList<>();
+                ranksInRoyal.addAll(List.of(
+                        Rank.ACE,
+                        Rank.KING,
+                        Rank.QUEEN,
+                        Rank.JACK,
+                        Rank.TEN
+                ));
+                for (Rank rank : ranksInRoyal) {
                     if (!ranks.contains(rank)) {
                         return false;
                     }
@@ -234,6 +243,7 @@ public class CardRanking {
             boolean hasPair = false;
             int count = 0;
             for (Rank rank : Rank.values()) {
+                count = 0;
                 for (Card card : cards) {
                     if (card.getRank() == rank) {
                         count++;
@@ -246,14 +256,15 @@ public class CardRanking {
                             rankOfPair = rankOfThrees;
                             hasPair = true;
                         }
-                        rankOfThrees = rank;
-                        hasThreeOfAKind = true;
                     }
-                    else if (count == 2) {
-                        rankOfPair = rank;
-                        hasPair = true;
-                    }
+                    rankOfThrees = rank;
+                    hasThreeOfAKind = true;
                 }
+                else if (count == 2) {
+                    rankOfPair = rank;
+                    hasPair = true;
+                }
+
             }
             if(!hasThreeOfAKind || !hasPair) {
                 return false;
