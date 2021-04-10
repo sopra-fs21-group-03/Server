@@ -233,13 +233,5 @@ public class GameEntity implements Serializable {
     private void distributeBlinds(){
 
     }
-
-    public River getRiver() {
-        return river;
-    }
-
-    public void setRiver(River river) {
-        this.river = river;
-    }
 }
 

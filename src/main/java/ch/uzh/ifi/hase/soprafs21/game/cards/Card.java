@@ -15,6 +15,11 @@ public class Card {
         this.mySuit = mySuit;
     }
 
+    public Card(Suit suit, Rank rank) {
+        this.mySuit = suit;
+        this.myRank = rank;
+    }
+
     /**
      * Default constructor so hibernate can save cards in the repo
      */
@@ -28,6 +33,7 @@ public class Card {
     }
 
 
-    public Suit getSuit(){
+    public Suit getSuit() {
         return mySuit;
+    }
 }

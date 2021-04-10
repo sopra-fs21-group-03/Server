@@ -19,7 +19,7 @@ public class CardRanking {
         ArrayList<UserDraw> unsorted = new ArrayList<>();
         HashMap<User, UserCombination> usersAndCombination = new HashMap();
 
-        ArrayList<User> activeUsers = game.getActiveUsers();
+        ArrayList<User> activeUsers = (ArrayList<User>) game.getActiveUsers();
         for(User user: activeUsers) {
             usersAndCombination.put(user, new UserCombination(user, game.getRiver().getCards()));
         }
@@ -103,7 +103,7 @@ public class CardRanking {
         UserCombination(User user, ArrayList<Card> river) {
             this.user = user;
             cards = (ArrayList<Card>) river.clone();
-            cards.addAll(Arrays.asList(user.getCards()));
+            cards.addAll(user.getCards());
             calcCombination();
         }
 
