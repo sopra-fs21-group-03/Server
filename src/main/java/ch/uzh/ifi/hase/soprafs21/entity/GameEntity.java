@@ -69,7 +69,6 @@ public class GameEntity implements Serializable {
     }
 
     /* Getter and setter */
-
     public User getUserThatRaisedLast() {
         return userThatRaisedLast;
     }
@@ -233,6 +232,14 @@ public class GameEntity implements Serializable {
      */
     private void distributeBlinds(){
 
+    }
+
+    public River getRiver() {
+        return river;
+    }
+
+    public void setRiver(River river) {
+        this.river = river;
     }
 }
 

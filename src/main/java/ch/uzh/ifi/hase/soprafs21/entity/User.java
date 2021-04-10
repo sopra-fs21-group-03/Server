@@ -128,12 +128,20 @@ public class User implements Serializable {
         this.status = status;
     }
 
+
     public List<Card> getCards() {
         return cards;
     }
 
     public void setCards(List<Card> cards) {
         this.cards = cards;
+    }
+
+
+
+
+    public void addCard(Card card) {
+        
     }
 
 }

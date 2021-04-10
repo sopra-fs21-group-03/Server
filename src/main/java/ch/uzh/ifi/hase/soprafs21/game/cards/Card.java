@@ -27,7 +27,7 @@ public class Card {
         return myRank;
     }
 
+
     public Suit getSuit(){
         return mySuit;
-    }
 }
