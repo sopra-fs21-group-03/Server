@@ -499,4 +499,116 @@ class CardRankingTest {
         assertEquals(expected.get(1), actual.get(1));
 
     }
+
+    @Test
+    void getRankingHighCard() throws Exception {
+        GameEntity game = new GameEntity();
+        River river = new River();
+        game.setRiver(river);
+        CardRanking cardRanking = new CardRanking();
+        Pot pot = new Pot();
+        game.setPot(pot);
+
+        User userOne = new User();
+        userOne.setUsername("one");
+        User userTwo = new User();
+        userTwo.setUsername("two");
+        User userThree = new User();
+        userThree.setUsername("three");
+        ArrayList<User> users = new ArrayList<>();
+        users.add(userOne);
+        users.add(userTwo);
+        users.add(userThree);
+        game.setAllUsers(users);
+        game.setActiveUsers(users);
+        pot.addUser(userOne);
+        pot.addUser(userTwo);
+        pot.addUser(userThree);
+        pot.addMoney(userOne, 100);
+        pot.addMoney(userTwo, 100);
+        pot.addMoney(userThree, 100);
+
+        userOne.addCard(new Card(Suit.DIAMOND, Rank.TWO));
+        userOne.addCard(new Card(Suit.CLUB, Rank.THREE));
+        userTwo.addCard(new Card(Suit.SPADE, Rank.TWO));
+        userTwo.addCard(new Card(Suit.DIAMOND, Rank.ACE));
+        userThree.addCard(new Card(Suit.DIAMOND, Rank.THREE));
+        userThree.addCard(new Card(Suit.CLUB, Rank.TWO));
+
+        river.addCard(new Card(Suit.CLUB, Rank.SEVEN));
+        river.addCard(new Card(Suit.SPADE, Rank.NINE));
+        river.addCard(new Card(Suit.HEART, Rank.TEN));
+        river.addCard(new Card(Suit.DIAMOND, Rank.QUEEN));
+        river.addCard(new Card(Suit.DIAMOND, Rank.KING));
+
+        ArrayList<UserDraw> actual = cardRanking.getRanking(game);
+        ArrayList<UserDraw> expected = new ArrayList<>();
+        UserDraw userDraw = new UserDraw();
+        userDraw.addUser(userTwo, 100);
+        expected.add(userDraw);
+        userDraw = new UserDraw();
+        userDraw.addUser(userOne, 100);
+        userDraw.addUser(userThree, 100);
+        expected.add(userDraw);
+
+        assertEquals(expected.get(0), actual.get(0));
+        assertEquals(expected.get(1), actual.get(1));
+    }
+
+    @Test
+    void getRankingPair() throws Exception {
+        GameEntity game = new GameEntity();
+        River river = new River();
+        game.setRiver(river);
+        CardRanking cardRanking = new CardRanking();
+        Pot pot = new Pot();
+        game.setPot(pot);
+
+        User userOne = new User();
+        userOne.setUsername("one");
+        User userTwo = new User();
+        userTwo.setUsername("two");
+        User userThree = new User();
+        userThree.setUsername("three");
+        ArrayList<User> users = new ArrayList<>();
+        users.add(userOne);
+        users.add(userTwo);
+        users.add(userThree);
+        game.setAllUsers(users);
+        game.setActiveUsers(users);
+        pot.addUser(userOne);
+        pot.addUser(userTwo);
+        pot.addUser(userThree);
+        pot.addMoney(userOne, 100);
+        pot.addMoney(userTwo, 100);
+        pot.addMoney(userThree, 100);
+
+        userOne.addCard(new Card(Suit.DIAMOND, Rank.TEN));
+        userOne.addCard(new Card(Suit.CLUB, Rank.THREE));
+        userTwo.addCard(new Card(Suit.SPADE, Rank.SEVEN));
+        userTwo.addCard(new Card(Suit.DIAMOND, Rank.ACE));
+        userThree.addCard(new Card(Suit.DIAMOND, Rank.THREE));
+        userThree.addCard(new Card(Suit.CLUB, Rank.TEN));
+
+        river.addCard(new Card(Suit.CLUB, Rank.SEVEN));
+        river.addCard(new Card(Suit.SPADE, Rank.NINE));
+        river.addCard(new Card(Suit.HEART, Rank.TEN));
+        river.addCard(new Card(Suit.DIAMOND, Rank.QUEEN));
+        river.addCard(new Card(Suit.DIAMOND, Rank.KING));
+
+        ArrayList<UserDraw> actual = cardRanking.getRanking(game);
+        ArrayList<UserDraw> expected = new ArrayList<>();
+        UserDraw userDraw = new UserDraw();
+        userDraw.addUser(userOne, 100);
+        userDraw.addUser(userThree, 100);
+        expected.add(userDraw);
+        userDraw = new UserDraw();
+        userDraw.addUser(userTwo, 100);
+        expected.add(userDraw);
+
+
+        assertEquals(expected.get(0), actual.get(0));
+        assertEquals(expected.get(1), actual.get(1));
+    }
+
 }

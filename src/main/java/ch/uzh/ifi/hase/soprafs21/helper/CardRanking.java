@@ -6,6 +6,7 @@ import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.game.cards.Card;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -37,6 +38,22 @@ public class CardRanking {
             unsorted.add(usersAsGood);
         }
 
+        //eliminate duplicates
+        ArrayList<UserDraw> noDuplicates = new ArrayList<>();
+        for(UserDraw userDraw: unsorted) {
+            boolean add = true;
+            for(UserDraw ud: noDuplicates) {
+                if(userDraw.equals(ud)) {
+                    add = false;
+                }
+            }
+            if(add) {
+                noDuplicates.add(userDraw);
+            }
+        }
+        unsorted = noDuplicates;
+
+
         ranking.add(unsorted.get(0));
         for(int i = 1; i < unsorted.size(); i++) {
             User user = null;
@@ -57,10 +74,6 @@ public class CardRanking {
                     break;
                 }
             }
-            if(!ranking.contains(unsorted.get(i))) {
-               ranking.add(unsorted.get(i));
-            }
-
         }
 
         return ranking;
@@ -527,14 +540,306 @@ public class CardRanking {
             } else if(this.combination.ordinal() > other.combination.ordinal()) {
                 return false;
             } else {
-                //this case is when they have the same combo and the individual cards decide, to be implemented
-                return false;
+                //this case is when they have the same combo and the individual cards decide
+                Rank[] thisRank;
+                Rank[] otherRank;
+                switch(this.combination) {
+                    case ROYAL_FLUSH:
+                        return false;
+                    case STRAIGHT_FLUSH:
+                        if(getHighestCard(this.finalCards).getRank().ordinal() > other.getHighestCard(other.finalCards).getRank().ordinal()) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    case FOUR_OF_A_KIND:
+                        thisRank = this.getRanksGivenFour(); //length should always be 2
+                        otherRank = other.getRanksGivenFour(); //length should always be 2
+                        for(int i = 0; i < thisRank.length; i++) {
+                            if(thisRank[i].ordinal() > otherRank[i].ordinal()) {
+                                return true;
+                            } else if(thisRank[i].ordinal() < otherRank[i].ordinal()) {
+                                return false;
+                            }
+                        }
+                        return false;
+                    case FULL_HOUSE:
+                        thisRank = this.getRanksGivenFullHouse();
+                        otherRank = other.getRanksGivenFullHouse();
+                        for(int i = 0; i < thisRank.length; i++) {
+                            if(thisRank[i].ordinal() > otherRank[i].ordinal()) {
+                                return true;
+                            } else if(thisRank[i].ordinal() < otherRank[i].ordinal()) {
+                                return false;
+                            }
+                        }
+                        return false;
+                    case FLUSH:
+                        ArrayList<Card> thisCards = null;
+                        ArrayList<Card> otherCards = null;
+                        thisCards = (ArrayList<Card>) this.finalCards.clone();
+                        otherCards = (ArrayList<Card>) other.finalCards.clone();
+                        while(thisCards.size() >= 1) {
+                            Card card = getHighestCard(thisCards);
+                            thisCards.remove(card);
+                            Rank thisCurrentRank = card.getRank();
+                            card = getHighestCard(otherCards);
+                            otherCards.remove(card);
+                            Rank otherCurrentRank = card.getRank();
+                            if(thisCurrentRank.ordinal() > otherCurrentRank.ordinal()) {
+                                return true;
+                            } else if(thisCurrentRank.ordinal() < otherCurrentRank.ordinal()) {
+                                return false;
+                            }
+                        }
+                        return false;
+                    case STRAIGHT:
+                        if(getHighestCard(this.finalCards).getRank().ordinal() > getHighestCard(other.finalCards).getRank().ordinal()) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    case THREE_OF_A_KIND:
+                        thisRank = this.getRanksGivenThree(); //array length 3
+                        otherRank = other.getRanksGivenThree(); // array length 3
+                        for(int i = 0; i < thisRank.length; i++) {
+                            if(thisRank[i].ordinal() > otherRank[i].ordinal()) {
+                                return true;
+                            } else if(thisRank[i].ordinal() < otherRank[i].ordinal()) {
+                                return false;
+                            }
+                        }
+                        return false;
+                    case TWO_PAIR:
+                        thisRank = this.getRanksGivenTwoPair(); //array length 3
+                        otherRank = other.getRanksGivenTwoPair(); // array length 3
+                        for(int i = 0; i < thisRank.length; i++) {
+                            if(thisRank[i].ordinal() > otherRank[i].ordinal()) {
+                                return true;
+                            } else if(thisRank[i].ordinal() < otherRank[i].ordinal()) {
+                                return false;
+                            }
+                        }
+                        return false;
+                    case ONE_PAIR:
+                        thisRank = this.getRanksGivenOnePair(); //array length 4
+                        otherRank = other.getRanksGivenOnePair(); // array length 4
+                        for(int i = 0; i < thisRank.length; i++) {
+                            if(thisRank[i].ordinal() > otherRank[i].ordinal()) {
+                                return true;
+                            } else if(thisRank[i].ordinal() < otherRank[i].ordinal()) {
+                                return false;
+                            }
+                        }
+                        return false;
+                    case HIGH_CARD:
+                        thisRank = this.getRanksOrdered();
+                        otherRank = other.getRanksOrdered();
+                        for(int i = 0; i < thisRank.length; i++) {
+                            if(thisRank[i].ordinal() > otherRank[i].ordinal()) {
+                                return true;
+                            } else if(thisRank[i].ordinal() < otherRank[i].ordinal()) {
+                                return false;
+                            }
+                        }
+                        return false;
+                    default:
+                        return false;
+                }
+
             }
         }
 
-        //to be implemented
         public boolean asGood(UserCombination other) {
-            return false;
+            if((this.getCombination() != other.getCombination()) || (this.isBetterThan(other) || other.isBetterThan(this))) {
+                return false;
+            } else {
+                return true;
+            }
         }
+
+        /**
+         * Assumption: one deck --> five of a kind not possible
+         * assuming that this is of combination FOUR_OF_A_KING and its final cards are saved, this returns an array
+         * of length 2 with element index 0 being rank of the fours, and element index 1 being the other card
+         * @return Rank[2] (Rank[0] being four, Rank[1] being other card)
+         */
+        private Rank[] getRanksGivenFour() {
+            Rank rankOfFour = null;
+            Rank rankOther = null;
+            for(Rank rank: Rank.values()) {
+                int count = 0;
+                for(Card card: finalCards) {
+                    if(card.getRank() == rank) {
+                        count ++;
+                        if(count > 1) {
+                            rankOfFour = rank;
+                            break;
+                        }
+                    }
+                }
+            }
+            for(Rank rank: Rank.values()) {
+                for(Card card: finalCards) {
+                    if(card.getRank() != rankOfFour) {
+                        rankOther = card.getRank();
+                        break;
+                    }
+                }
+            }
+            Rank[] ranks = {rankOfFour, rankOther};
+            return ranks;
+        }
+
+        /**
+         * assuming that this is of combination FULL_HOUSE and its final cards are saved, this returns an array
+         * of length 2 with element index 0 being rank of the three, and element index 1 being the two
+         * @return Rank[2] (Rank[0] being three, Rank[1] being two)
+         */
+        private Rank[] getRanksGivenFullHouse() {
+            Rank rankOfThree = null;
+            Rank rankOfTwo = null;
+            for(int i = 0; i < finalCards.size(); i++) {
+                Rank rank = finalCards.get(i).getRank();
+                int count = 0;
+                for(Card card: finalCards) {
+                    if(card.getRank() == rank) {
+                        count ++;
+                    }
+                }
+                if(count == 3) {
+                    rankOfThree = rank;
+                } else if(count == 2) {
+                    rankOfTwo = rank;
+                }
+            }
+            Rank[] ranks = {rankOfThree,rankOfTwo};
+            return ranks;
+        }
+
+        /**
+         * assuming that this is of combination THREE_OF_A_KIND and its final cards are saved, this returns an array
+         * of length 3 with element index 0 being rank of the three, and element index 1 being highest of other, and
+         * element index 2 being last rank
+         * @return Rank[3] (Rank[0] being three, Rank[1] being highest of other, Rank[2] being last rank)
+         */
+        private Rank[] getRanksGivenThree() {
+            Rank three = null; //rank of three
+            Rank rank1 = null; //rank of other card
+            Rank rank2 = null; //rank of other card
+            for(Rank rank: Rank.values()) {
+                int count = 0;
+                for(Card card: finalCards) {
+                    if(card.getRank() == rank) {
+                        count ++;
+                    }
+                }
+                if(count >= 3) {
+                    three = rank;
+                } else if(count == 1){
+                    if(rank1 == null) {
+                        rank1 = rank;
+                    } else {
+                        rank2 = rank;
+                    }
+                }
+                if(rank2.ordinal() > rank1.ordinal()) {
+                    Rank placeholder = rank1;
+                    rank1 = rank2;
+                    rank2 = placeholder;
+                }
+            }
+            Rank[] ranks = {three, rank1, rank2};
+            return ranks;
+        }
+
+        /**
+         * assuming that this is of combination TWO_PAIR and its final cards are saved, this returns an array
+         * of length 3 with element index 0 being rank of the higher pair, and element index 1 being other pair, and
+         * element index 2 being last rank
+         * @return Rank[3] (Rank[0] being high pair, Rank[1] being lower pair, Rank[2] being last rank)
+         */
+        private Rank[] getRanksGivenTwoPair() {
+            Rank pair1 = null; //rank of three
+            Rank pair2 = null; //rank of other card
+            Rank other = null; //rank of other card
+            for(Rank rank: Rank.values()) {
+                int count = 0;
+                for(Card card: finalCards) {
+                    if(card.getRank() == rank) {
+                        count ++;
+                    }
+                }
+                if(count >= 2) {
+                    if(pair1 == null) {
+                        pair1 = rank;
+                    } else {
+                        pair2 = rank;
+                    }
+                } else if(count == 1){
+                    other = rank;
+                }
+                if(pair2.ordinal() > pair1.ordinal()) {
+                    Rank placeholder = pair1;
+                    pair1 = pair2;
+                    pair2 = placeholder;
+                }
+            }
+            Rank[] ranks = {pair1, pair2, other};
+            return ranks;
+        }
+
+        /**
+         * assuming that this is of combination ONE_PAIR and its final cards are saved, this returns an array
+         * of length 4 with element index 0 being rank of pair, and element index 1 to 3 being the other cards,
+         * beginning from highest rank
+         * @return Rank[4] (Rank[0] being high pair, Rank[1] being lower pair, Rank[2] being last rank)
+         */
+        private Rank[] getRanksGivenOnePair() {
+            Rank[] ranks = new Rank[4];
+            ArrayList<Card> cards = (ArrayList<Card>) finalCards.clone();
+            Rank pair = null;
+            for(Rank rank: Rank.values()) {
+                int count = 0;
+                for(Card card: finalCards) {
+                    if(card.getRank() == rank) {
+                        count ++;
+                    }
+                }
+                if(count >= 2) {
+                    pair = rank;
+                    ranks[0] = pair;
+                    break;
+                }
+            }
+            //starts with index 1, since 0 is already in ranks (pair)
+            int i = 1;
+            while(cards.size() > 0) {
+                Card card = getHighestCard(cards);
+                cards.remove(card);
+                if(!(card.getRank() == pair)) {
+                    ranks[i] = card.getRank();
+                    i ++;
+                }
+            }
+            return ranks;
+        }
+
+        /**
+         * assuming that this is of combination HIGH_CARD and its final cards are saved, this returns an array
+         * of length 5 with elements being ordered by ranks, ordered from highest to lowest
+         * @return Rank[5]
+         */
+        private Rank[] getRanksOrdered() {
+            Rank[] ranks = new Rank[5];
+            ArrayList<Card> cards = (ArrayList<Card>) finalCards.clone();
+            for(int i = 0; i < ranks.length; i++) {
+                Card card = getHighestCard(cards);
+                cards.remove(card);
+                ranks[i] = card.getRank();
+            }
+            return ranks;
+        }
+
     }
 }
