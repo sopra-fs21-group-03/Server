@@ -74,7 +74,9 @@ public class CardRanking {
                     break;
                 }
             }
-        }
+            if(!ranking.contains(unsorted.get(i))){
+                ranking.add(unsorted.get(i));
+            }        }
 
         return ranking;
     }
@@ -288,9 +290,9 @@ public class CardRanking {
 
         private void setFinalCardsForFullHouse(Rank rankOfThrees, Rank rankOfPair) {
             ArrayList<Card> cards = new ArrayList<>();
+            int countThree = 0;
+            int countPair = 0;
             for(Card card : this.cards) {
-                int countThree = 0;
-                int countPair = 0;
                     if(countThree < 3 && card.getRank() == rankOfThrees) {
                         cards.add(card);
                         countThree ++;
@@ -299,6 +301,7 @@ public class CardRanking {
                         countPair ++;
                     }
             }
+            finalCards = cards;
         }
 
         private boolean isFlush() {
@@ -743,11 +746,11 @@ public class CardRanking {
                         rank2 = rank;
                     }
                 }
-                if(rank2.ordinal() > rank1.ordinal()) {
-                    Rank placeholder = rank1;
-                    rank1 = rank2;
-                    rank2 = placeholder;
-                }
+            }
+            if(rank2.ordinal() > rank1.ordinal()) {
+                Rank placeholder = rank1;
+                rank1 = rank2;
+                rank2 = placeholder;
             }
             Rank[] ranks = {three, rank1, rank2};
             return ranks;
@@ -779,11 +782,11 @@ public class CardRanking {
                 } else if(count == 1){
                     other = rank;
                 }
-                if(pair2.ordinal() > pair1.ordinal()) {
-                    Rank placeholder = pair1;
-                    pair1 = pair2;
-                    pair2 = placeholder;
-                }
+            }
+            if(pair2.ordinal() > pair1.ordinal()) {
+                Rank placeholder = pair1;
+                pair1 = pair2;
+                pair2 = placeholder;
             }
             Rank[] ranks = {pair1, pair2, other};
             return ranks;
