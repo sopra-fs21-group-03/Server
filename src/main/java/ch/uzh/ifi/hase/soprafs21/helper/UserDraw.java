@@ -69,4 +69,32 @@ public class UserDraw {
             usersInDraw.remove(user);
         }
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == this) {
+            return true;
+        }
+
+        if(!(obj instanceof UserDraw)) {
+            return false;
+        }
+
+        UserDraw o = (UserDraw) obj;
+        List<User> users = new ArrayList<>(this.getUsers());
+        List<User> otherUsers = new ArrayList<>(o.getUsers());
+
+        for(User user: users) {
+            if(!otherUsers.contains(user)) {
+                return false;
+            }
+        }
+
+        for(User otherUser: otherUsers) {
+            if(!users.contains(otherUser)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
