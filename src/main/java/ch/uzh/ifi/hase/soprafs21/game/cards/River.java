@@ -1,9 +1,11 @@
 package ch.uzh.ifi.hase.soprafs21.game.cards;
 
+
 import javassist.bytecode.ExceptionTable;
 
 import javax.persistence.Embeddable;
 import java.util.ArrayList;
+
 
 @Embeddable
 public class River {

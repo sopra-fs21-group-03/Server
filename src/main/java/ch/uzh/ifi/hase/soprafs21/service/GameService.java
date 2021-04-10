@@ -4,9 +4,8 @@ package ch.uzh.ifi.hase.soprafs21.service;
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
-import ch.uzh.ifi.hase.soprafs21.repository.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
+import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
@@ -14,7 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -190,5 +191,78 @@ public class GameService {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "This User cannot check, since a different User has a different amount of money in the pot!");
             }
         }
+    }
+
+    /**
+     * Gets the gameData for a game
+     * @param gameID
+     * @param userWhoWantsToFetch
+     * @return
+     */
+    public GameEntity getGameData(long gameID, User userWhoWantsToFetch){
+        Optional<GameEntity> optionalGame = gameRepository.findById(gameID);
+        boolean valid = false;
+        ArrayList<OpponentInGameGetDTO> opponents = new ArrayList<>();
+
+        if (optionalGame.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The game you requested was not found");
+        }
+
+        GameEntity game = optionalGame.get();
+
+        List<User> players = new ArrayList<>(game.getAllUsers());
+
+        for (User user : players){
+            if (user.getToken().equals(userWhoWantsToFetch.getToken())) {
+                valid = true;
+                players.remove(user);
+                break;
+            }
+        }
+
+        if (!valid){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not logged in");
+        }
+
+        for (User player : players){
+            opponents.add(DTOMapper.INSTANCE.convertEntityToOpponentInGameGetDTO(player));
+        }
+
+        game.setOpponents(opponents);
+
+        return game;
+    }
+
+    public User getOwnGameData(Long gameID, Long userID, User userWhoWantsToFetch) {
+        Optional<GameEntity> optionalGame = gameRepository.findById(gameID);
+        boolean valid = false;
+
+        if (optionalGame.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The game you requested was not found");
+        }
+
+        GameEntity game = optionalGame.get();
+        User player = null;
+
+        List<User> players = new ArrayList<>(game.getAllUsers());
+        for (User user: players){
+            if (user.getId().equals(userID)) {
+                player = user;
+                if (player.getToken().equals(userWhoWantsToFetch.getToken())){
+                    valid = true;
+                }
+                break;
+            }
+        }
+
+        if (player == null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found");
+        }
+
+        if (!valid){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Player not logged in");
+        }
+
+        return player;
     }
 }

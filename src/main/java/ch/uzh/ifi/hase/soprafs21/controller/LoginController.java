@@ -9,10 +9,7 @@ import ch.uzh.ifi.hase.soprafs21.service.LoginService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Login Controller
@@ -83,6 +80,12 @@ public class LoginController {
         // If successful userStatus is set to online
         String token = loginService.checkLoginCredentials(userInput);
 
+        /*
+           TO DO
+           Create Game and add User to the GameList
+         */
+
+
         return Collections.singletonMap("token", token);
     }
 
@@ -101,4 +104,5 @@ public class LoginController {
 
 
     }
+
 }

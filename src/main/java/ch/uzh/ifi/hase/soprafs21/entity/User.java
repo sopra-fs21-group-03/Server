@@ -7,6 +7,7 @@ import ch.uzh.ifi.hase.soprafs21.game.cards.Card;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Internal User Representation
@@ -46,8 +47,8 @@ public class User implements Serializable {
     @Column
     private Blind blind;
 
-    @Column
-    private Card[] cards = new Card[2];
+    @ElementCollection
+    private List<Card> cards;
 
     public Blind getBlind() {
         return blind;
@@ -127,19 +128,20 @@ public class User implements Serializable {
         this.status = status;
     }
 
-    public void addCard(Card card, int index) {
-        this.cards[index] = card;
-    }
 
-    public Card[] getCards() {
+    public List<Card> getCards() {
         return cards;
     }
 
-    public void addCard(Card card) {
-        if(cards[0] == null) {
-            cards[0] = card;
-        }else if(cards[1] == null) {
-            cards[1] = card;
-        }
+    public void setCards(List<Card> cards) {
+        this.cards = cards;
     }
+
+
+
+
+    public void addCard(Card card) {
+        
+    }
+
 }

@@ -3,6 +3,7 @@ package ch.uzh.ifi.hase.soprafs21.service;
 import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs21.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
+import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs21.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,8 @@ public class LoginServiceTest {
 
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private GameRepository gameRepository;
 
     @InjectMocks
     private LoginService loginService;
@@ -167,6 +170,5 @@ public class LoginServiceTest {
         Mockito.when(userRepository.findById(Mockito.any())).thenReturn(java.util.Optional.ofNullable(testUser));
 
         assertThrows(ResponseStatusException.class, () -> loginService.getUserToLogout(userInputs, testUser.getId()));
-
     }
 }
