@@ -1,19 +1,19 @@
 package ch.uzh.ifi.hase.soprafs21.game.cards;
 
-
-import javassist.bytecode.ExceptionTable;
-
+import javax.persistence.ElementCollection;
 import javax.persistence.Embeddable;
 import java.util.ArrayList;
+import java.util.List;
 
 
 @Embeddable
 public class River {
 
-    private ArrayList<Card> cards = new ArrayList<>();
+    @ElementCollection
+    private List<Card> cards = new ArrayList<>();
 
     public ArrayList<Card> getCards() {
-        return (ArrayList<Card>) cards.clone();
+        return new ArrayList<>(cards);
     }
 
     public void addCard(Card card) throws Exception {

@@ -140,12 +140,12 @@ class GameServiceTest {
         gameService.userRaises(testGame.getId(), testUser.getId(), raiseamountpossible);
         assertEquals(5, testUser.getMoney());
         assertEquals(testUser, testGame.getUserThatRaisedLast());
-        assertEquals(5, testGame.getPot().sum());
+        assertEquals(5, testGame.getPot().getTotal());
 
         gameService.userRaises(testGame.getId(), testUser2.getId(), raiseamountpossible);
         assertEquals(5, testUser2.getMoney());
         assertEquals(testUser2, testGame.getUserThatRaisedLast());
-        assertEquals(10, testGame.getPot().sum());
+        assertEquals(10, testGame.getPot().getTotal());
 
     }
 
@@ -153,7 +153,7 @@ class GameServiceTest {
     void userRaises_toohighamount(){
         assertThrows(ResponseStatusException.class, () -> gameService.userRaises(testGame.getId(), testUser.getId(), raiseamounttoomuch));
         assertNotEquals(testUser, testGame.getUserThatRaisedLast());
-        assertEquals(0, testGame.getPot().sum());
+        assertEquals(0, testGame.getPot().getTotal());
 
     }
 
@@ -162,12 +162,12 @@ class GameServiceTest {
         gameService.userRaises(testGame.getId(), testUser.getId(), raiseamountpossible);
         assertEquals(5, testUser.getMoney());
         assertEquals(testUser, testGame.getUserThatRaisedLast());
-        assertEquals(5, testGame.getPot().sum());
+        assertEquals(5, testGame.getPot().getTotal());
 
         assertThrows(ResponseStatusException.class, () -> gameService.userRaises(testGame.getId(), testUser.getId(), raiseamountpossible));
         assertEquals(5, testUser.getMoney());
         assertEquals(testUser, testGame.getUserThatRaisedLast());
-        assertEquals(5, testGame.getPot().sum());
+        assertEquals(5, testGame.getPot().getTotal());
 
     }
 
@@ -176,12 +176,12 @@ class GameServiceTest {
         gameService.userRaises(testGame.getId(), testUser.getId(), raiseamountpossible);
         assertEquals(5, testUser.getMoney());
         assertEquals(testUser, testGame.getUserThatRaisedLast());
-        assertEquals(5, testGame.getPot().sum());
+        assertEquals(5, testGame.getPot().getTotal());
 
         gameService.userCalls(testGame.getId(), testUser2.getId());
         assertEquals(5, testUser2.getMoney());
         assertEquals(testUser, testGame.getUserThatRaisedLast());
-        assertEquals(10, testGame.getPot().sum());
+        assertEquals(10, testGame.getPot().getTotal());
     }
 
     @Test
@@ -192,13 +192,13 @@ class GameServiceTest {
         gameService.userRaises(testGame.getId(), testUser.getId(), 45);
         assertEquals(5, testUser.getMoney());
         assertEquals(testUser, testGame.getUserThatRaisedLast());
-        assertEquals(45, testGame.getPot().sum());
+        assertEquals(45, testGame.getPot().getTotal());
 
         gameService.userCalls(testGame.getId(), testUser2.getId());
         //testUser2 has to go all-in in order to still be in the game
         assertEquals(0, testUser2.getMoney());
         assertEquals(testUser, testGame.getUserThatRaisedLast());
-        assertEquals(55, testGame.getPot().sum());
+        assertEquals(55, testGame.getPot().getTotal());
     }
 
     @Test
@@ -215,7 +215,7 @@ class GameServiceTest {
         assertEquals(8, testUser2.getMoney());
         assertEquals(8, testUser3.getMoney());
 
-        assertEquals(6, testGame.getPot().sum());
+        assertEquals(6, testGame.getPot().getTotal());
         assertEquals(testUser, testGame.getUserThatRaisedLast());
 
 
@@ -232,7 +232,7 @@ class GameServiceTest {
         assertEquals(10, testUser2.getMoney());
         assertEquals(10, testUser3.getMoney());
 
-        assertEquals(2, testGame.getPot().sum());
+        assertEquals(2, testGame.getPot().getTotal());
         assertEquals(testUser, testGame.getUserThatRaisedLast());
 
 

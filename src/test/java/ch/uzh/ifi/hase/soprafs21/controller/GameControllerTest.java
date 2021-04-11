@@ -1,9 +1,13 @@
 package ch.uzh.ifi.hase.soprafs21.controller;
 
 import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
+import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
+import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.UserPutDTO;
+import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs21.service.GameService;
+import ch.uzh.ifi.hase.soprafs21.service.LoginService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -18,10 +22,16 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -33,7 +43,78 @@ class GameControllerTest {
     @MockBean
     private GameService gameService;
 
+    @MockBean
+    private LoginService loginService;
+
     private User testUser;
+
+    /**
+     * Test if gameData is fetched by a logged in user
+     */
+
+    /*
+    @Test
+    void getGameData_success() throws Exception {
+        //given
+        GameEntity gameEntity = new GameEntity();
+        ArrayList<OpponentInGameGetDTO> opponents = new ArrayList<>();
+
+        User user1 = new User();
+        user1.setUsername("user1");
+        user1.setPassword("test");
+        user1.setToken("1");
+        gameEntity.addUserToAll(user1);
+        gameEntity.addUserToActive(user1);
+        loginService.createUser(user1);
+
+        User user2 = new User();
+        user2.setUsername("user1");
+        user2.setPassword("test");
+        user2.setToken("2");
+        gameEntity.addUserToAll(user2);
+        gameEntity.addUserToActive(user2);
+        loginService.createUser(user2);
+
+        List<User> players = new ArrayList<>(gameEntity.getAllUsers());
+        players.remove(user2);
+
+        for (User player : players){
+            opponents.add(DTOMapper.INSTANCE.convertEntityToOpponentInGameGetDTO(player));
+        }
+
+        gameEntity.setGameName("default");
+        gameEntity.setOpponents(opponents);
+
+        UserPutDTO userPutDTO = new UserPutDTO();
+        userPutDTO.setToken(user2.getToken());
+
+        // will return the gameEntity
+        given(gameService.getGameData(1, user2)).willReturn(gameEntity);
+
+        //when
+        MockHttpServletRequestBuilder getRequest = get("/games/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(userPutDTO));
+
+        //then
+        mockMvc.perform(getRequest).andExpect(status().isOk())
+                .andExpect(jsonPath("$.gameName", is("default")));
+    } */
+    /**
+     * Test if game could not be found
+     */
+    @Test
+    void getGameData_notFound(){
+
+    }
+
+    /**
+     * Test if user is not authorized to get gameData
+     */
+    @Test
+    void getGameData_unauthorized(){
+
+    }
 
     @Test
     void userfolds_success() {
