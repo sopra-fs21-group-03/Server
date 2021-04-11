@@ -1,6 +1,8 @@
 package ch.uzh.ifi.hase.soprafs21.entity;
 
+import ch.uzh.ifi.hase.soprafs21.constant.Blind;
 import ch.uzh.ifi.hase.soprafs21.game.Pot;
+import ch.uzh.ifi.hase.soprafs21.game.cards.Card;
 import ch.uzh.ifi.hase.soprafs21.game.cards.Deck;
 import ch.uzh.ifi.hase.soprafs21.game.cards.River;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
@@ -9,6 +11,9 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalInt;
+import java.util.Random;
+import java.util.stream.IntStream;
 
 @Entity
 @Table(name = "GAME")
@@ -154,8 +159,10 @@ public class GameEntity implements Serializable {
      * Setup function
      * Gets called when all players are in the game
      */
-    public void setup(){
-
+    public void setup() throws Exception {
+        setStartingPot();
+        distributeBlinds();
+        distributeCards();
     }
 
     /* Helper functions to set up a game */
@@ -215,11 +222,12 @@ public class GameEntity implements Serializable {
      * @throws Exception lobby is not full
      */
     private void setStartingPot() throws Exception {
+        // Check if enough users are in the game
         if (allUsers.size() != 5){
             throw new Exception();
         }
 
-        for (User user : activeUsers){
+        for (User user : allUsers){
             user.setMoney(20000);
         }
     }
@@ -227,11 +235,44 @@ public class GameEntity implements Serializable {
     // Distribute blinds
 
     /**
-     * Used to randomly distribute the small and big blind.
+     * Used to randomly distribute the small and big blind at the start of the game.
      * ... to be further implemented
      */
-    private void distributeBlinds(){
+    private void distributeBlinds() throws Exception{
+        // Check if enough users are in the game
+        if (allUsers.size() != 5){
+            throw new Exception();
+        }
 
+        // default value
+        int randomInt = 1;
+
+        // Generate random integer between 1 and 4
+        Random random = new Random();
+        OptionalInt optionalRandomInt = random.ints(1, 5).findFirst();
+
+        if (optionalRandomInt.isPresent()){
+            randomInt = optionalRandomInt.getAsInt();
+        }
+
+        User toGetBigBlind = allUsers.get(randomInt);
+        toGetBigBlind.setBlind(Blind.BIG);
+
+        User toGetSmallBlind = allUsers.get(randomInt-1);
+        toGetSmallBlind.setBlind(Blind.SMALL);
+    }
+
+    private void distributeCards() throws Exception{
+        // Check if enough users are in the game
+        if (allUsers.size() != 5){
+            throw new Exception();
+        }
+
+        for (User user: allUsers){
+            for (int i = 0; i<2; i++){
+                user.addCard(this.deck.draw());
+            }
+        }
     }
 }
 
