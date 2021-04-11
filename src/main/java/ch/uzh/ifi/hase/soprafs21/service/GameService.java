@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs21.service;
 
 
+import ch.uzh.ifi.hase.soprafs21.constant.Round;
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
@@ -26,6 +27,11 @@ public class GameService {
     @Autowired
     public GameService(@Qualifier("gameRepository") GameRepository gameRepository) {
         this.gameRepository = gameRepository;
+    }
+
+    private boolean checkIfUserPerformingActionIsUserOnTurn(Long gameid, User user) {
+        GameEntity theGame = findGameEntity(gameid);
+        return theGame.getOnTurn().getUsername().equals(user.getUsername());
     }
 
     private GameEntity findGameEntity(Long gameid) {
@@ -70,12 +76,19 @@ public class GameService {
         GameEntity theGame = findGameEntity(gameid);
         for (User user : theGame.getActiveUsers()) {
             if (userid.equals(user.getId())) {
-                theGame.getActiveUsers().remove(user);
-                gameRepository.save(theGame);
-                return;
-                /**
-                 *  User folds -> he gets removed from the ActiveUsers List, not from the AllUsers List
-                 */
+                if (checkIfUserPerformingActionIsUserOnTurn(gameid, user)) {
+
+                    theGame.setCheckcounter(0);
+                    theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(user);
+                    theGame.getActiveUsers().remove(user);
+                    gameRepository.save(theGame);
+                    return;
+                    /**
+                     *  User folds -> he gets removed from the ActiveUsers List, not from the AllUsers List
+                     */}
+                else {
+                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This User is not in turn!");
+                }
             }
         }
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The User could not be found...");
@@ -91,41 +104,49 @@ public class GameService {
 
         for (User user : theGame.getActiveUsers()) {
             if (userid.equals(user.getId())) {
-                if (theGame.getUserThatRaisedLast() == null || !theGame.getUserThatRaisedLast().getId().equals(user.getId())) {
+                if (checkIfUserPerformingActionIsUserOnTurn(gameid, user)) {
+                    if (theGame.getUserThatRaisedLast() == null || !theGame.getUserThatRaisedLast().getId().equals(user.getId())) {
                 /*
                 User was found and he is not the User that raised last
                  */
-                    if (user.getMoney() > amount) {
-                        theGame.getPot().addMoney(user, amount);
-                        theGame.setUserThatRaisedLast(user);
-                        try {
-                            user.removeMoney(amount);
+                        if (user.getMoney() > amount) {
+                            theGame.getPot().addMoney(user, amount);
+                            theGame.setUserThatRaisedLast(user);
+                            try {
+                                user.removeMoney(amount);
+                            }
+                            catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            theGame.setCheckcounter(0);
+                            theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(user);
+                            gameRepository.save(theGame);
+                            return;
                         }
-                        catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        else if (user.getMoney() == amount) {
+                            /**
+                             This is the All-In Case
+                             */
+                            theGame.getPot().addMoney(user, amount);
+                            theGame.setUserThatRaisedLast(user);
+                            user.setMoney(0);
+                            theGame.setCheckcounter(0);
+                            theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(user);
+                            gameRepository.save(theGame);
+                            return;
 
-                        gameRepository.save(theGame);
-                        return;
-                    }
-                    else if (user.getMoney() == amount) {
-                        /**
-                         This is the All-In Case
-                         */
-                        theGame.getPot().addMoney(user, amount);
-                        theGame.setUserThatRaisedLast(user);
-                        user.setMoney(0);
-                        gameRepository.save(theGame);
-                        return;
+                        }
+                        else {
+                            throw new ResponseStatusException(HttpStatus.CONFLICT, "The User doesn't have enough money to raise with such an amount!");
+                        }
 
                     }
                     else {
-                        throw new ResponseStatusException(HttpStatus.CONFLICT, "The User doesn't have enough money to raise with such an amount!");
+                        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This User was the User that raised last! Therefore, he cannot raise a second time in a row!");
                     }
-
                 }
                 else {
-                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This User was the User that raised last! Therefore, he cannot raise a second time in a row!");
+                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This User is not in turn!");
                 }
             }
         }
@@ -144,39 +165,51 @@ public class GameService {
 
         //first: give me the player that raise last
         User lastRaiser = theGame.getUserThatRaisedLast();
+        if(lastRaiser == null && theGame.getRound() != Round.PREFLOP){
+            // userChecks will be called, since noone called before. ATTENTION: in the first round, where we have the
+            // input of BIG and SMALL Blind, this function should not be called
+            userChecks(gameid, userid);
+        }
+
         //In the function call, we got a userid. Give me this User
         User thisUser = getUserByIdInActiveUsers(gameid, userid);
+        if (checkIfUserPerformingActionIsUserOnTurn(gameid, thisUser)) {
 
-        if (thisUser.getMoney() <= 0) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "The User cannot call, since he has no money!");
-        }
-
-        //if someone wants to call -> he wants to have the same amount of money in the pot as the user that raised last
-        int totalPotContributionOfPlayerThatRaisedLast = theGame.getPot().getUserContributionOfAUser(lastRaiser);
-        int amountThisUserAlreadyHasInThePot = theGame.getPot().getUserContributionOfAUser(thisUser);
-
-        if (thisUser.getMoney() + amountThisUserAlreadyHasInThePot >= totalPotContributionOfPlayerThatRaisedLast) {
-            int difference = totalPotContributionOfPlayerThatRaisedLast - amountThisUserAlreadyHasInThePot;
-
-            try {
-                thisUser.removeMoney(difference);
-            }
-            catch (Exception e) {
-                e.printStackTrace();
+            if (thisUser.getMoney() <= 0) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "The User cannot call, since he has no money!");
             }
 
-            theGame.getPot().addMoney(thisUser, difference);
+            //if someone wants to call -> he wants to have the same amount of money in the pot as the user that raised last
+            int totalPotContributionOfPlayerThatRaisedLast = theGame.getPot().getUserContributionOfAUser(lastRaiser);
+            int amountThisUserAlreadyHasInThePot = theGame.getPot().getUserContributionOfAUser(thisUser);
 
+            if (thisUser.getMoney() + amountThisUserAlreadyHasInThePot >= totalPotContributionOfPlayerThatRaisedLast) {
+                int difference = totalPotContributionOfPlayerThatRaisedLast - amountThisUserAlreadyHasInThePot;
+
+                try {
+                    thisUser.removeMoney(difference);
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                theGame.getPot().addMoney(thisUser, difference);
+
+            }
+            else {
+                /**
+                 * This is the All-In Case
+                 */
+                theGame.getPot().addMoney(thisUser, thisUser.getMoney());
+                thisUser.setMoney(0);
+            }
+            theGame.setCheckcounter(0);
+            theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(thisUser);
+            gameRepository.save(theGame);
         }
         else {
-            /**
-             * This is the All-In Case
-             */
-            theGame.getPot().addMoney(thisUser, thisUser.getMoney());
-            thisUser.setMoney(0);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This User is not in turn!");
         }
-
-        gameRepository.save(theGame);
     }
 
     public void userChecks(Long gameid, Long userid) {
@@ -184,26 +217,35 @@ public class GameService {
 
         //In the function call, we got a userid. Give me this User
         User thisUser = getUserByIdInActiveUsers(gameid, userid);
+        if (checkIfUserPerformingActionIsUserOnTurn(gameid, thisUser)) {
 
-        for (User user : theGame.getActiveUsers()) {
-            if (theGame.getPot().getUserContributionOfAUser(user) > theGame.getPot().getUserContributionOfAUser(thisUser)) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "This User cannot check, since a different User has a different amount of money in the pot!");
+            for (User user : theGame.getActiveUsers()) {
+                if (theGame.getPot().getUserContributionOfAUser(user) > theGame.getPot().getUserContributionOfAUser(thisUser)) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "This User cannot check, since a different User has a different amount of money in the pot!");
+                }
             }
+            theGame.setCheckcounter(theGame.getCheckcounter()+1);
+            theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(thisUser);
+            gameRepository.save(theGame);
+        }
+        else {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This User is not in turn!");
         }
     }
 
     /**
      * Gets the gameData for a game
+     *
      * @param gameID
      * @param userWhoWantsToFetch
      * @return
      */
-    public GameEntity getGameData(long gameID, User userWhoWantsToFetch){
+    public GameEntity getGameData(long gameID, User userWhoWantsToFetch) {
         Optional<GameEntity> optionalGame = gameRepository.findById(gameID);
         boolean valid = false;
         ArrayList<OpponentInGameGetDTO> opponents = new ArrayList<>();
 
-        if (optionalGame.isEmpty()){
+        if (optionalGame.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The game you requested was not found");
         }
 
@@ -211,7 +253,7 @@ public class GameService {
 
         List<User> players = new ArrayList<>(game.getAllUsers());
 
-        for (User user : players){
+        for (User user : players) {
             if (user.getToken().equals(userWhoWantsToFetch.getToken())) {
                 valid = true;
                 players.remove(user);
@@ -219,11 +261,11 @@ public class GameService {
             }
         }
 
-        if (!valid){
+        if (!valid) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not logged in");
         }
 
-        for (User player : players){
+        for (User player : players) {
             opponents.add(DTOMapper.INSTANCE.convertEntityToOpponentInGameGetDTO(player));
         }
 
@@ -236,7 +278,7 @@ public class GameService {
         Optional<GameEntity> optionalGame = gameRepository.findById(gameID);
         boolean valid = false;
 
-        if (optionalGame.isEmpty()){
+        if (optionalGame.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The game you requested was not found");
         }
 
@@ -244,21 +286,21 @@ public class GameService {
         User player = null;
 
         List<User> players = new ArrayList<>(game.getAllUsers());
-        for (User user: players){
+        for (User user : players) {
             if (user.getId().equals(userID)) {
                 player = user;
-                if (player.getToken().equals(userWhoWantsToFetch.getToken())){
+                if (player.getToken().equals(userWhoWantsToFetch.getToken())) {
                     valid = true;
                 }
                 break;
             }
         }
 
-        if (player == null){
+        if (player == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found");
         }
 
-        if (!valid){
+        if (!valid) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Player not logged in");
         }
 

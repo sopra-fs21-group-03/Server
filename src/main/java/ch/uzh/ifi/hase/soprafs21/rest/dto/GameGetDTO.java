@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs21.rest.dto;
 
+import ch.uzh.ifi.hase.soprafs21.constant.Round;
 import ch.uzh.ifi.hase.soprafs21.game.Pot;
 import ch.uzh.ifi.hase.soprafs21.game.cards.River;
 
@@ -12,8 +13,17 @@ public class GameGetDTO {
     private Pot pot;
     private boolean showdown;
     private OnTurnGetDTO onTurn;
+    private Round round;
 
     private List<OpponentInGameGetDTO> opponents;
+
+    public Round getRound() {
+        return round;
+    }
+
+    public void setRound(Round round) {
+        this.round = round;
+    }
 
     public String getGameName() {
         return gameName;
