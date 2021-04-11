@@ -79,7 +79,7 @@ public class User implements Serializable {
         this.money += amount;
     }
 
-    public void removeMoney(int amount) throws Exception{
+    public int removeMoney(int amount) throws Exception{
         /** Should not be below 0!*/
         if (this.money - amount >= 0) {
             this.money -= amount;
@@ -87,6 +87,7 @@ public class User implements Serializable {
         else {
             throw new Exception();
         }
+        return amount;
     }
 
     public Long getId() {

@@ -137,7 +137,12 @@ public class LoginService {
             addUserToGame(userToBeAdded, game);
             // Check if there are already five players in the game
             if (game.getAllUsers().size() == 5) {
-                game.setup();
+                try {
+                    game.setup();
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
 

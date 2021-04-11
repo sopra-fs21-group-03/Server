@@ -3,21 +3,26 @@ package ch.uzh.ifi.hase.soprafs21.game;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.helper.UserDraw;
 
-import javax.persistence.Embeddable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Set;
+import javax.persistence.*;
+import java.io.Serializable;
+import java.util.*;
 
 @Embeddable
-public class Pot {
+public class Pot implements Serializable {
 
-    private HashMap<User, Integer> userContribution = new HashMap<>();
+    @ElementCollection
+    private Map<User, Integer> userContribution;
 
-    private ArrayList<UserDraw> usersInDraw = new ArrayList<>();
+    // Only for sending the map to the client.
+    // NOT USED IN INTERNAL REPRESENTATION
+    @ElementCollection
+    @Transient
+    private Map<String, Integer> contribution;
 
     private int total;
 
     public Pot() {
+        userContribution = new HashMap<>();
         total = 0;
     }
 
@@ -29,8 +34,33 @@ public class Pot {
         total += amount;
     }
 
-    public int sum() {
+    public void setTotal(int total) {
+        this.total = total;
+    }
+
+    public int getTotal() {
         return total;
+    }
+
+    void setUserContribution(Map<User, Integer> userContribution) {
+        this.userContribution = userContribution;
+    }
+
+    Map<User, Integer> getUserContribution() {
+        return userContribution;
+    }
+
+    public Map<String, Integer> getContribution() {
+        contribution = new HashMap<>();
+        for (User user : userContribution.keySet()){
+            contribution.put(user.getUsername(), userContribution.get(user));
+        }
+
+        return contribution;
+    }
+
+    public void setContribution(Map<String, Integer> userContributionGetter) {
+        this.contribution = userContributionGetter;
     }
 
     public void addUser(User user) {
@@ -90,11 +120,9 @@ public class Pot {
         }
     }
 
-    HashMap<User, Integer> getUserContribution() {
-        return userContribution;
-    }
 
     public int getUserContributionOfAUser(User user) {
         return userContribution.get(user);
     }
+
 }

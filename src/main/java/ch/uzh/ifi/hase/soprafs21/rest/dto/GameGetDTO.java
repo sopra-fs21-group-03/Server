@@ -1,10 +1,8 @@
 package ch.uzh.ifi.hase.soprafs21.rest.dto;
 
-import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.game.Pot;
 import ch.uzh.ifi.hase.soprafs21.game.cards.River;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class GameGetDTO {
@@ -13,7 +11,7 @@ public class GameGetDTO {
     private River river;
     private Pot pot;
     private boolean showdown;
-    private User onTurn;
+    private OnTurnGetDTO onTurn;
 
     private List<OpponentInGameGetDTO> opponents;
 
@@ -33,7 +31,7 @@ public class GameGetDTO {
         this.river = river;
     }
 
-    public Pot getPot() {
+   public Pot getPot() {
         return pot;
     }
 
@@ -49,11 +47,11 @@ public class GameGetDTO {
         this.showdown = showdown;
     }
 
-    public User getOnTurn() {
+    public OnTurnGetDTO getOnTurn() {
         return onTurn;
     }
 
-    public void setOnTurn(User onTurn) {
+    public void setOnTurn(OnTurnGetDTO onTurn) {
         this.onTurn = onTurn;
     }
 

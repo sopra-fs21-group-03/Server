@@ -4,9 +4,10 @@ import ch.uzh.ifi.hase.soprafs21.constant.Rank;
 import ch.uzh.ifi.hase.soprafs21.constant.Suit;
 
 import javax.persistence.Embeddable;
+import java.io.Serializable;
 
 @Embeddable
-public class Card {
+public class Card implements Serializable {
     private final Rank myRank;
     private final Suit mySuit;
 

@@ -1,14 +1,18 @@
 package ch.uzh.ifi.hase.soprafs21.entity;
 
+import ch.uzh.ifi.hase.soprafs21.constant.Blind;
 import ch.uzh.ifi.hase.soprafs21.game.Pot;
 import ch.uzh.ifi.hase.soprafs21.game.cards.Deck;
 import ch.uzh.ifi.hase.soprafs21.game.cards.River;
+import ch.uzh.ifi.hase.soprafs21.rest.dto.OnTurnGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalInt;
+import java.util.Random;
 
 @Entity
 @Table(name = "GAME")
@@ -39,18 +43,38 @@ public class GameEntity implements Serializable {
     @Column
     private Pot pot;
 
-    @Column
+    @OneToOne
     private User userThatRaisedLast;
 
     @Column // Maybe don't needed idk
-    private User onTurn;
+    private OnTurnGetDTO onTurn;
 
     @Column
     private boolean showdown;
 
     @Column
+    private boolean firstGameSetup;
+
+    @Column
+    private boolean setUpped;
+
+    @Column
     private Deck deck;
 
+    /* Constructor */
+    public GameEntity(){
+        river = new River();
+        allUsers = new ArrayList<>();
+        activeUsers = new ArrayList<>();
+        opponents = new ArrayList<>();
+        Id = 1L;
+        firstGameSetup = true;
+        setUpped = false;
+        deck = new Deck();
+        pot = new Pot();
+    }
+
+    /* Getter and setter */
     public Deck getDeck() {
         return deck;
     }
@@ -58,17 +82,6 @@ public class GameEntity implements Serializable {
     public void setDeck(Deck deck) {
         this.deck = deck;}
 
-    /* Constructor */
-    public GameEntity(){
-        allUsers = new ArrayList<>();
-        activeUsers = new ArrayList<>();
-        opponents = new ArrayList<>();
-        Id = 1L;
-        deck = new Deck();
-        pot = new Pot();
-    }
-
-    /* Getter and setter */
     public User getUserThatRaisedLast() {
         return userThatRaisedLast;
     }
@@ -134,11 +147,11 @@ public class GameEntity implements Serializable {
         return pot;
     }
 
-    public void setOnTurn(User current){
+    public void setOnTurn(OnTurnGetDTO current){
         this.onTurn = current;
     }
 
-    public User getOnTurn(){
+    public OnTurnGetDTO getOnTurn(){
         return onTurn;
     }
 
@@ -150,12 +163,23 @@ public class GameEntity implements Serializable {
         return showdown;
     }
 
+
     /**
      * Setup function
      * Gets called when all players are in the game
      */
-    public void setup(){
+    public void setup() throws Exception {
+        if (!setUpped){
+            setStartingPotForUsers();
 
+            if (firstGameSetup){
+                setUpPot();
+            }
+
+            distributeBlinds();
+            distributeCards();
+        setUpped = true;
+        }
     }
 
     /* Helper functions to set up a game */
@@ -214,24 +238,99 @@ public class GameEntity implements Serializable {
      * Currently sets it to 20'000.
      * @throws Exception lobby is not full
      */
-    private void setStartingPot() throws Exception {
+    private void setStartingPotForUsers() throws Exception {
+        // Check if enough users are in the game
         if (allUsers.size() != 5){
             throw new Exception();
         }
 
-        for (User user : activeUsers){
-            user.setMoney(20000);
+        for (User user : allUsers){
+            user.setMoney(5000);
         }
     }
 
     // Distribute blinds
 
     /**
-     * Used to randomly distribute the small and big blind.
+     * Used to randomly distribute the small and big blind at the start of the game.
      * ... to be further implemented
      */
-    private void distributeBlinds(){
+    private void distributeBlinds() throws Exception{
+        // Check if enough users are in the game
+        if (allUsers.size() != 5){
+            throw new Exception();
+        }
 
+        if (firstGameSetup) {
+            for (User user : allUsers){
+                user.setBlind(Blind.NEUTRAL);
+            }
+
+            // default value
+            int randomInt = 1;
+
+            // Generate random integer between 1 and 4
+            Random random = new Random();
+            OptionalInt optionalRandomInt = random.ints(0, allUsers.size()).findFirst();
+
+            if (optionalRandomInt.isPresent()) {
+                randomInt = optionalRandomInt.getAsInt();
+            }
+
+            User toGetBigBlind = allUsers.get(randomInt);
+            toGetBigBlind.setBlind(Blind.BIG);
+
+            User toGetSmallBlind = allUsers.get(Math.abs((randomInt-1)%(allUsers.size())));
+            toGetSmallBlind.setBlind(Blind.SMALL);
+
+            onTurn = new OnTurnGetDTO();
+            onTurn.setUsername(allUsers.get(Math.abs((randomInt-2)%(allUsers.size()))).getUsername());
+
+            pot.addMoney(toGetBigBlind, toGetBigBlind.removeMoney(200));
+            pot.addMoney(toGetSmallBlind, toGetSmallBlind.removeMoney(100));
+            firstGameSetup = false;
+
+        } else{
+            int index;
+
+            for (User user: allUsers){
+                if (user.getBlind() == Blind.SMALL){
+                    index = allUsers.indexOf(user);
+                    allUsers.get(index).setBlind(Blind.NEUTRAL);
+
+                    User toGetSmallBlind = allUsers.get(Math.abs((index-1) % (allUsers.size())));
+                    User toGetBigBlind = allUsers.get(Math.abs((index-2) % (allUsers.size())));
+
+                    toGetSmallBlind.setBlind(Blind.SMALL);
+                    toGetBigBlind.setBlind(Blind.BIG);
+
+                    pot.addMoney(toGetBigBlind, toGetBigBlind.removeMoney(200));
+                    pot.addMoney(toGetSmallBlind, toGetSmallBlind.removeMoney(100));
+                }
+
+            }
+        }
+
+    }
+
+    private void distributeCards() throws Exception{
+        // Check if enough users are in the game
+        if (allUsers.size() != 5){
+            throw new Exception();
+        }
+
+        for (User user: allUsers){
+            for (int i = 0; i<2; i++){
+                user.addCard(this.deck.draw());
+            }
+        }
+    }
+
+    private void setUpPot(){
+        for (User user: allUsers){
+            pot.addUser(user);
+
+        }
     }
 }
 

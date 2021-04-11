@@ -2,10 +2,13 @@ package ch.uzh.ifi.hase.soprafs21.helper;
 
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class UserDraw {
-    private HashMap<User, Integer> usersInDraw = new HashMap();
+
+public class UserDraw implements Serializable {
+
+    private Map<User, Integer> usersInDraw = new HashMap();
 
     public void addUser(User user, int amount) {
         usersInDraw.put(user, amount);
