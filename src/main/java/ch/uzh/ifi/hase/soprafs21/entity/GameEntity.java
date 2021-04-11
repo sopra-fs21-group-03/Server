@@ -69,7 +69,6 @@ public class GameEntity implements Serializable {
     }
 
     /* Getter and setter */
-
     public User getUserThatRaisedLast() {
         return userThatRaisedLast;
     }

@@ -7,6 +7,7 @@ import ch.uzh.ifi.hase.soprafs21.game.cards.Card;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -48,7 +49,7 @@ public class User implements Serializable {
     private Blind blind;
 
     @ElementCollection
-    private List<Card> cards;
+    private List<Card> cards = new ArrayList<>();
 
     public Blind getBlind() {
         return blind;
@@ -134,6 +135,10 @@ public class User implements Serializable {
 
     public void setCards(List<Card> cards) {
         this.cards = cards;
+    }
+
+    public void addCard(Card card) {
+        this.cards.add(card);
     }
 
 }
