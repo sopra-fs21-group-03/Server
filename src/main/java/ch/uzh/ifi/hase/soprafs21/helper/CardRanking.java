@@ -6,15 +6,13 @@ import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.game.cards.Card;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 public class CardRanking {
 
-    public ArrayList<UserDraw> getRanking(GameEntity game) {
+    public List<UserDraw> getRanking(GameEntity game) {
         ArrayList<UserDraw> ranking = new ArrayList<>();
         ArrayList<UserDraw> unsorted = new ArrayList<>();
         HashMap<User, UserCombination> usersAndCombination = new HashMap();
@@ -69,8 +67,7 @@ public class CardRanking {
                 }
                 if(usersAndCombination.get(user).isBetterThan(usersAndCombination.get(userToCompare))) {
                     int index = ranking.indexOf(userDrawToCompare);
-                    ranking.set(index, unsorted.get(i));
-                    ranking.add(userDrawToCompare);
+                    ranking.add(index, unsorted.get(i));
                     break;
                 }
             }
@@ -191,7 +188,7 @@ public class CardRanking {
                     int rank = card.getRank().ordinal();
                     for(int i = 1; i <= 4; i++) {
                         int expectedRank = rank - i;
-                        if(!cardRanks.contains(expectedRank) || !(card.getSuit() == suit)) {
+                        if(!cardRanks.contains(expectedRank) || card.getSuit() != suit) {
                             isStraightFlush = false;
                         }
                     }
