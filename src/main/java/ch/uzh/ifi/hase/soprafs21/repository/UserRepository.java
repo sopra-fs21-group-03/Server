@@ -10,7 +10,7 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findById(Long id);
-    // temporary find method
+
     User findByToken(String token);
   
     User findByUsername(String username);
