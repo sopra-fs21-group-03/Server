@@ -4,8 +4,15 @@ import ch.uzh.ifi.hase.soprafs21.entity.User;
 
 import java.util.*;
 
+<<<<<<< Updated upstream
 public class UserDraw {
     private HashMap<User, Integer> usersInDraw = new HashMap();
+=======
+
+public class UserDraw implements Serializable {
+
+    private Map<User, Integer> usersInDraw = new HashMap<>();
+>>>>>>> Stashed changes
 
     public void addUser(User user, int amount) {
         usersInDraw.put(user, amount);
