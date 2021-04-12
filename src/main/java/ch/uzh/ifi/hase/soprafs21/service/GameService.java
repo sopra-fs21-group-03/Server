@@ -212,6 +212,58 @@ public class GameService {
         }
     }
 
+    public void userCallsForRaising(Long gameid, Long userid) {
+        GameEntity theGame = findGameEntity(gameid);
+
+        //first: give me the player that raise last
+        User lastRaiser = theGame.getUserThatRaisedLast();
+        if(lastRaiser == null && theGame.getRound() != Round.PREFLOP){
+            // userChecks will be called, since noone called before. ATTENTION: in the first round, where we have the
+            // input of BIG and SMALL Blind, this function should not be called
+            userChecks(gameid, userid);
+        }
+
+        //In the function call, we got a userid. Give me this User
+        User thisUser = getUserByIdInActiveUsers(gameid, userid);
+        if (checkIfUserPerformingActionIsUserOnTurn(gameid, thisUser)) {
+
+            if (thisUser.getMoney() <= 0) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "The User cannot call, since he has no money!");
+            }
+
+            //if someone wants to call -> he wants to have the same amount of money in the pot as the user that raised last
+            int totalPotContributionOfPlayerThatRaisedLast = theGame.getPot().getUserContributionOfAUser(lastRaiser);
+            int amountThisUserAlreadyHasInThePot = theGame.getPot().getUserContributionOfAUser(thisUser);
+
+            if (thisUser.getMoney() + amountThisUserAlreadyHasInThePot >= totalPotContributionOfPlayerThatRaisedLast) {
+                int difference = totalPotContributionOfPlayerThatRaisedLast - amountThisUserAlreadyHasInThePot;
+
+                try {
+                    thisUser.removeMoney(difference);
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                theGame.getPot().addMoney(thisUser, difference);
+
+            }
+            else {
+                /**
+                 * This is the All-In Case
+                 */
+                theGame.getPot().addMoney(thisUser, thisUser.getMoney());
+                thisUser.setMoney(0);
+            }
+            theGame.setCheckcounter(0);
+
+            gameRepository.save(theGame);
+        }
+        else {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This User is not in turn!");
+        }
+    }
+
     public void userChecks(Long gameid, Long userid) {
         GameEntity theGame = findGameEntity(gameid);
 

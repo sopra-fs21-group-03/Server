@@ -5,6 +5,8 @@ import ch.uzh.ifi.hase.soprafs21.constant.Round;
 import ch.uzh.ifi.hase.soprafs21.game.Pot;
 import ch.uzh.ifi.hase.soprafs21.game.cards.Deck;
 import ch.uzh.ifi.hase.soprafs21.game.cards.River;
+import ch.uzh.ifi.hase.soprafs21.helper.CardRanking;
+import ch.uzh.ifi.hase.soprafs21.helper.UserDraw;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OnTurnGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
 
@@ -202,7 +204,7 @@ public class GameEntity implements Serializable {
                     //I found the User who performed the action
                     if (user.getId().equals(theUser.getId())) {
                         //give me the index of the potential next user
-                        indexOfPotentialNextUserInTurn = Math.abs(activeUsers.indexOf(user) - 1+activeUsers.size()) % activeUsers.size();
+                        indexOfPotentialNextUserInTurn = Math.abs(activeUsers.indexOf(user) - 1 + activeUsers.size()) % activeUsers.size();
                         if (userThatRaisedLast != null && activeUsers.get(indexOfPotentialNextUserInTurn).getUsername().equals(userThatRaisedLast.getUsername())) {
                             setNextRound();
                         }
@@ -223,6 +225,12 @@ public class GameEntity implements Serializable {
         else if (activeUsers.size() == 1) {
             //this remaining User has won
             //GIVE HIM HIS MONEY
+            UserDraw winnerUserDraw = new UserDraw();
+            winnerUserDraw.addUser(activeUsers.get(0), pot.getUserContributionOfAUser(activeUsers.get(0)));
+            ArrayList<UserDraw> winner = new ArrayList<UserDraw>();
+            winner.add(winnerUserDraw);
+            pot.distribute(winner);
+            //does this work???
 
             //then: a new gameround starts
             setUpped = false;
@@ -295,7 +303,7 @@ public class GameEntity implements Serializable {
             setSmallBlindAsPlayerInTurn();
         }
         /**
-         Here, we get inside the Showdown. I (Carlos) have to implement what happens here
+         Here, we get inside the Showdown. This needs to be implemented
          */
         else if (round == Round.RIVERCARD) {
             round = Round.SHOWDOWN;
@@ -434,11 +442,11 @@ public class GameEntity implements Serializable {
             User toGetBigBlind = allUsers.get(randomInt);
             toGetBigBlind.setBlind(Blind.BIG);
 
-            User toGetSmallBlind = allUsers.get(Math.abs((randomInt + 1)+activeUsers.size()) % (allUsers.size()));
+            User toGetSmallBlind = allUsers.get(Math.abs((randomInt + 1) + activeUsers.size()) % (allUsers.size()));
             toGetSmallBlind.setBlind(Blind.SMALL);
 
             onTurn = new OnTurnGetDTO();
-            onTurn.setUsername(allUsers.get(Math.abs((randomInt - 1) +activeUsers.size()) % (allUsers.size())).getUsername());
+            onTurn.setUsername(allUsers.get(Math.abs((randomInt - 1) + activeUsers.size()) % (allUsers.size())).getUsername());
 
             pot.addMoney(toGetBigBlind, toGetBigBlind.removeMoney(200));
             pot.addMoney(toGetSmallBlind, toGetSmallBlind.removeMoney(100));
@@ -454,20 +462,21 @@ public class GameEntity implements Serializable {
                     index = allUsers.indexOf(user);
                     allUsers.get(index).setBlind(Blind.NEUTRAL);
 
-                    User toGetSmallBlind = allUsers.get(Math.abs((index - 1+activeUsers.size()) % (allUsers.size())));
-                    User toGetBigBlind = allUsers.get(Math.abs((index - 2+activeUsers.size()) % (allUsers.size())));
+                    User toGetSmallBlind = allUsers.get(Math.abs((index - 1 + activeUsers.size()) % (allUsers.size())));
+                    User toGetBigBlind = allUsers.get(Math.abs((index - 2 + activeUsers.size()) % (allUsers.size())));
 
                     /**
                      * Assumption that we made but which is not always true: that this onTurn User is active (therefore, this User still has money)
                      */
                     onTurn = new OnTurnGetDTO();
-                    onTurn.setUsername(allUsers.get(Math.abs((index - 3+activeUsers.size()) % (allUsers.size()))).getUsername());
+                    onTurn.setUsername(allUsers.get(Math.abs((index - 3 + activeUsers.size()) % (allUsers.size()))).getUsername());
 
                     toGetSmallBlind.setBlind(Blind.SMALL);
                     toGetBigBlind.setBlind(Blind.BIG);
 
                     pot.addMoney(toGetBigBlind, toGetBigBlind.removeMoney(200));
                     pot.addMoney(toGetSmallBlind, toGetSmallBlind.removeMoney(100));
+                    break;
                 }
 
             }
