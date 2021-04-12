@@ -78,9 +78,9 @@ public class GameService {
             if (userid.equals(user.getId())) {
                 if (checkIfUserPerformingActionIsUserOnTurn(gameid, user)) {
 
-                    theGame.setCheckcounter(0);
-                    theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(user);
+                    String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(user);
                     theGame.getActiveUsers().remove(user);
+                    theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(usernameOfPotentialNextUserInTurn);
                     gameRepository.save(theGame);
                     return;
                     /**
@@ -119,7 +119,8 @@ public class GameService {
                                 e.printStackTrace();
                             }
                             theGame.setCheckcounter(0);
-                            theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(user);
+                            String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(user);
+                            theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(usernameOfPotentialNextUserInTurn);
                             gameRepository.save(theGame);
                             return;
                         }
@@ -131,7 +132,8 @@ public class GameService {
                             theGame.setUserThatRaisedLast(user);
                             user.setMoney(0);
                             theGame.setCheckcounter(0);
-                            theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(user);
+                            String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(user);
+                            theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(usernameOfPotentialNextUserInTurn);
                             gameRepository.save(theGame);
                             return;
 
@@ -204,7 +206,8 @@ public class GameService {
                 thisUser.setMoney(0);
             }
             theGame.setCheckcounter(0);
-            theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(thisUser);
+            String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(thisUser);
+            theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(usernameOfPotentialNextUserInTurn);
             gameRepository.save(theGame);
         }
         else {
@@ -256,7 +259,6 @@ public class GameService {
                 thisUser.setMoney(0);
             }
             theGame.setCheckcounter(0);
-
             gameRepository.save(theGame);
         }
         else {
@@ -277,7 +279,8 @@ public class GameService {
                 }
             }
             theGame.setCheckcounter(theGame.getCheckcounter()+1);
-            theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(thisUser);
+            String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(thisUser);
+            theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(usernameOfPotentialNextUserInTurn);
             gameRepository.save(theGame);
         }
         else {
