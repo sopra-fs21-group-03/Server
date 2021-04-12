@@ -9,7 +9,6 @@ public class UserDraw implements Serializable {
 
     private Map<User, Integer> usersInDraw = new HashMap<>();
 
-
     public void addUser(User user, int amount) {
         usersInDraw.put(user, amount);
     }
