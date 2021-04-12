@@ -3,9 +3,14 @@ package ch.uzh.ifi.hase.soprafs21.game;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.helper.UserDraw;
 
-import javax.persistence.*;
-import java.io.Serializable;
+
+import javax.persistence.ElementCollection;
+import javax.persistence.Embeddable;
+import javax.persistence.Transient;
 import java.util.*;
+import java.io.Serializable;
+
+
 
 @Embeddable
 public class Pot implements Serializable {
@@ -78,7 +83,7 @@ public class Pot implements Serializable {
     }
 
     //function receives an ordered array sorted by user with best cards to user with worst cards
-    public void distribute(ArrayList<UserDraw> ranking) {
+    public void distribute(List<UserDraw> ranking) {
         Set<User> enemies = userContribution.keySet();
 
         //gets next best user and gets all the money it is allowed to get, until no money is left in pot

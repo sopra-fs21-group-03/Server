@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import javax.swing.*;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -102,8 +103,8 @@ class CardRankingTest {
         river.addCard(new Card(Suit.DIAMOND, Rank.SEVEN));
         river.addCard(new Card(Suit.DIAMOND, Rank.KING));
 
-        ArrayList<UserDraw> actual = cardRanking.getRanking(game);
-        ArrayList<UserDraw> expected = new ArrayList<>();
+        List<UserDraw> actual = cardRanking.getRanking(game);
+        List<UserDraw> expected = new ArrayList<>();
         UserDraw userDraw = new UserDraw();
         userDraw.addUser(userTwo, 100);
         expected.add(userDraw);
@@ -150,8 +151,8 @@ class CardRankingTest {
         river.addCard(new Card(Suit.DIAMOND, Rank.SEVEN));
         river.addCard(new Card(Suit.DIAMOND, Rank.KING));
 
-        ArrayList<UserDraw> actual = cardRanking.getRanking(game);
-        ArrayList<UserDraw> expected = new ArrayList<>();
+        List<UserDraw> actual = cardRanking.getRanking(game);
+        List<UserDraw> expected = new ArrayList<>();
         UserDraw userDraw = new UserDraw();
         userDraw.addUser(userTwo, 100);
         expected.add(userDraw);
@@ -198,8 +199,8 @@ class CardRankingTest {
         river.addCard(new Card(Suit.DIAMOND, Rank.TWO));
         river.addCard(new Card(Suit.DIAMOND, Rank.KING));
 
-        ArrayList<UserDraw> actual = cardRanking.getRanking(game);
-        ArrayList<UserDraw> expected = new ArrayList<>();
+        List<UserDraw> actual = cardRanking.getRanking(game);
+        List<UserDraw> expected = new ArrayList<>();
         UserDraw userDraw = new UserDraw();
         userDraw.addUser(userTwo, 100);
         expected.add(userDraw);
@@ -246,8 +247,8 @@ class CardRankingTest {
         river.addCard(new Card(Suit.DIAMOND, Rank.SEVEN));
         river.addCard(new Card(Suit.DIAMOND, Rank.KING));
 
-        ArrayList<UserDraw> actual = cardRanking.getRanking(game);
-        ArrayList<UserDraw> expected = new ArrayList<>();
+        List<UserDraw> actual = cardRanking.getRanking(game);
+        List<UserDraw> expected = new ArrayList<>();
         UserDraw userDraw = new UserDraw();
         userDraw.addUser(userTwo, 100);
         expected.add(userDraw);
@@ -294,8 +295,8 @@ class CardRankingTest {
         river.addCard(new Card(Suit.DIAMOND, Rank.SEVEN));
         river.addCard(new Card(Suit.DIAMOND, Rank.KING));
 
-        ArrayList<UserDraw> actual = cardRanking.getRanking(game);
-        ArrayList<UserDraw> expected = new ArrayList<>();
+        List<UserDraw> actual = cardRanking.getRanking(game);
+        List<UserDraw> expected = new ArrayList<>();
         UserDraw userDraw = new UserDraw();
         userDraw.addUser(userTwo, 100);
         expected.add(userDraw);
@@ -342,8 +343,8 @@ class CardRankingTest {
         river.addCard(new Card(Suit.DIAMOND, Rank.EIGHT));
         river.addCard(new Card(Suit.DIAMOND, Rank.KING));
 
-        ArrayList<UserDraw> actual = cardRanking.getRanking(game);
-        ArrayList<UserDraw> expected = new ArrayList<>();
+        List<UserDraw> actual = cardRanking.getRanking(game);
+        List<UserDraw> expected = new ArrayList<>();
         UserDraw userDraw = new UserDraw();
         userDraw.addUser(userTwo, 100);
         expected.add(userDraw);
@@ -390,8 +391,8 @@ class CardRankingTest {
         river.addCard(new Card(Suit.DIAMOND, Rank.SEVEN));
         river.addCard(new Card(Suit.DIAMOND, Rank.TWO));
 
-        ArrayList<UserDraw> actual = cardRanking.getRanking(game);
-        ArrayList<UserDraw> expected = new ArrayList<>();
+        List<UserDraw> actual = cardRanking.getRanking(game);
+        List<UserDraw> expected = new ArrayList<>();
         UserDraw userDraw = new UserDraw();
         userDraw.addUser(userTwo, 100);
         expected.add(userDraw);
@@ -438,8 +439,8 @@ class CardRankingTest {
         river.addCard(new Card(Suit.DIAMOND, Rank.SEVEN));
         river.addCard(new Card(Suit.DIAMOND, Rank.KING));
 
-        ArrayList<UserDraw> actual = cardRanking.getRanking(game);
-        ArrayList<UserDraw> expected = new ArrayList<>();
+        List<UserDraw> actual = cardRanking.getRanking(game);
+        List<UserDraw> expected = new ArrayList<>();
         UserDraw userDraw = new UserDraw();
         userDraw.addUser(userTwo, 100);
         expected.add(userDraw);
@@ -486,8 +487,8 @@ class CardRankingTest {
         river.addCard(new Card(Suit.DIAMOND, Rank.QUEEN));
         river.addCard(new Card(Suit.DIAMOND, Rank.KING));
 
-        ArrayList<UserDraw> actual = cardRanking.getRanking(game);
-        ArrayList<UserDraw> expected = new ArrayList<>();
+        List<UserDraw> actual = cardRanking.getRanking(game);
+        List<UserDraw> expected = new ArrayList<>();
         UserDraw userDraw = new UserDraw();
         userDraw.addUser(userTwo, 100);
         expected.add(userDraw);
@@ -541,8 +542,8 @@ class CardRankingTest {
         river.addCard(new Card(Suit.DIAMOND, Rank.QUEEN));
         river.addCard(new Card(Suit.DIAMOND, Rank.KING));
 
-        ArrayList<UserDraw> actual = cardRanking.getRanking(game);
-        ArrayList<UserDraw> expected = new ArrayList<>();
+        List<UserDraw> actual = cardRanking.getRanking(game);
+        List<UserDraw> expected = new ArrayList<>();
         UserDraw userDraw = new UserDraw();
         userDraw.addUser(userTwo, 100);
         expected.add(userDraw);
@@ -596,8 +597,8 @@ class CardRankingTest {
         river.addCard(new Card(Suit.DIAMOND, Rank.QUEEN));
         river.addCard(new Card(Suit.DIAMOND, Rank.KING));
 
-        ArrayList<UserDraw> actual = cardRanking.getRanking(game);
-        ArrayList<UserDraw> expected = new ArrayList<>();
+        List<UserDraw> actual = cardRanking.getRanking(game);
+        List<UserDraw> expected = new ArrayList<>();
         UserDraw userDraw = new UserDraw();
         userDraw.addUser(userOne, 100);
         userDraw.addUser(userThree, 100);
@@ -652,8 +653,8 @@ class CardRankingTest {
         river.addCard(new Card(Suit.DIAMOND, Rank.QUEEN));
         river.addCard(new Card(Suit.DIAMOND, Rank.KING));
 
-        ArrayList<UserDraw> actual = cardRanking.getRanking(game);
-        ArrayList<UserDraw> expected = new ArrayList<>();
+        List<UserDraw> actual = cardRanking.getRanking(game);
+        List<UserDraw> expected = new ArrayList<>();
         UserDraw userDraw = new UserDraw();
         userDraw.addUser(userTwo, 100);
         expected.add(userDraw);
@@ -707,8 +708,8 @@ class CardRankingTest {
         river.addCard(new Card(Suit.DIAMOND, Rank.QUEEN));
         river.addCard(new Card(Suit.DIAMOND, Rank.KING));
 
-        ArrayList<UserDraw> actual = cardRanking.getRanking(game);
-        ArrayList<UserDraw> expected = new ArrayList<>();
+        List<UserDraw> actual = cardRanking.getRanking(game);
+        List<UserDraw> expected = new ArrayList<>();
         UserDraw userDraw = new UserDraw();
         userDraw.addUser(userTwo, 100);
         expected.add(userDraw);
@@ -762,8 +763,8 @@ class CardRankingTest {
         river.addCard(new Card(Suit.DIAMOND, Rank.QUEEN));
         river.addCard(new Card(Suit.DIAMOND, Rank.KING));
 
-        ArrayList<UserDraw> actual = cardRanking.getRanking(game);
-        ArrayList<UserDraw> expected = new ArrayList<>();
+        List<UserDraw> actual = cardRanking.getRanking(game);
+        List<UserDraw> expected = new ArrayList<>();
         UserDraw userDraw = new UserDraw();
         userDraw.addUser(userTwo, 100);
         expected.add(userDraw);
@@ -817,8 +818,8 @@ class CardRankingTest {
         river.addCard(new Card(Suit.DIAMOND, Rank.QUEEN));
         river.addCard(new Card(Suit.DIAMOND, Rank.KING));
 
-        ArrayList<UserDraw> actual = cardRanking.getRanking(game);
-        ArrayList<UserDraw> expected = new ArrayList<>();
+        List<UserDraw> actual = cardRanking.getRanking(game);
+        List<UserDraw> expected = new ArrayList<>();
         UserDraw userDraw = new UserDraw();
         userDraw.addUser(userTwo, 100);
         expected.add(userDraw);
@@ -876,8 +877,8 @@ class CardRankingTest {
         river.addCard(new Card(Suit.HEART, Rank.ACE));
         river.addCard(new Card(Suit.CLUB, Rank.ACE));
 
-        ArrayList<UserDraw> actual = cardRanking.getRanking(game);
-        ArrayList<UserDraw> expected = new ArrayList<>();
+        List<UserDraw> actual = cardRanking.getRanking(game);
+        List<UserDraw> expected = new ArrayList<>();
         UserDraw userDraw = new UserDraw();
         userDraw.addUser(userTwo, 100);
         expected.add(userDraw);
@@ -926,8 +927,8 @@ class CardRankingTest {
         river.addCard(new Card(Suit.DIAMOND, Rank.SEVEN));
         river.addCard(new Card(Suit.DIAMOND, Rank.SIX));
 
-        ArrayList<UserDraw> actual = cardRanking.getRanking(game);
-        ArrayList<UserDraw> expected = new ArrayList<>();
+        List<UserDraw> actual = cardRanking.getRanking(game);
+        List<UserDraw> expected = new ArrayList<>();
         UserDraw userDraw = new UserDraw();
         userDraw.addUser(userTwo, 100);
         expected.add(userDraw);

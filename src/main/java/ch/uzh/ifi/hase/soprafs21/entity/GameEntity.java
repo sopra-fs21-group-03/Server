@@ -442,11 +442,16 @@ public class GameEntity implements Serializable {
             User toGetBigBlind = allUsers.get(randomInt);
             toGetBigBlind.setBlind(Blind.BIG);
 
+
             User toGetSmallBlind = allUsers.get(Math.abs((randomInt + 1) + activeUsers.size()) % (allUsers.size()));
+
             toGetSmallBlind.setBlind(Blind.SMALL);
 
+
             onTurn = new OnTurnGetDTO();
+
             onTurn.setUsername(allUsers.get(Math.abs((randomInt - 1) + activeUsers.size()) % (allUsers.size())).getUsername());
+
 
             pot.addMoney(toGetBigBlind, toGetBigBlind.removeMoney(200));
             pot.addMoney(toGetSmallBlind, toGetSmallBlind.removeMoney(100));
@@ -470,6 +475,7 @@ public class GameEntity implements Serializable {
                      */
                     onTurn = new OnTurnGetDTO();
                     onTurn.setUsername(allUsers.get(Math.abs((index - 3 + activeUsers.size()) % (allUsers.size()))).getUsername());
+
 
                     toGetSmallBlind.setBlind(Blind.SMALL);
                     toGetBigBlind.setBlind(Blind.BIG);
