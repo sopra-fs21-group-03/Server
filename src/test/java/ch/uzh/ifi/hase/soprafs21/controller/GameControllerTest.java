@@ -10,6 +10,7 @@ import ch.uzh.ifi.hase.soprafs21.service.GameService;
 import ch.uzh.ifi.hase.soprafs21.service.LoginService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,12 +24,15 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -50,11 +54,11 @@ class GameControllerTest {
 
     /**
      * Test if gameData is fetched by a logged in user
+     * In this test the game has not yet been instantiated
      */
 
-    /*
     @Test
-    void getGameData_success() throws Exception {
+    void getGameData_gameNotSetUp_success() throws Exception {
         //given
         GameEntity gameEntity = new GameEntity();
         ArrayList<OpponentInGameGetDTO> opponents = new ArrayList<>();
@@ -65,7 +69,6 @@ class GameControllerTest {
         user1.setToken("1");
         gameEntity.addUserToAll(user1);
         gameEntity.addUserToActive(user1);
-        loginService.createUser(user1);
 
         User user2 = new User();
         user2.setUsername("user1");
@@ -73,8 +76,8 @@ class GameControllerTest {
         user2.setToken("2");
         gameEntity.addUserToAll(user2);
         gameEntity.addUserToActive(user2);
-        loginService.createUser(user2);
 
+        // Mock gameEntity
         List<User> players = new ArrayList<>(gameEntity.getAllUsers());
         players.remove(user2);
 
@@ -89,17 +92,28 @@ class GameControllerTest {
         userPutDTO.setToken(user2.getToken());
 
         // will return the gameEntity
-        given(gameService.getGameData(1, user2)).willReturn(gameEntity);
+        given(gameService.getGameData(Mockito.anyLong(), Mockito.any())).willReturn(gameEntity);
 
         //when
         MockHttpServletRequestBuilder getRequest = get("/games/1")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(userPutDTO));
+                .header("Authorization", userPutDTO.getToken());
 
+        // Mock map
+        Map<User, Integer> mockedMap= new LinkedHashMap<>();
         //then
         mockMvc.perform(getRequest).andExpect(status().isOk())
-                .andExpect(jsonPath("$.gameName", is("default")));
-    } */
+                .andExpect(jsonPath("$.gameName", is("default")))
+                // Test if no cards are in the river
+                .andExpect(jsonPath("$.river.cards", Matchers.empty()))
+                // Test if hashmap in contribution is empty
+                .andExpect(jsonPath("$.pot.contribution", is(mockedMap)))
+                // Expect nothing in the pot
+                .andExpect(jsonPath("$.pot.total", is(0)))
+                .andExpect(jsonPath("$.showdown", is(false)))
+                .andExpect(jsonPath("$.onTurn", Matchers.nullValue()))
+                .andExpect(jsonPath("$.round", is("NOTSTARTED")));
+                // to be further implemented...
+    }
     /**
      * Test if game could not be found
      */
