@@ -43,6 +43,11 @@ public class LoginService {
         return this.userRepository.findAll();
     }
 
+    public User getUserId(String token){
+        return userRepository.findByToken(token);
+    }
+
+
     public User createUser(User newUser) {
         newUser.setToken(UUID.randomUUID().toString());
         newUser.setStatus(UserStatus.ONLINE);

@@ -45,6 +45,15 @@ public class LoginController {
         return userGetDTOs;
     }
 
+    @GetMapping("/users/ids")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public UserGetDTO getUserID(@RequestHeader(value = "Authorization") String token){
+        User userGetDTO = loginService.getUserId(token);
+
+        return DTOMapper.INSTANCE.convertEntityToUserGetDTO(userGetDTO);
+    }
+
     /**
      * This Mapping is used to register a user.
      * Throws a "Conflict" exception if username is already taken
