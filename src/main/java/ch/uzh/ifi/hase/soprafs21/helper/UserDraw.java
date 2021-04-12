@@ -5,10 +5,9 @@ import ch.uzh.ifi.hase.soprafs21.entity.User;
 import java.io.Serializable;
 import java.util.*;
 
-
 public class UserDraw implements Serializable {
 
-    private Map<User, Integer> usersInDraw = new HashMap();
+    private Map<User, Integer> usersInDraw = new HashMap<>();
 
     public void addUser(User user, int amount) {
         usersInDraw.put(user, amount);

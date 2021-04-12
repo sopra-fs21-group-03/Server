@@ -49,6 +49,7 @@ public class GameController {
         User raiserUserInput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
         User raiserUserFound = gameService.getUserByIdInActiveUsers(gameid, userid);
         if (raiserUserInput.getToken().equals(raiserUserFound.getToken())){
+            gameService.userCallsForRaising(gameid, userid);
             gameService.userRaises(gameid, userid, raiseamount);
         }
         else{
@@ -96,14 +97,15 @@ public class GameController {
      *       - 404 if gameData was not found
      *       - 401 if User is not authenticated (SHOULD BE WRITTEN INTO THE REST SPECIFICATION!)
      * @param GameID get the gameID of the requested game
-     * @param userPutDTO get the token
+     * @param token get the token
      * @return gameData and List of opponents
      */
     @GetMapping("/games/{GameID}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public GameGetDTO getGameData(@PathVariable Long GameID, @RequestBody UserPutDTO userPutDTO){
-        User userWhoWantsToFetch = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
+    public GameGetDTO getGameData(@PathVariable Long GameID, @RequestHeader(value = "Authorization") String token){
+        User userWhoWantsToFetch = new User();
+        userWhoWantsToFetch.setToken(token);
 
         GameEntity game = gameService.getGameData(GameID, userWhoWantsToFetch);
 
@@ -118,14 +120,15 @@ public class GameController {
      *       - 401 if the gameData does not belong to the user requesting it
      * @param GameID Id of the game
      * @param UserID Id of the user
-     * @param userPutDTO used to get the token of the user
+     * @param token used to get the token of the user
      * @return own gameData
      */
     @GetMapping("/games/{GameID}/{UserID}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public PlayerInGameGetDTO getOwnGameData(@PathVariable Long GameID, @PathVariable Long UserID, @RequestBody UserPutDTO userPutDTO){
-        User userWhoWantsToFetch = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
+    public PlayerInGameGetDTO getOwnGameData(@PathVariable Long GameID, @PathVariable Long UserID, @RequestHeader(value = "Authorization") String token){
+        User userWhoWantsToFetch = new User();
+        userWhoWantsToFetch.setToken(token);
 
         User player = gameService.getOwnGameData(GameID, UserID, userWhoWantsToFetch);
 
