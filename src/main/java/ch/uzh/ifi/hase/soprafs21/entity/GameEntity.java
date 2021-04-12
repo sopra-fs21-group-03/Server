@@ -280,23 +280,13 @@ public class GameEntity implements Serializable {
             User toGetBigBlind = allUsers.get(randomInt);
             toGetBigBlind.setBlind(Blind.BIG);
 
-            randomInt -=1;
 
-            if (randomInt<0){
-                randomInt = allUsers.size()-1;
-            }
-
-            User toGetSmallBlind = allUsers.get(randomInt);
+            User toGetSmallBlind = allUsers.get(Math.abs((randomInt + 1)+activeUsers.size()) % (allUsers.size()));
             toGetSmallBlind.setBlind(Blind.SMALL);
 
-            randomInt -=1;
-
-            if (randomInt<0){
-                randomInt = allUsers.size()-1;
-            }
 
             onTurn = new OnTurnGetDTO();
-            onTurn.setUsername(allUsers.get(randomInt).getUsername());
+            onTurn.setUsername(allUsers.get(Math.abs((randomInt - 1)+activeUsers.size()) % (allUsers.size())).getUsername());
 
             pot.addMoney(toGetBigBlind, toGetBigBlind.removeMoney(200));
             pot.addMoney(toGetSmallBlind, toGetSmallBlind.removeMoney(100));
@@ -310,31 +300,20 @@ public class GameEntity implements Serializable {
                     index = allUsers.indexOf(user);
                     allUsers.get(index).setBlind(Blind.NEUTRAL);
 
-                    index -=1;
-                    if (index<0){
-                        index = allUsers.size()-1;
-                    }
 
-                    User toGetSmallBlind = allUsers.get(index);
+                    User toGetSmallBlind = allUsers.get(Math.abs((index - 1+activeUsers.size()) % (allUsers.size())));
 
-                    index -=1;
-                    if (index<0){
-                        index = allUsers.size()-1;
-                    }
-                    User toGetBigBlind = allUsers.get(index);
+                    User toGetBigBlind = allUsers.get(Math.abs((index - 2+activeUsers.size()) % (allUsers.size())));
 
-                    index -= 1;
-                    if (index<0){
-                        index = allUsers.size()-1;
-                    }
                     onTurn = new OnTurnGetDTO();
-                    onTurn.setUsername(allUsers.get(index).getUsername());
+                    onTurn.setUsername(allUsers.get(Math.abs((index - 3+activeUsers.size()) % (allUsers.size()))).getUsername());
 
                     toGetSmallBlind.setBlind(Blind.SMALL);
                     toGetBigBlind.setBlind(Blind.BIG);
 
                     pot.addMoney(toGetBigBlind, toGetBigBlind.removeMoney(200));
                     pot.addMoney(toGetSmallBlind, toGetSmallBlind.removeMoney(100));
+                    break;
                 }
 
             }
