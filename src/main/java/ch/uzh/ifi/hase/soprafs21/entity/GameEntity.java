@@ -59,9 +59,6 @@ public class GameEntity implements Serializable {
     private boolean firstGameSetup;
 
     @Column
-    private boolean setUpped;
-
-    @Column
     private Deck deck;
 
     @Column
@@ -79,7 +76,7 @@ public class GameEntity implements Serializable {
         opponents = new ArrayList<>();
         Id = 1L;
         firstGameSetup = true;
-        setUpped = false;
+
         deck = new Deck();
         pot = new Pot();
 
@@ -193,18 +190,41 @@ public class GameEntity implements Serializable {
         return showdown;
     }
 
+
     /**
-     * @param theUser: The User who calls this function. Happens after Call, Check, Raise or Fold of this User
+     * @param theUser who has a partner in the gameround who is the potential next player in turn. If such a player exists, the function will return his
+     *                username, else, the function will thrown an IllegalStateException.
      */
-    public void setNextUserOrNextRoundOrSomeoneHasAlreadyWon(User theUser) {
+    public String getUsernameOfPotentialNextUserInTurn(User theUser) {
+        if (activeUsers.size() > 1) {
+            int indexOfPotentialNextUserInTurn;
+            for (User user : activeUsers) {
+                //I found the User who performed the action
+                if (user.getId().equals(theUser.getId())) {
+
+                    //give me the index of the potential next user
+                    indexOfPotentialNextUserInTurn = Math.abs(activeUsers.indexOf(user) - 1 + activeUsers.size()) % activeUsers.size();
+                    return activeUsers.get(indexOfPotentialNextUserInTurn).getUsername();
+                }
+            }
+        }
+        throw new IllegalStateException("You cannot get the Username of the next User in turn since only one User or less are inside active Users and therefore, there" +
+                "is no next User");
+    }
+
+
+    /**
+     * @param usernameOfPotentialNextUserInTurn this is the username of the potential next user of the perspective of the User who called an Action, such
+     *                                          as Fold, Raise, Check or Call.
+     */
+    public void setNextUserOrNextRoundOrSomeoneHasAlreadyWon(String usernameOfPotentialNextUserInTurn) {
         if (activeUsers.size() > 1) {
             if (checkcounter < activeUsers.size()) {
                 int indexOfPotentialNextUserInTurn;
                 for (User user : activeUsers) {
                     //I found the User who performed the action
-                    if (user.getId().equals(theUser.getId())) {
-                        //give me the index of the potential next user
-                        indexOfPotentialNextUserInTurn = Math.abs(activeUsers.indexOf(user) - 1 + activeUsers.size()) % activeUsers.size();
+                    if (user.getUsername().equals(usernameOfPotentialNextUserInTurn)) {
+                        indexOfPotentialNextUserInTurn = activeUsers.indexOf(user);
                         if (userThatRaisedLast != null && activeUsers.get(indexOfPotentialNextUserInTurn).getUsername().equals(userThatRaisedLast.getUsername())) {
                             setNextRound();
                         }
@@ -233,7 +253,7 @@ public class GameEntity implements Serializable {
             //does this work???
 
             //then: a new gameround starts
-            setUpped = false;
+
             try {
                 setup();
             }
@@ -262,6 +282,7 @@ public class GameEntity implements Serializable {
      * The next Round should only start, if all Players made the same contribution
      */
     private void setNextRound() {
+        setCheckcounter(0);
 
         if (round == Round.PREFLOP) {
             round = Round.FLOP;
@@ -310,7 +331,7 @@ public class GameEntity implements Serializable {
             showdown = true;
         }
         else if (round == Round.SHOWDOWN) {
-            setUpped = false;
+
             try {
                 setup();
             }
@@ -327,17 +348,17 @@ public class GameEntity implements Serializable {
      * Gets called when all players are in the game
      */
     public void setup() throws Exception {
-        if (!setUpped) {
+        if (firstGameSetup) {
             setStartingPotForUsers();
-
-            if (firstGameSetup) {
-                setUpPot();
-            }
-            round = Round.PREFLOP;
-            distributeBlinds();
-            distributeCards();
-            setUpped = true;
+            setUpPot();
         }
+        deck = new Deck();
+        river.clear();
+        round = Round.PREFLOP;
+        showdown = false;
+        distributeBlinds();
+        distributeCards();
+
     }
 
     /* Helper functions to set up a game */
@@ -443,14 +464,14 @@ public class GameEntity implements Serializable {
             toGetBigBlind.setBlind(Blind.BIG);
 
 
-            User toGetSmallBlind = allUsers.get(Math.abs((randomInt + 1) + activeUsers.size()) % (allUsers.size()));
+            User toGetSmallBlind = allUsers.get(Math.abs((randomInt + 1) + allUsers.size()) % (allUsers.size()));
 
             toGetSmallBlind.setBlind(Blind.SMALL);
 
 
             onTurn = new OnTurnGetDTO();
 
-            onTurn.setUsername(allUsers.get(Math.abs((randomInt - 1) + activeUsers.size()) % (allUsers.size())).getUsername());
+            onTurn.setUsername(allUsers.get(Math.abs((randomInt - 1) + allUsers.size()) % (allUsers.size())).getUsername());
 
 
             pot.addMoney(toGetBigBlind, toGetBigBlind.removeMoney(200));
@@ -461,20 +482,29 @@ public class GameEntity implements Serializable {
         }
         else {
             int index;
+            //this if Statement will be exectued if the activeUsers List is smaller than the allUsers List. This happens, if Users fold and don't show
+            // up in the activeUsers-List anymore
+            if(activeUsers.size() < allUsers.size()){
+                for(User user: allUsers){
+                    if(!activeUsers.contains(user)){
+                        activeUsers.add(user);
+                    }
+                }
+            }
 
             for (User user : allUsers) {
                 if (user.getBlind() == Blind.SMALL) {
                     index = allUsers.indexOf(user);
                     allUsers.get(index).setBlind(Blind.NEUTRAL);
 
-                    User toGetSmallBlind = allUsers.get(Math.abs((index - 1 + activeUsers.size()) % (allUsers.size())));
-                    User toGetBigBlind = allUsers.get(Math.abs((index - 2 + activeUsers.size()) % (allUsers.size())));
+                    User toGetSmallBlind = allUsers.get(Math.abs((index - 1 + allUsers.size()) % (allUsers.size())));
+                    User toGetBigBlind = allUsers.get(Math.abs((index - 2 + allUsers.size()) % (allUsers.size())));
 
                     /**
                      * Assumption that we made but which is not always true: that this onTurn User is active (therefore, this User still has money)
                      */
                     onTurn = new OnTurnGetDTO();
-                    onTurn.setUsername(allUsers.get(Math.abs((index - 3 + activeUsers.size()) % (allUsers.size()))).getUsername());
+                    onTurn.setUsername(allUsers.get(Math.abs((index - 3 + allUsers.size()) % (allUsers.size()))).getUsername());
 
 
                     toGetSmallBlind.setBlind(Blind.SMALL);
@@ -497,6 +527,9 @@ public class GameEntity implements Serializable {
         }
 
         for (User user : allUsers) {
+            if(user.getCards().size() == 2){
+                user.getCards().clear();
+            }
             for (int i = 0; i < 2; i++) {
                 user.addCard(this.deck.draw());
             }
