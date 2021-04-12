@@ -4,11 +4,10 @@ import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.helper.UserDraw;
 
 
+import javax.persistence.ElementCollection;
 import javax.persistence.Embeddable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import javax.persistence.Transient;
+import java.util.*;
 import java.io.Serializable;
 
 
