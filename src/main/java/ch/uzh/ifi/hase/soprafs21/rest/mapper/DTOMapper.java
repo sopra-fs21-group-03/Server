@@ -33,6 +33,7 @@ public interface DTOMapper {
     User convertUserPutDTOtoEntity(UserPutDTO userPutDTO);
 
     @Mapping(source = "gameName", target = "gameName")
+    @Mapping(source = "round", target = "round")
     @Mapping(source = "river", target = "river")
     @Mapping(source = "pot", target = "pot")
     @Mapping(source = "onTurn", target = "onTurn")
