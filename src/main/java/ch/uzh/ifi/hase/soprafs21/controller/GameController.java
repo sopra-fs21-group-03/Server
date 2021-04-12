@@ -49,6 +49,7 @@ public class GameController {
         User raiserUserInput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
         User raiserUserFound = gameService.getUserByIdInActiveUsers(gameid, userid);
         if (raiserUserInput.getToken().equals(raiserUserFound.getToken())){
+            gameService.userCallsForRaising(gameid, userid);
             gameService.userRaises(gameid, userid, raiseamount);
         }
         else{
