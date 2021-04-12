@@ -6,6 +6,7 @@ import ch.uzh.ifi.hase.soprafs21.helper.UserDraw;
 import javax.persistence.Embeddable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 @Embeddable

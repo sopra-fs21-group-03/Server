@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -77,7 +78,7 @@ class PotTest {
         pot.addMoney(user1,100);
         pot.addMoney(user2, 100);
         pot.addMoney(user3, 100);
-        ArrayList<UserDraw> ranking = new ArrayList<>();
+        List<UserDraw> ranking = new ArrayList<>();
         UserDraw userD1 = new UserDraw();
         userD1.addUser(user1, pot.getUserContribution().get(user1));
         UserDraw userD2 = new UserDraw();
@@ -115,7 +116,7 @@ class PotTest {
         pot.addMoney(user2, 50);
         pot.addMoney(user3, 150);
         pot.addMoney(user4, 150);
-        ArrayList<UserDraw> ranking = new ArrayList<>();
+        List<UserDraw> ranking = new ArrayList<>();
         UserDraw userD1 = new UserDraw();
         userD1.addUser(user1, pot.getUserContribution().get(user1));
         UserDraw userD2 = new UserDraw();
@@ -150,7 +151,7 @@ class PotTest {
         pot.addMoney(user1,100);
         pot.addMoney(user2, 100);
         pot.addMoney(user3, 100);
-        ArrayList<UserDraw> ranking = new ArrayList<>();
+        List<UserDraw> ranking = new ArrayList<>();
         UserDraw userD1 = new UserDraw();
         userD1.addUser(user1, pot.getUserContribution().get(user1));
         userD1.addUser(user2, pot.getUserContribution().get(user2));
@@ -187,7 +188,7 @@ class PotTest {
         pot.addMoney(user2, 100);
         pot.addMoney(user3, 200);
         pot.addMoney(user4, 200);
-        ArrayList<UserDraw> ranking = new ArrayList<>();
+        List<UserDraw> ranking = new ArrayList<>();
         UserDraw userD1 = new UserDraw();
         userD1.addUser(user1, pot.getUserContribution().get(user1));
         UserDraw userD2 = new UserDraw();
