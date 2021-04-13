@@ -4,9 +4,7 @@ import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs21.constant.Round;
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
-import ch.uzh.ifi.hase.soprafs21.game.Pot;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
-import ch.uzh.ifi.hase.soprafs21.rest.dto.OnTurnGetDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -89,11 +87,6 @@ class GameServiceTest {
         testGame.setId(1L);
 
 
-        //OnTurnGetDTO testOnTurnGetDTO = new OnTurnGetDTO();
-        //testOnTurnGetDTO.setUsername("testUsername1");
-
-        //testGame.setOnTurn(testOnTurnGetDTO);
-
         ArrayList<User> testActiveUsers = new ArrayList<User>();
         testActiveUsers.add(testUser);
         testActiveUsers.add(testUser2);
@@ -130,8 +123,69 @@ class GameServiceTest {
 
         // when -> any object is being save in the gameRepository -> return the dummy testGame
         Mockito.when(gameRepository.save(Mockito.any())).thenReturn(testGame);
-        Mockito.when(gameRepository.findById(Mockito.any())).thenReturn(Optional.ofNullable(testGame));
+        Mockito.when(gameRepository.findById(testGame.getId())).thenReturn(Optional.ofNullable(testGame));
     }
+
+
+    /**
+     * Player got his own gameData
+     */
+    @Test
+    void getOwnGameData_success(){
+        User mock = gameService.getOwnGameData(testGame.getId(), testUser.getId(), testUser);
+
+        assertEquals(testUser, mock);
+    }
+
+    /**
+     * Player could not be found
+     */
+    @Test
+    void getOwnGameData_notFound(){
+        assertThrows(ResponseStatusException.class,
+                () -> gameService.getOwnGameData(testGame.getId(), testUser.getId()+1, testUser));
+    }
+
+    /**
+     * Player is not authorized to get this data
+     * In this case testUser tries to access testUser2s gameData
+     */
+    @Test
+    void getOwnGameData_unauthorized(){
+        assertThrows(ResponseStatusException.class,
+                ()-> gameService.getOwnGameData(testGame.getId(), testUser2.getId(), testUser));
+    }
+
+    /**
+     * Tests if the service returns the right gameEntity
+     * Also implicitly tests if game gets set Upped correctly
+     */
+    @Test
+    void getGameData_success(){
+        GameEntity mock = gameService.getGameData(testGame.getId(), testUser);
+
+        assertEquals(mock, testGame);
+    }
+
+    /**
+     * Tests if the right exception is thrown when a user tries to access a nonexistent game
+     */
+    @Test
+    void getGameData_notFound(){
+        assertThrows(ResponseStatusException.class, () -> gameService.getGameData(2L, testUser));
+    }
+
+    /**
+     * User is not authorized to get gameData
+     */
+    @Test
+    void getGameData_unauthorized(){
+        User falseTokenUser = new User();
+        falseTokenUser.setToken("falseToken");
+
+        assertThrows(ResponseStatusException.class, ()->gameService.getGameData(testGame.getId(), falseTokenUser));
+    }
+
 
     @Test
     void getUserById_success() {

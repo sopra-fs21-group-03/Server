@@ -303,12 +303,9 @@ public class GameService {
 
         GameEntity game = optionalGame.get();
 
-        List<User> players = new ArrayList<>(game.getAllUsers());
-
-        for (User user : players) {
+        for (User user : game.getAllUsers()) {
             if (user.getToken().equals(userWhoWantsToFetch.getToken())) {
                 valid = true;
-                players.remove(user);
                 break;
             }
         }
@@ -317,11 +314,11 @@ public class GameService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not logged in");
         }
 
-        for (User player : players) {
+        for (User player : game.getAllUsers()) {
             opponents.add(DTOMapper.INSTANCE.convertEntityToOpponentInGameGetDTO(player));
         }
 
-        game.setOpponents(opponents);
+        game.setPlayersInTurnOrder(opponents);
 
         return game;
     }

@@ -5,7 +5,6 @@ import ch.uzh.ifi.hase.soprafs21.constant.Round;
 import ch.uzh.ifi.hase.soprafs21.game.Pot;
 import ch.uzh.ifi.hase.soprafs21.game.cards.Deck;
 import ch.uzh.ifi.hase.soprafs21.game.cards.River;
-import ch.uzh.ifi.hase.soprafs21.helper.CardRanking;
 import ch.uzh.ifi.hase.soprafs21.helper.UserDraw;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OnTurnGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
@@ -38,7 +37,7 @@ public class GameEntity implements Serializable {
     private List<User> allUsers;
 
     @ElementCollection
-    private List<OpponentInGameGetDTO> opponents;
+    private List<OpponentInGameGetDTO> playersInTurnOrder;
 
     @Column
     private River river;
@@ -76,7 +75,7 @@ public class GameEntity implements Serializable {
         river = new River();
         allUsers = new ArrayList<>();
         activeUsers = new ArrayList<>();
-        opponents = new ArrayList<>();
+        playersInTurnOrder = new ArrayList<>();
         Id = 1L;
         firstGameSetup = true;
         setUpped = false;
@@ -136,12 +135,12 @@ public class GameEntity implements Serializable {
         this.activeUsers = activeUsers;
     }
 
-    public List<OpponentInGameGetDTO> getOpponents() {
-        return opponents;
+    public List<OpponentInGameGetDTO> getPlayersInTurnOrder() {
+        return playersInTurnOrder;
     }
 
-    public void setOpponents(List<OpponentInGameGetDTO> opponents) {
-        this.opponents = opponents;
+    public void setPlayersInTurnOrder(List<OpponentInGameGetDTO> opponents) {
+        this.playersInTurnOrder = opponents;
     }
 
     public void setId(Long gameID) {
@@ -401,11 +400,6 @@ public class GameEntity implements Serializable {
      * @throws Exception lobby is not full
      */
     private void setStartingPotForUsers() throws Exception {
-        // Check if enough users are in the game
-        if (allUsers.size() != 5) {
-            throw new Exception();
-        }
-
         for (User user : allUsers) {
             user.setMoney(5000);
         }
@@ -418,10 +412,6 @@ public class GameEntity implements Serializable {
      * ... to be further implemented
      */
     private void distributeBlinds() throws Exception {
-        // Check if enough users are in the game
-        if (allUsers.size() != 5) {
-            throw new Exception();
-        }
 
         if (firstGameSetup) {
             for (User user : allUsers) {
@@ -491,10 +481,6 @@ public class GameEntity implements Serializable {
     }
 
     private void distributeCards() throws Exception {
-        // Check if enough users are in the game
-        if (allUsers.size() != 5) {
-            throw new Exception();
-        }
 
         for (User user : allUsers) {
             for (int i = 0; i < 2; i++) {

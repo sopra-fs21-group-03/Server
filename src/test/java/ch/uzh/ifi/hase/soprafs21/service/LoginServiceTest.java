@@ -42,6 +42,7 @@ public class LoginServiceTest {
 
         // when -> any object is being save in the userRepository -> return the dummy testUser
         Mockito.when(userRepository.save(Mockito.any())).thenReturn(testUser);
+
     }
 
     /* Tests for registering a user */
