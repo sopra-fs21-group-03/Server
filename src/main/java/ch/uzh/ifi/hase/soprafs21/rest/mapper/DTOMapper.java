@@ -37,6 +37,7 @@ public interface DTOMapper {
     @Mapping(source = "river", target = "river")
     @Mapping(source = "pot", target = "pot")
     @Mapping(source = "onTurn", target = "onTurn")
+    @Mapping(source = "playersInTurnOrder", target = "players")
     GameGetDTO convertEntityToGameGetDTO(GameEntity gameEntity);
 
     @Mapping(source = "username", target = "username")
