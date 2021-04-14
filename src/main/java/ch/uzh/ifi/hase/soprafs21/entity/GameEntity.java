@@ -209,7 +209,7 @@ public class GameEntity implements Serializable {
                     else {
                         /**
                          * This is an All-In Case: the potentially next User in turn does not have any money left ( .getMoney() returns 0)
-                         * Therefore, the next next User should be the next user in turn
+                         * Therefore, the next next (übernächster) User should be the next user in turn
                          */
 
                         //I have to cheat here, since the All-In case is tricky
@@ -239,6 +239,8 @@ public class GameEntity implements Serializable {
     /**
      * @param usernameOfPotentialNextUserInTurn this is the username of the potential next user of the perspective of the User who called an Action, such
      *                                          as Fold, Raise, Check or Call.
+     *                                          <p>
+     *                                          IMPORTANT ASSUMPTION: This username of this potentially next user in turn has to be in the activeUsers Array!
      */
     public void setNextUserOrNextRoundOrSomeoneHasAlreadyWon(String usernameOfPotentialNextUserInTurn) {
         if (activeUsers.size() > 1) {
@@ -304,53 +306,80 @@ public class GameEntity implements Serializable {
         }
     }
 
+    private void setStartingPlayer(User user) {
+        if (user.getMoney() > 0) {
+            onTurn = new OnTurnGetDTO();
+            onTurn.setUsername(user.getUsername());
+        }
+        else {
+            /**
+             * This is again an All-In case. The User has no money left and therefore, the next user should start.
+             */
+            int nomoneycounter = 0;
+            for (User startingUser : activeUsers) {
+                if (startingUser.getMoney() == 0) {
+                    nomoneycounter++;
+                }
+            }
+
+            //Everybody went All-In or everybody except one person went All-In
+            if (nomoneycounter == activeUsers.size() || nomoneycounter == (activeUsers.size() - 1)) {
+                while (river.getCards().size() < 5) {
+                    try {
+                        river.addCard(deck.draw());
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                //we directly get to the showdown
+                round = Round.RIVERCARD;
+                setNextRound();
+
+            }
+            //Not everyone went All-In -> find the next User that is on turn
+            else {
+                // I assume: The method call below should never return the String "NextRoundPlease", since I already checked for the case that everybody went All-In
+
+                String usernameOfUserWhoStartsTheRound = getUsernameOfPotentialNextUserInTurn(user);
+                onTurn = new OnTurnGetDTO();
+                onTurn.setUsername(usernameOfUserWhoStartsTheRound);
+
+            }
+
+        }
+
+    }
+
     //this always happens at the begin of a new round
     private void setSmallBlindAsPlayerInTurn_orSomeoneElse() {
-        for (User user : activeUsers) {
-            if (user.getBlind() == Blind.SMALL) {
-                if (user.getMoney() > 0) {
-                    onTurn = new OnTurnGetDTO();
-                    onTurn.setUsername(user.getUsername());
-                    break;
+        //is the SMALL Blind still in the activeUsers Array? allUsers certainly will contain the Small Blind
+        int index = -1;
+        User nextUser;
+        for (User uservar : allUsers) {
+            if (uservar.getBlind() == Blind.SMALL) {
+                index = allUsers.indexOf(uservar);
+                nextUser = uservar;
+                if (activeUsers.contains(nextUser)) {
+                    setStartingPlayer(nextUser);
+                    return;
                 }
                 else {
-                    /**
-                     * This is again an All-In case. The SMALL Blind has no money left and therefore, the next user after the SMALL Blind should start.
-                     */
-                    int nomoneycounter = 0;
-                    for (User startingUser : activeUsers) {
-                        if (startingUser.getMoney() == 0) {
-                            nomoneycounter++;
-                        }
-                    }
-
-                    //Everybody went All-In or everybody except one person went All-In
-                    if (nomoneycounter == activeUsers.size() || nomoneycounter == (activeUsers.size() - 1)) {
-                        while (river.getCards().size() < 5) {
-                            try {
-                                river.addCard(deck.draw());
-                            }
-                            catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        //we directly get to the showdown
-                        round = Round.RIVERCARD;
-                        setNextRound();
-                        break;
-                    }
-                    //Not everyone went All-In -> find the next User that is on turn
-                    else {
-                        // I assume: The method call below should never return the String "NextRoundPlease", since I already checked for the case that everybody went All-In
-                        String usernameOfUserWhoStartsTheRound = getUsernameOfPotentialNextUserInTurn(user);
-                        onTurn = new OnTurnGetDTO();
-                        onTurn.setUsername(usernameOfUserWhoStartsTheRound);
-                        break;
-                    }
-
+                    break;
                 }
             }
         }
+        int counter = 0;
+        while (counter < activeUsers.size()) {
+            index = Math.abs((index - 1 + allUsers.size()) % (allUsers.size()));
+            nextUser = allUsers.get(index);
+            if (activeUsers.contains(nextUser)) {
+                setStartingPlayer(nextUser);
+                return;
+            }
+            counter++;
+        }
+
     }
 
     /**
