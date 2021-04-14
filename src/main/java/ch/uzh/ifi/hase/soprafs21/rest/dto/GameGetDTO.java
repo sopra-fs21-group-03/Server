@@ -15,7 +15,7 @@ public class GameGetDTO {
     private OnTurnGetDTO onTurn;
     private Round round;
 
-    private List<OpponentInGameGetDTO> opponents;
+    private List<OpponentInGameGetDTO> players;
 
     public Round getRound() {
         return round;
@@ -65,11 +65,11 @@ public class GameGetDTO {
         this.onTurn = onTurn;
     }
 
-    public List<OpponentInGameGetDTO> getOpponents() {
-        return opponents;
+    public List<OpponentInGameGetDTO> getPlayers() {
+        return players;
     }
 
-    public void setOpponents(List<OpponentInGameGetDTO> opponents) {
-        this.opponents = opponents;
+    public void setPlayers(List<OpponentInGameGetDTO> players) {
+        this.players = players;
     }
 }
