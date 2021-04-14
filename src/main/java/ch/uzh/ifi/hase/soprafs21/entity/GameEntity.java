@@ -207,9 +207,19 @@ public class GameEntity implements Serializable {
                         return activeUsers.get(indexOfPotentialNextUserInTurn).getUsername();
                     }
                     else {
+                        /**
+                         * This is an All-In Case: the potentially next User in turn does not have any money left ( .getMoney() returns 0)
+                         * Therefore, the next next User should be the next user in turn
+                         */
+
+                        //I have to cheat here, since the All-In case is tricky
+                        checkcounter = checkcounter + 1;
+                        if (checkcounter == activeUsers.size()) {
+                            return "NextRoundPlease";
+                        }
                         String UsernameOfTheNextNextUser = getUsernameOfPotentialNextUserInTurn(user);
                         if (UsernameOfTheNextNextUser.equals(theUser.getUsername())) {
-                            //I have to cheat here, since the All-In case is tricky
+
                             checkcounter = activeUsers.size();
                             return "NextRoundPlease";
                         }
@@ -295,12 +305,50 @@ public class GameEntity implements Serializable {
     }
 
     //this always happens at the begin of a new round
-    private void setSmallBlindAsPlayerInTurn() {
+    private void setSmallBlindAsPlayerInTurn_orSomeoneElse() {
         for (User user : activeUsers) {
             if (user.getBlind() == Blind.SMALL) {
-                onTurn = new OnTurnGetDTO();
-                onTurn.setUsername(user.getUsername());
-                break;
+                if (user.getMoney() > 0) {
+                    onTurn = new OnTurnGetDTO();
+                    onTurn.setUsername(user.getUsername());
+                    break;
+                }
+                else {
+                    /**
+                     * This is again an All-In case. The SMALL Blind has no money left and therefore, the next user after the SMALL Blind should start.
+                     */
+                    int nomoneycounter = 0;
+                    for (User startingUser : activeUsers) {
+                        if (startingUser.getMoney() == 0) {
+                            nomoneycounter++;
+                        }
+                    }
+
+                    //Everybody went All-In or everybody except one person went All-In
+                    if (nomoneycounter == activeUsers.size() || nomoneycounter == (activeUsers.size() - 1)) {
+                        while (river.getCards().size() < 5) {
+                            try {
+                                river.addCard(deck.draw());
+                            }
+                            catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        //we directly get to the showdown
+                        round = Round.RIVERCARD;
+                        setNextRound();
+                        break;
+                    }
+                    //Not everyone went All-In -> find the next User that is on turn
+                    else {
+                        // I assume: The method call below should never return the String "NextRoundPlease", since I already checked for the case that everybody went All-In
+                        String usernameOfUserWhoStartsTheRound = getUsernameOfPotentialNextUserInTurn(user);
+                        onTurn = new OnTurnGetDTO();
+                        onTurn.setUsername(usernameOfUserWhoStartsTheRound);
+                        break;
+                    }
+
+                }
             }
         }
     }
@@ -322,7 +370,7 @@ public class GameEntity implements Serializable {
             catch (Exception e) {
                 e.printStackTrace();
             }
-            setSmallBlindAsPlayerInTurn();
+            setSmallBlindAsPlayerInTurn_orSomeoneElse();
         }
 
         else if (round == Round.FLOP) {
@@ -335,7 +383,7 @@ public class GameEntity implements Serializable {
             catch (Exception e) {
                 e.printStackTrace();
             }
-            setSmallBlindAsPlayerInTurn();
+            setSmallBlindAsPlayerInTurn_orSomeoneElse();
         }
 
         else if (round == Round.TURNCARD) {
@@ -348,7 +396,7 @@ public class GameEntity implements Serializable {
             catch (Exception e) {
                 e.printStackTrace();
             }
-            setSmallBlindAsPlayerInTurn();
+            setSmallBlindAsPlayerInTurn_orSomeoneElse();
         }
         /**
          Here, we get inside the Showdown. This needs to be implemented
@@ -527,6 +575,7 @@ public class GameEntity implements Serializable {
 
                     toGetSmallBlind.setBlind(Blind.SMALL);
                     toGetBigBlind.setBlind(Blind.BIG);
+                    setUserThatRaisedLast(toGetBigBlind);
 
                     pot.addMoney(toGetBigBlind, toGetBigBlind.removeMoney(200));
                     pot.addMoney(toGetSmallBlind, toGetSmallBlind.removeMoney(100));
