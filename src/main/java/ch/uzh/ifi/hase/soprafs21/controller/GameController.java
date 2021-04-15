@@ -19,12 +19,18 @@ public class GameController {
     GameController(GameService gameService){this.gameService = gameService;}
 
     /**
-     * This is a Put Method for Fold. For the other actions, the beginnings of the methods will be similar to
-     * this one
-     * @param userid
-     * @param userPutDTO
-    **/
-
+     *
+     * Put Mapping to update a User and a GameEntity according to the User's action. Here, it is a fold
+     * Code:
+     * - 204 if the fold was successful. Nothing will be returned
+     * - 404 if gameData or the User was not found
+     * - 401 if User is not authorized to perform this action or if he is not in turn
+     *
+     *
+     * @param gameid get the gameID of the requested game
+     * @param userid the id of the user who wants to perform this action
+     * @param userPutDTO a Object which containts the token of the user
+     */
     @PutMapping("/games/{GameID}/{UserID}/fold")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -35,10 +41,23 @@ public class GameController {
             gameService.userFolds(gameid, userid);
         }
         else{
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The User could not be found... (In Fold process)");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The User is not authorized... (In Fold process)");
         }
     }
 
+    /**
+     *
+     * Put Mapping to update a User and a GameEntity according to the User's action. Here, it is a raise
+     * Code:
+     * - 204 if the raise was successful. Nothing will be returned
+     * - 404 if gameData was not found or the User was not found
+     * - 401 if User is not authorized to perform this action or if he is not in turn
+     * - 409 if User does not have enough money or if generally a money problem occurs
+     *
+     * @param gameid get the gameID of the requested game
+     * @param userid the id of the user who wants to perform this action
+     * @param userPutDTO a Object which containts the token of the user and the raiseamount
+     */
     @PutMapping("/games/{GameID}/{UserID}/raise")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -61,6 +80,19 @@ public class GameController {
 
     }
 
+    /**
+     *
+     * Put Mapping to update a User and a GameEntity according to the User's action. Here, it is a call
+     * Code:
+     * - 204 if the call was successful. Nothing will be returned
+     * - 404 if gameData was not found or the User was not found
+     * - 401 if User is not authorized to perform this action or if he is not in turn
+     * - 409 if User does not have any money or if generally a money problem occurs
+     *
+     * @param gameid get the gameID of the requested game
+     * @param userid the id of the user who wants to perform this action
+     * @param userPutDTO a Object which containts the token of the user
+     */
     @PutMapping("/games/{GameID}/{UserID}/call")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -75,6 +107,19 @@ public class GameController {
         }
     }
 
+    /**
+     *
+     * Put Mapping to update a User and a GameEntity according to the User's action. Here, it is a check
+     * Code:
+     * - 204 if the check was successful. Nothing will be returned
+     * - 404 if gameData was not found or the User was not found
+     * - 401 if User is not authorized to perform this action or if he is not in turn
+     * - 409 if checking is not allowed, since some one else has more money in the pot than this User.
+     *
+     * @param gameid get the gameID of the requested game
+     * @param userid the id of the user who wants to perform this action
+     * @param userPutDTO a Object which containts the token of the user
+     */
     @PutMapping("/games/{GameID}/{UserID}/check")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
