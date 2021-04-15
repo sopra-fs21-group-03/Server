@@ -372,7 +372,7 @@ public class GameEntity implements Serializable {
             }
         }
         int counter = 0;
-        while (counter < activeUsers.size()) {
+        while (counter < allUsers.size()) {
             index = Math.abs((index - 1 + allUsers.size()) % (allUsers.size()));
             nextUser = allUsers.get(index);
             if (activeUsers.contains(nextUser)) {
