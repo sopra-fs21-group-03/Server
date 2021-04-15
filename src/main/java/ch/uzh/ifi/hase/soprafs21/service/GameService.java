@@ -234,6 +234,7 @@ public class GameService {
             // userChecks will be called, since noone called before. ATTENTION: in the first round, where we have the
             // input of BIG and SMALL Blind, this function should not be called
             userChecks(gameid, userid);
+            return;
         }
 
         //In the function call, we got a userid. Give me this User
