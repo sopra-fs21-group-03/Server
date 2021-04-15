@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs21.service;
 
 
 import ch.uzh.ifi.hase.soprafs21.constant.Round;
+import ch.uzh.ifi.hase.soprafs21.constant.Show;
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
@@ -435,5 +436,59 @@ public class GameService {
         }
 
         return player;
+    }
+
+    public void show(GameEntity game, User user, boolean wantsToShow) {
+        if(checkIfUserPerformingActionIsUserOnTurn(game.getId(), user)){
+            Show show;
+            if (wantsToShow) {
+                show = Show.SHOW;
+                try {
+                    game.nextTurnInShowdown(user);
+                }
+                catch (Exception e) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "Not users turn");
+                }
+            }
+            else {
+                show = Show.DONT_SHOW;
+                try {
+                    game.nextTurnInShowdown(user);
+                }
+                catch (Exception e) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "Not users turn");
+
+                }
+                game.removeUserFromActive(user.getId());
+            }
+            user.setWantsToShow(show);
+
+            //check if all active users decided whether to show or not
+            for (User activeUser : game.getActiveUsers()) {
+                if (activeUser.getWantsToShow() == Show.NOT_DECIDED) {
+                    return;
+                }
+            }
+
+            //if all user decided distribute the pot
+            game.distributePot();
+            try {
+                game.setup();
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Not users turn");
+        }
+    }
+
+    public GameEntity getGameById(Long gameId) {
+        Optional<GameEntity> game = gameRepository.findById(gameId);
+        if(game.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "game not found");
+        } else {
+            return game.get();
+        }
     }
 }
