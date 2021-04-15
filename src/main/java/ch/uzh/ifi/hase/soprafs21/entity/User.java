@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs21.entity;
 
 import ch.uzh.ifi.hase.soprafs21.constant.Blind;
 import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
+import ch.uzh.ifi.hase.soprafs21.constant.Show;
 import ch.uzh.ifi.hase.soprafs21.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs21.game.cards.Card;
 
@@ -50,6 +51,9 @@ public class User implements Serializable {
 
     @ElementCollection
     private List<Card> cards = new ArrayList<>();
+
+    @Column
+    private Show wantsToShow = Show.NOT_DECIDED;
 
     public Blind getBlind() {
         return blind;
@@ -142,4 +146,11 @@ public class User implements Serializable {
         this.cards.add(card);
     }
 
+    public Show getWantsToShow() {
+        return wantsToShow;
+    }
+
+    public void setWantsToShow(Show wantsToShow) {
+        this.wantsToShow = wantsToShow;
+    }
 }
