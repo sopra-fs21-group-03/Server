@@ -13,11 +13,11 @@ import java.util.List;
 public class CardRanking {
 
     public List<UserDraw> getRanking(GameEntity game) {
-        ArrayList<UserDraw> ranking = new ArrayList<>();
-        ArrayList<UserDraw> unsorted = new ArrayList<>();
+        List<UserDraw> ranking = new ArrayList<>();
+        List<UserDraw> unsorted = new ArrayList<>();
         HashMap<User, UserCombination> usersAndCombination = new HashMap();
 
-        ArrayList<User> activeUsers = (ArrayList<User>) game.getActiveUsers();
+        List<User> activeUsers = game.getActiveUsers();
         for(User user: activeUsers) {
             usersAndCombination.put(user, new UserCombination(user, game.getRiver().getCards()));
         }
@@ -26,7 +26,7 @@ public class CardRanking {
         for(User user: activeUsers) {
             UserDraw usersAsGood = new UserDraw();
             usersAsGood.addUser(user, game.getPot().getUserContributionOfAUser(user));
-            ArrayList<User> otherUsers = (ArrayList<User>) activeUsers.clone();
+            List<User> otherUsers = new ArrayList<>(activeUsers);
             otherUsers.remove(user);
             for(User other: otherUsers) {
                 if(usersAndCombination.get(user).asGood(usersAndCombination.get(other))) {
@@ -99,7 +99,7 @@ public class CardRanking {
 
         UserCombination(User user, ArrayList<Card> river) {
             this.user = user;
-            cards = (ArrayList<Card>) river.clone();
+            cards = new ArrayList<>(river);
             cards.addAll(user.getCards());
             calcCombination();
         }
@@ -242,7 +242,7 @@ public class CardRanking {
                     cards.add(card);
                 }
             }
-            ArrayList<Card> cardsWithoutFour = (ArrayList<Card>) this.cards.clone();
+            ArrayList<Card> cardsWithoutFour = new ArrayList<>(this.cards);
             cardsWithoutFour.removeAll(cards);
             cards.add(getHighestCard(cards));
             finalCards = cards;
@@ -397,7 +397,7 @@ public class CardRanking {
                     finalCards.add(card);
                 }
             }
-            ArrayList<Card> cards = (ArrayList<Card>) this.cards.clone();
+            ArrayList<Card> cards = new ArrayList<>(this.cards);
             finalCards.add(getHighestCard(cards));
             cards.remove(getHighestCard(cards));
             finalCards.add(getHighestCard(cards));
@@ -440,7 +440,7 @@ public class CardRanking {
                     finalCards.add(card);
                 }
             }
-            ArrayList<Card> cards = (ArrayList<Card>) this.cards.clone();
+            ArrayList<Card> cards = new ArrayList<>(this.cards);
             boolean oneMore = true;
             while(oneMore) {
                 Card card = getHighestCard(cards);
@@ -482,7 +482,7 @@ public class CardRanking {
                     finalCards.add(card);
                 }
             }
-            ArrayList<Card> cards = (ArrayList<Card>) this.cards.clone();
+            ArrayList<Card> cards = new ArrayList<>(this.cards);
             int cardsNeeded = 3;
             while(cardsNeeded > 0) {
                 Card card = getHighestCard(cards);
@@ -496,7 +496,7 @@ public class CardRanking {
 
         //not ordered
         private void setFinalCardsForHighCard() {
-            ArrayList<Card> cards = (ArrayList<Card>) this.cards.clone();
+            ArrayList<Card> cards = new ArrayList<>(this.cards);
             while(cards.size() > 5) {
                 removeLowestRankCard(cards);
             }
@@ -577,8 +577,8 @@ public class CardRanking {
                     case FLUSH:
                         ArrayList<Card> thisCards = null;
                         ArrayList<Card> otherCards = null;
-                        thisCards = (ArrayList<Card>) this.finalCards.clone();
-                        otherCards = (ArrayList<Card>) other.finalCards.clone();
+                        thisCards = new ArrayList<>(this.finalCards);
+                        otherCards = new ArrayList<>(other.finalCards);
                         while(thisCards.size() >= 1) {
                             Card card = getHighestCard(thisCards);
                             thisCards.remove(card);
@@ -797,7 +797,7 @@ public class CardRanking {
          */
         private Rank[] getRanksGivenOnePair() {
             Rank[] ranks = new Rank[4];
-            ArrayList<Card> cards = (ArrayList<Card>) finalCards.clone();
+            ArrayList<Card> cards = new ArrayList<>(finalCards);
             Rank pair = null;
             for(Rank rank: Rank.values()) {
                 int count = 0;
@@ -832,7 +832,7 @@ public class CardRanking {
          */
         private Rank[] getRanksOrdered() {
             Rank[] ranks = new Rank[5];
-            ArrayList<Card> cards = (ArrayList<Card>) finalCards.clone();
+            ArrayList<Card> cards = new ArrayList<>(finalCards);
             for(int i = 0; i < ranks.length; i++) {
                 Card card = getHighestCard(cards);
                 cards.remove(card);
