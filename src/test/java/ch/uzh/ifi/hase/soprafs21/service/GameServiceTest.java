@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs21.service;
 
+import ch.uzh.ifi.hase.soprafs21.constant.Blind;
 import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs21.constant.Round;
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
@@ -37,6 +38,52 @@ class GameServiceTest {
 
     int raiseamountpossible;
     int raiseamounttoomuch;
+
+    private User getBigBlind(){
+        User bigblind = null;
+        for (User user : testGame.getActiveUsers()){
+            if (user.getBlind() == Blind.BIG){
+                bigblind = user;
+                break;
+            }
+        }
+        return bigblind;
+    }
+
+    private User getSmallBlind(){
+        User smallblind = null;
+        for (User user : testGame.getActiveUsers()){
+            if (user.getBlind() == Blind.SMALL){
+                smallblind = user;
+                break;
+            }
+        }
+        return smallblind;
+    }
+
+    private Long getIdOfUserOnTurn() {
+        String username = testGame.getOnTurn().getUsername();
+        Long id = 1L;
+        for (User user : testGame.getActiveUsers()) {
+            if (user.getUsername().equals(username)) {
+                id = user.getId();
+            }
+        }
+        return id;
+    }
+
+    private User getOnTurnUser() {
+        String username = testGame.getOnTurn().getUsername();
+        User theuser = null;
+        for (User user : testGame.getActiveUsers()) {
+            if (user.getUsername().equals(username)) {
+                theuser = user;
+                break;
+            }
+        }
+        return theuser;
+    }
+
 
     @BeforeEach
     public void setup() {
@@ -131,7 +178,7 @@ class GameServiceTest {
      * Player got his own gameData
      */
     @Test
-    void getOwnGameData_success(){
+    void getOwnGameData_success() {
         User mock = gameService.getOwnGameData(testGame.getId(), testUser.getId(), testUser);
 
         assertEquals(testUser, mock);
@@ -141,9 +188,9 @@ class GameServiceTest {
      * Player could not be found
      */
     @Test
-    void getOwnGameData_notFound(){
+    void getOwnGameData_notFound() {
         assertThrows(ResponseStatusException.class,
-                () -> gameService.getOwnGameData(testGame.getId(), testUser.getId()+1, testUser));
+                () -> gameService.getOwnGameData(testGame.getId(), testUser.getId() + 1, testUser));
     }
 
     /**
@@ -151,9 +198,9 @@ class GameServiceTest {
      * In this case testUser tries to access testUser2s gameData
      */
     @Test
-    void getOwnGameData_unauthorized(){
+    void getOwnGameData_unauthorized() {
         assertThrows(ResponseStatusException.class,
-                ()-> gameService.getOwnGameData(testGame.getId(), testUser2.getId(), testUser));
+                () -> gameService.getOwnGameData(testGame.getId(), testUser2.getId(), testUser));
     }
 
     /**
@@ -161,7 +208,7 @@ class GameServiceTest {
      * Also implicitly tests if game gets set Upped correctly
      */
     @Test
-    void getGameData_success(){
+    void getGameData_success() {
         GameEntity mock = gameService.getGameData(testGame.getId(), testUser);
 
         assertEquals(mock, testGame);
@@ -171,7 +218,7 @@ class GameServiceTest {
      * Tests if the right exception is thrown when a user tries to access a nonexistent game
      */
     @Test
-    void getGameData_notFound(){
+    void getGameData_notFound() {
         assertThrows(ResponseStatusException.class, () -> gameService.getGameData(2L, testUser));
     }
 
@@ -179,11 +226,11 @@ class GameServiceTest {
      * User is not authorized to get gameData
      */
     @Test
-    void getGameData_unauthorized(){
+    void getGameData_unauthorized() {
         User falseTokenUser = new User();
         falseTokenUser.setToken("falseToken");
 
-        assertThrows(ResponseStatusException.class, ()->gameService.getGameData(testGame.getId(), falseTokenUser));
+        assertThrows(ResponseStatusException.class, () -> gameService.getGameData(testGame.getId(), falseTokenUser));
     }
 
 
@@ -208,14 +255,7 @@ class GameServiceTest {
 
     @Test
     void userFolds_success() {
-        String username = testGame.getOnTurn().getUsername();
-        Long id = 1L;
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username)) {
-                id = user.getId();
-            }
-        }
-
+        Long id = getIdOfUserOnTurn();
         assertNotNull(id);
         gameService.userFolds(1L, id);
         assertEquals(4, testGame.getActiveUsers().size());
@@ -230,61 +270,35 @@ class GameServiceTest {
 
     @Test
     void userRaises_success() {
+        Long id = getIdOfUserOnTurn();
+        User user = getOnTurnUser();
 
-        String username = testGame.getOnTurn().getUsername();
-        Long id = 1L;
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username)) {
-                id = user.getId();
-            }
-        }
         gameService.userCallsForRaising(testGame.getId(), id);
         gameService.userRaises(testGame.getId(), id, raiseamountpossible);
 
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username)) {
-                assertEquals(4795, user.getMoney());
-                assertEquals(user.getUsername(), testGame.getUserThatRaisedLast().getUsername());
-            }
-        }
-
+        assertEquals(4795, user.getMoney());
+        assertEquals(user.getUsername(), testGame.getUserThatRaisedLast().getUsername());
         assertEquals(505, testGame.getPot().getTotal());
 
-        String username2 = testGame.getOnTurn().getUsername();
+        id = getIdOfUserOnTurn();
+        user = getOnTurnUser();
 
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username2)) {
-                id = user.getId();
-            }
-        }
         gameService.userCallsForRaising(testGame.getId(), id);
         gameService.userRaises(testGame.getId(), id, raiseamountpossible);
 
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username2)) {
-                assertEquals(4790, user.getMoney());
-                assertEquals(user.getUsername(), testGame.getUserThatRaisedLast().getUsername());
-            }
-        }
-
-
+        assertEquals(4790, user.getMoney());
+        assertEquals(user.getUsername(), testGame.getUserThatRaisedLast().getUsername());
         assertEquals(715, testGame.getPot().getTotal());
 
     }
 
     @Test
     void userRaises_toohighamount() {
-        String username = testGame.getOnTurn().getUsername();
-        Long id = 1L;
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username)) {
-                id = user.getId();
-            }
-        }
 
-        Long finalId = id;
+        Long id = getIdOfUserOnTurn();
+
         gameService.userCallsForRaising(testGame.getId(), id);
-        assertThrows(ResponseStatusException.class, () -> gameService.userRaises(testGame.getId(), finalId, raiseamounttoomuch));
+        assertThrows(ResponseStatusException.class, () -> gameService.userRaises(testGame.getId(), id, raiseamounttoomuch));
         assertNotEquals(id, testGame.getUserThatRaisedLast().getId());
         assertEquals(500, testGame.getPot().getTotal());
 
@@ -292,31 +306,23 @@ class GameServiceTest {
 
     @Test
     void userRaises_butwasplayerthatraisedlast() {
-        String username = testGame.getOnTurn().getUsername();
-        Long id = 1L;
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username)) {
-                id = user.getId();
-            }
-        }
+        User user = getOnTurnUser();
+        String username = user.getUsername();
+        Long id = getIdOfUserOnTurn();
+
         gameService.userCallsForRaising(testGame.getId(), id);
         gameService.userRaises(testGame.getId(), id, raiseamountpossible);
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username)) {
-                assertEquals(4795, user.getMoney());
-                assertEquals(user.getUsername(), testGame.getUserThatRaisedLast().getUsername());
-            }
-        }
 
+        assertEquals(4795, user.getMoney());
+        assertEquals(user.getUsername(), testGame.getUserThatRaisedLast().getUsername());
         assertEquals(505, testGame.getPot().getTotal());
+        assertThrows(ResponseStatusException.class, () -> gameService.userCallsForRaising(testGame.getId(), id));
+        assertThrows(ResponseStatusException.class, () -> gameService.userRaises(testGame.getId(), id, raiseamountpossible));
 
-        Long finalId = id;
-        assertThrows(ResponseStatusException.class, () -> gameService.userCallsForRaising(testGame.getId(), finalId));
-        assertThrows(ResponseStatusException.class, () -> gameService.userRaises(testGame.getId(), finalId, raiseamountpossible));
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username)) {
-                assertEquals(4795, user.getMoney());
-                assertEquals(user.getUsername(), testGame.getUserThatRaisedLast().getUsername());
+        for (User aUser : testGame.getActiveUsers()) {
+            if (aUser.getUsername().equals(username)) {
+                assertEquals(4795, aUser.getMoney());
+                assertEquals(aUser.getUsername(), testGame.getUserThatRaisedLast().getUsername());
             }
         }
 
@@ -326,59 +332,33 @@ class GameServiceTest {
 
     @Test
     void userCalls_success() {
-        String username = testGame.getOnTurn().getUsername();
-        Long id = 1L;
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username)) {
-                id = user.getId();
-            }
-        }
+        User myUser = getOnTurnUser();
+        String username = myUser.getUsername();
+        Long id = getIdOfUserOnTurn();
+
         gameService.userCallsForRaising(testGame.getId(), id);
         gameService.userRaises(testGame.getId(), id, raiseamountpossible);
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username)) {
-                assertEquals(4795, user.getMoney());
-                assertEquals(user.getUsername(), testGame.getUserThatRaisedLast().getUsername());
-            }
-        }
 
+        assertEquals(4795, myUser.getMoney());
+        assertEquals(myUser.getUsername(), testGame.getUserThatRaisedLast().getUsername());
         assertEquals(505, testGame.getPot().getTotal());
-        String username2 = testGame.getOnTurn().getUsername();
-        Long id2 = 1L;
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username2)) {
-                id2 = user.getId();
-            }
-        }
+
+        myUser = getOnTurnUser();
+        String username2 = myUser.getUsername();
+        Long id2 = getIdOfUserOnTurn();
+
         gameService.userCalls(testGame.getId(), id2);
-
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username2)) {
-                assertEquals(4795, user.getMoney());
-            }
-        }
-
+        assertEquals(4795, myUser.getMoney());
         assertEquals(id, testGame.getUserThatRaisedLast().getId());
         assertEquals(710, testGame.getPot().getTotal());
     }
 
     @Test
     void userCalls_firstUserOnTurn_nooneraised_onlysmallandbigblindputtheirinput_success() {
-
-        String username2 = testGame.getOnTurn().getUsername();
-        Long id2 = 1L;
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username2)) {
-                id2 = user.getId();
-            }
-        }
+        User onTurn = getOnTurnUser();
+        Long id2 = getIdOfUserOnTurn();
         gameService.userCalls(testGame.getId(), id2);
-
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username2)) {
-                assertEquals(4800, user.getMoney());
-            }
-        }
+        assertEquals(4800, onTurn.getMoney());
         assertEquals(500, testGame.getPot().getTotal());
     }
 
@@ -403,91 +383,22 @@ class GameServiceTest {
     @Test
     void userchecks_success() {
         //for checking, we are going to be in the FLOP round
-        String username2 = testGame.getOnTurn().getUsername();
-        Long id2 = 1L;
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username2)) {
-                id2 = user.getId();
-            }
+        int counter = 0;
+        while (counter < 4) {
+            Long id = getIdOfUserOnTurn();
+            gameService.userCalls(testGame.getId(), id);
+            counter++;
         }
-        gameService.userCalls(testGame.getId(), id2);
-
-        username2 = testGame.getOnTurn().getUsername();
-        id2 = 1L;
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username2)) {
-                id2 = user.getId();
-            }
-        }
-        gameService.userCalls(testGame.getId(), id2);
-
-        username2 = testGame.getOnTurn().getUsername();
-        id2 = 1L;
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username2)) {
-                id2 = user.getId();
-            }
-        }
-        gameService.userCalls(testGame.getId(), id2);
-
-        username2 = testGame.getOnTurn().getUsername();
-        id2 = 1L;
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username2)) {
-                id2 = user.getId();
-            }
-        }
-        gameService.userCalls(testGame.getId(), id2);
-
         //now we should be in the FLOP round -> everyone will check now (The Test should test if this works)
         assertEquals(Round.FLOP, testGame.getRound());
 
-        username2 = testGame.getOnTurn().getUsername();
-        id2 = 1L;
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username2)) {
-                id2 = user.getId();
-            }
+        counter = 0;
+        while (counter < 5) {
+            Long id = getIdOfUserOnTurn();
+            gameService.userChecks(testGame.getId(), id);
+            counter++;
         }
-        gameService.userChecks(testGame.getId(), id2);
-
-        username2 = testGame.getOnTurn().getUsername();
-        id2 = 1L;
         for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username2)) {
-                id2 = user.getId();
-            }
-        }
-        gameService.userChecks(testGame.getId(), id2);
-
-        username2 = testGame.getOnTurn().getUsername();
-        id2 = 1L;
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username2)) {
-                id2 = user.getId();
-            }
-        }
-        gameService.userChecks(testGame.getId(), id2);
-
-        username2 = testGame.getOnTurn().getUsername();
-        id2 = 1L;
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username2)) {
-                id2 = user.getId();
-            }
-        }
-        gameService.userChecks(testGame.getId(), id2);
-
-        username2 = testGame.getOnTurn().getUsername();
-        id2 = 1L;
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username2)) {
-                id2 = user.getId();
-            }
-        }
-        gameService.userChecks(testGame.getId(), id2);
-
-        for(User user: testGame.getActiveUsers()){
             assertEquals(200, testGame.getPot().getUserContributionOfAUser(user));
             assertEquals(4800, user.getMoney());
         }
@@ -496,24 +407,77 @@ class GameServiceTest {
     }
 
     @Test
-    void userchecks_youshallnotcheck() {
-        String username2 = testGame.getOnTurn().getUsername();
-        Long id2 = 1L;
-        User theUser = new User();
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getUsername().equals(username2)) {
-                id2 = user.getId();
-                theUser = user;
-                break;
-            }
-        }
+    void userChecks_youShallNotCheck() {
+        Long id2 = getIdOfUserOnTurn();
+        User theUser = getOnTurnUser();
 
-        Long finalId = id2;
-        assertThrows(ResponseStatusException.class, () -> gameService.userChecks(testGame.getId(), finalId));
+        assertThrows(ResponseStatusException.class, () -> gameService.userChecks(testGame.getId(), id2));
         assertEquals(5000, theUser.getMoney());
         assertEquals(theUser.getUsername(), testGame.getOnTurn().getUsername());
         assertEquals(300, testGame.getPot().getTotal());
 
+    }
+
+    @Test
+    void allUsersExceptOneFold_oneClearWinner_testingWithPreFlop() {
+        User bigblind = getBigBlind();
+
+        int counter = 0;
+        while (counter < 4) {
+            gameService.userFolds(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+
+        assertEquals(Round.PREFLOP, testGame.getRound());
+        assertEquals(300, testGame.getPot().getTotal());
+        assertEquals(5000, bigblind.getMoney());
+    }
+
+    @Test
+    void allUsersExceptOneFold_oneClearWinner_testingWithTurncard() {
+        User smallBlind = getSmallBlind();
+
+        int counter = 0;
+        while (counter < 4) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        //Now, 200 * 5 = 1000 are in the pot
+        //at the beginning of each new round (not being Preflop), the small blind starts
+
+        assertEquals(Round.FLOP, testGame.getRound());
+        assertEquals(1000, testGame.getPot().getTotal());
+
+        counter = 0;
+        while (counter < 5) {
+            gameService.userChecks(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        counter = 0;
+
+        assertEquals(Round.TURNCARD, testGame.getRound());
+        assertEquals(1000, testGame.getPot().getTotal());
+
+        gameService.userChecks(testGame.getId(), getIdOfUserOnTurn());
+        while (counter < 4) {
+            gameService.userFolds(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+
+        assertEquals(Round.PREFLOP, testGame.getRound());
+        assertEquals(300, testGame.getPot().getTotal());
+        assertEquals(5800, smallBlind.getMoney());
+    }
+
+    @Test
+    void playerFolds_nextUserComesInTurn(){
+        User onTurn = getOnTurnUser();
+        int indexOfonTurn = testGame.getActiveUsers().indexOf(onTurn);
+        int indexOfUserAfteronTurn = Math.abs((indexOfonTurn - 1 + testGame.getAllUsers().size()) % (testGame.getAllUsers().size()));
+        User userAfteronTurn = testGame.getActiveUsers().get(indexOfUserAfteronTurn);
+
+        gameService.userFolds(testGame.getId(), onTurn.getId());
+        assertEquals(userAfteronTurn.getUsername(), testGame.getOnTurn().getUsername());
     }
 }
 
