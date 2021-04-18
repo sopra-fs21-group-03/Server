@@ -39,6 +39,9 @@ public class GameEntity implements Serializable {
     private List<User> allUsers;
 
     @ElementCollection
+    private List<User> spectators;
+
+    @ElementCollection
     private List<OpponentInGameGetDTO> playersInTurnOrder;
 
     @Column
@@ -438,6 +441,7 @@ public class GameEntity implements Serializable {
             allUsers.forEach(user -> user.setWantsToShow(Show.NOT_DECIDED));
         }
         else if (round == Round.SHOWDOWN) {
+            removeUserWithNoMoney();
             try {
                 setup();
             }
@@ -654,6 +658,21 @@ public class GameEntity implements Serializable {
         int currentIndex = activeUsers.indexOf(user);
         int nextIndex = Math.abs(currentIndex - 1 + activeUsers.size()) % activeUsers.size();
         onTurn.setUsername(activeUsers.get(nextIndex).getUsername());
+    }
+
+    /**
+     * changes allUsers playing, that have no money left to spectators
+     */
+    private void removeUserWithNoMoney() {
+        List<User> newSpectators = new ArrayList<>();
+        for(User user: allUsers) {
+            if(user.getMoney() == 0) {
+                newSpectators.add(user);
+            }
+        }
+        spectators.addAll(newSpectators);
+        allUsers.removeAll(newSpectators);
+        activeUsers.removeAll(newSpectators);
     }
 }
 

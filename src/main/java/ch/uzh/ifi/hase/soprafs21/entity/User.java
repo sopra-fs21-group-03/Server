@@ -89,7 +89,7 @@ public class User implements Serializable {
             this.money -= amount;
         }
         else {
-            throw new Exception();
+            //throw new Exception();
         }
         return amount;
     }
