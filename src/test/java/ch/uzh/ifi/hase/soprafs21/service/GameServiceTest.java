@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs21.service;
 
+import ch.uzh.ifi.hase.soprafs21.constant.Blind;
 import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs21.constant.Round;
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
@@ -37,6 +38,28 @@ class GameServiceTest {
 
     int raiseamountpossible;
     int raiseamounttoomuch;
+
+    private User getBigBlind(){
+        User bigblind = null;
+        for (User user : testGame.getActiveUsers()){
+            if (user.getBlind() == Blind.BIG){
+                bigblind = user;
+                break;
+            }
+        }
+        return bigblind;
+    }
+
+    private User getSmallBlind(){
+        User smallblind = null;
+        for (User user : testGame.getActiveUsers()){
+            if (user.getBlind() == Blind.SMALL){
+                smallblind = user;
+                break;
+            }
+        }
+        return smallblind;
+    }
 
     private Long getIdOfUserOnTurn() {
         String username = testGame.getOnTurn().getUsername();
@@ -396,9 +419,65 @@ class GameServiceTest {
     }
 
     @Test
-    void allUsersExceptOneFold_oneClearWinner() {
+    void allUsersExceptOneFold_oneClearWinner_testingWithPreFlop() {
+        User bigblind = getBigBlind();
 
+        int counter = 0;
+        while (counter < 4) {
+            gameService.userFolds(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
 
+        assertEquals(Round.PREFLOP, testGame.getRound());
+        assertEquals(300, testGame.getPot().getTotal());
+        assertEquals(5000, bigblind.getMoney());
+    }
+
+    @Test
+    void allUsersExceptOneFold_oneClearWinner_testingWithTurncard() {
+        User smallBlind = getSmallBlind();
+
+        int counter = 0;
+        while (counter < 4) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        //Now, 200 * 5 = 1000 are in the pot
+        //at the beginning of each new round (not being Preflop), the small blind starts
+
+        assertEquals(Round.FLOP, testGame.getRound());
+        assertEquals(1000, testGame.getPot().getTotal());
+
+        counter = 0;
+        while (counter < 5) {
+            gameService.userChecks(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        counter = 0;
+
+        assertEquals(Round.TURNCARD, testGame.getRound());
+        assertEquals(1000, testGame.getPot().getTotal());
+
+        gameService.userChecks(testGame.getId(), getIdOfUserOnTurn());
+        while (counter < 4) {
+            gameService.userFolds(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+
+        assertEquals(Round.PREFLOP, testGame.getRound());
+        assertEquals(300, testGame.getPot().getTotal());
+        assertEquals(5800, smallBlind.getMoney());
+    }
+
+    @Test
+    void playerFolds_nextUserComesInTurn(){
+        User onTurn = getOnTurnUser();
+        int indexOfonTurn = testGame.getActiveUsers().indexOf(onTurn);
+        int indexOfUserAfteronTurn = Math.abs((indexOfonTurn - 1 + testGame.getAllUsers().size()) % (testGame.getAllUsers().size()));
+        User userAfteronTurn = testGame.getActiveUsers().get(indexOfUserAfteronTurn);
+
+        gameService.userFolds(testGame.getId(), onTurn.getId());
+        assertEquals(userAfteronTurn.getUsername(), testGame.getOnTurn().getUsername());
     }
 }
 
