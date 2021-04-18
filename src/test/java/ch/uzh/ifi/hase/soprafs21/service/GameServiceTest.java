@@ -479,6 +479,45 @@ class GameServiceTest {
         gameService.userFolds(testGame.getId(), onTurn.getId());
         assertEquals(userAfteronTurn.getUsername(), testGame.getOnTurn().getUsername());
     }
+
+    @Test
+    void playerRaises_nextUserComesInTurn(){
+        User onTurn = getOnTurnUser();
+        int indexOfonTurn = testGame.getActiveUsers().indexOf(onTurn);
+        int indexOfUserAfteronTurn = Math.abs((indexOfonTurn - 1 + testGame.getAllUsers().size()) % (testGame.getAllUsers().size()));
+        User userAfteronTurn = testGame.getActiveUsers().get(indexOfUserAfteronTurn);
+
+        gameService.userRaises(testGame.getId(), onTurn.getId(), 300);
+        assertEquals(userAfteronTurn.getUsername(), testGame.getOnTurn().getUsername());
+    }
+
+    @Test
+    void playerCalls_nextUserComesInTurn(){
+        User onTurn = getOnTurnUser();
+        int indexOfonTurn = testGame.getActiveUsers().indexOf(onTurn);
+        int indexOfUserAfteronTurn = Math.abs((indexOfonTurn - 1 + testGame.getAllUsers().size()) % (testGame.getAllUsers().size()));
+        User userAfteronTurn = testGame.getActiveUsers().get(indexOfUserAfteronTurn);
+
+        gameService.userCalls(testGame.getId(), onTurn.getId());
+        assertEquals(userAfteronTurn.getUsername(), testGame.getOnTurn().getUsername());
+    }
+
+    @Test
+    void playerChecks_nextUserComesInTurn(){
+        int counter = 0;
+        while (counter < 4) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+
+        User onTurn = getOnTurnUser();
+        int indexOfonTurn = testGame.getActiveUsers().indexOf(onTurn);
+        int indexOfUserAfteronTurn = Math.abs((indexOfonTurn - 1 + testGame.getAllUsers().size()) % (testGame.getAllUsers().size()));
+        User userAfteronTurn = testGame.getActiveUsers().get(indexOfUserAfteronTurn);
+
+        gameService.userChecks(testGame.getId(), onTurn.getId());
+        assertEquals(userAfteronTurn.getUsername(), testGame.getOnTurn().getUsername());
+    }
 }
 
 
