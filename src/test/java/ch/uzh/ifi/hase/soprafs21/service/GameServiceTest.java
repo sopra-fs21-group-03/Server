@@ -535,6 +535,19 @@ class GameServiceTest {
         assertEquals(Round.TURNCARD, testGame.getRound());
     }
 
+    @Test
+    void flopRoundIsReached_3CardsAreRevealed(){
+        int counter = 0;
+        while (counter < 4) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        assertEquals(3, testGame.getRiver().getCards().size());
+        assertEquals(Round.FLOP, testGame.getRound());
+
+
+    }
+
 }
 
 
