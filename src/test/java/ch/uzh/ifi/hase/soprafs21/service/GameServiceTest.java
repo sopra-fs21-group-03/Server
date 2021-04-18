@@ -39,10 +39,10 @@ class GameServiceTest {
     int raiseamountpossible;
     int raiseamounttoomuch;
 
-    private User getBigBlind(){
+    private User getBigBlind() {
         User bigblind = null;
-        for (User user : testGame.getActiveUsers()){
-            if (user.getBlind() == Blind.BIG){
+        for (User user : testGame.getActiveUsers()) {
+            if (user.getBlind() == Blind.BIG) {
                 bigblind = user;
                 break;
             }
@@ -50,10 +50,10 @@ class GameServiceTest {
         return bigblind;
     }
 
-    private User getSmallBlind(){
+    private User getSmallBlind() {
         User smallblind = null;
-        for (User user : testGame.getActiveUsers()){
-            if (user.getBlind() == Blind.SMALL){
+        for (User user : testGame.getActiveUsers()) {
+            if (user.getBlind() == Blind.SMALL) {
                 smallblind = user;
                 break;
             }
@@ -362,24 +362,6 @@ class GameServiceTest {
         assertEquals(500, testGame.getPot().getTotal());
     }
 
-    /**
-     * @Test void userCalls_allin_oneplayerhasmoremoney() {
-     * //testUser is super rich
-     * testUser.setMoney(50);
-     * <p>
-     * gameService.userRaises(testGame.getId(), testUser.getId(), 45);
-     * assertEquals(5, testUser.getMoney());
-     * assertEquals(testUser, testGame.getUserThatRaisedLast());
-     * assertEquals(45, testGame.getPot().getTotal());
-     * <p>
-     * gameService.userCalls(testGame.getId(), testUser2.getId());
-     * //testUser2 has to go all-in in order to still be in the game
-     * assertEquals(0, testUser2.getMoney());
-     * assertEquals(testUser, testGame.getUserThatRaisedLast());
-     * assertEquals(55, testGame.getPot().getTotal());
-     * }
-     */
-
     @Test
     void userchecks_success() {
         //for checking, we are going to be in the FLOP round
@@ -470,7 +452,7 @@ class GameServiceTest {
     }
 
     @Test
-    void playerFolds_nextUserComesInTurn(){
+    void playerFolds_nextUserComesInTurn() {
         User onTurn = getOnTurnUser();
         int indexOfonTurn = testGame.getActiveUsers().indexOf(onTurn);
         int indexOfUserAfteronTurn = Math.abs((indexOfonTurn - 1 + testGame.getAllUsers().size()) % (testGame.getAllUsers().size()));
@@ -481,7 +463,7 @@ class GameServiceTest {
     }
 
     @Test
-    void playerRaises_nextUserComesInTurn(){
+    void playerRaises_nextUserComesInTurn() {
         User onTurn = getOnTurnUser();
         int indexOfonTurn = testGame.getActiveUsers().indexOf(onTurn);
         int indexOfUserAfteronTurn = Math.abs((indexOfonTurn - 1 + testGame.getAllUsers().size()) % (testGame.getAllUsers().size()));
@@ -492,7 +474,7 @@ class GameServiceTest {
     }
 
     @Test
-    void playerCalls_nextUserComesInTurn(){
+    void playerCalls_nextUserComesInTurn() {
         User onTurn = getOnTurnUser();
         int indexOfonTurn = testGame.getActiveUsers().indexOf(onTurn);
         int indexOfUserAfteronTurn = Math.abs((indexOfonTurn - 1 + testGame.getAllUsers().size()) % (testGame.getAllUsers().size()));
@@ -503,7 +485,7 @@ class GameServiceTest {
     }
 
     @Test
-    void playerChecks_nextUserComesInTurn(){
+    void playerChecks_nextUserComesInTurn() {
         int counter = 0;
         while (counter < 4) {
             gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
@@ -518,6 +500,41 @@ class GameServiceTest {
         gameService.userChecks(testGame.getId(), onTurn.getId());
         assertEquals(userAfteronTurn.getUsername(), testGame.getOnTurn().getUsername());
     }
+
+    @Test
+    void playerWhoRaisedLastIsReached_NextRoundShouldStart(){
+        int counter = 0;
+        while (counter < 4) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        assertEquals(Round.FLOP, testGame.getRound());
+        gameService.userRaises(testGame.getId(), getIdOfUserOnTurn(), 500);
+
+        counter = 0;
+        while (counter < 4) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        assertEquals(Round.TURNCARD, testGame.getRound());
+    }
+
+    @Test
+    void playerWhoStartedTheRoundIsReachedAgain_EveryoneChecked_NextRoundShouldStart(){
+        int counter = 0;
+        while (counter < 4) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        assertEquals(Round.FLOP, testGame.getRound());
+        counter = 0;
+        while (counter < 5) {
+            gameService.userChecks(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        assertEquals(Round.TURNCARD, testGame.getRound());
+    }
+
 }
 
 
