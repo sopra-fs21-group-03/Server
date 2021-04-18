@@ -2,9 +2,11 @@ package ch.uzh.ifi.hase.soprafs21.entity;
 
 import ch.uzh.ifi.hase.soprafs21.constant.Blind;
 import ch.uzh.ifi.hase.soprafs21.constant.Round;
+import ch.uzh.ifi.hase.soprafs21.constant.Show;
 import ch.uzh.ifi.hase.soprafs21.game.Pot;
 import ch.uzh.ifi.hase.soprafs21.game.cards.Deck;
 import ch.uzh.ifi.hase.soprafs21.game.cards.River;
+import ch.uzh.ifi.hase.soprafs21.helper.CardRanking;
 import ch.uzh.ifi.hase.soprafs21.helper.UserDraw;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OnTurnGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
@@ -35,6 +37,9 @@ public class GameEntity implements Serializable {
 
     @ElementCollection
     private List<User> allUsers;
+
+    @ElementCollection
+    private List<User> spectators;
 
     @ElementCollection
     private List<OpponentInGameGetDTO> playersInTurnOrder;
@@ -433,9 +438,10 @@ public class GameEntity implements Serializable {
         else if (round == Round.RIVERCARD) {
             round = Round.SHOWDOWN;
             showdown = true;
+            allUsers.forEach(user -> user.setWantsToShow(Show.NOT_DECIDED));
         }
         else if (round == Round.SHOWDOWN) {
-
+            removeUserWithNoMoney();
             try {
                 setup();
             }
@@ -633,6 +639,40 @@ public class GameEntity implements Serializable {
             pot.addUser(user);
 
         }
+    }
+
+    public void distributePot() {
+        activeUsers.removeIf(user -> user.getWantsToShow() != Show.SHOW);
+        List<UserDraw> ranking = new CardRanking().getRanking(this);
+        pot.distribute(ranking);
+    }
+
+    /**
+     * changes the onTurn user
+     */
+    public void nextTurnInShowdown(User user) throws Exception {
+        if(!activeUsers.contains(user) ) {
+            throw new Exception("User that played was not onTurn.");
+        }
+        String username = this.getOnTurn().getUsername();
+        int currentIndex = activeUsers.indexOf(user);
+        int nextIndex = Math.abs(currentIndex - 1 + activeUsers.size()) % activeUsers.size();
+        onTurn.setUsername(activeUsers.get(nextIndex).getUsername());
+    }
+
+    /**
+     * changes allUsers playing, that have no money left to spectators
+     */
+    private void removeUserWithNoMoney() {
+        List<User> newSpectators = new ArrayList<>();
+        for(User user: allUsers) {
+            if(user.getMoney() == 0) {
+                newSpectators.add(user);
+            }
+        }
+        spectators.addAll(newSpectators);
+        allUsers.removeAll(newSpectators);
+        activeUsers.removeAll(newSpectators);
     }
 }
 

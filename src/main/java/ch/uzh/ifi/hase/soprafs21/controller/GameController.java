@@ -1,16 +1,14 @@
 package ch.uzh.ifi.hase.soprafs21.controller;
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
-import ch.uzh.ifi.hase.soprafs21.rest.dto.GameGetDTO;
-import ch.uzh.ifi.hase.soprafs21.rest.dto.PlayerInGameGetDTO;
-import ch.uzh.ifi.hase.soprafs21.rest.dto.UserPostDTO;
-import ch.uzh.ifi.hase.soprafs21.rest.dto.UserPutDTO;
+import ch.uzh.ifi.hase.soprafs21.rest.dto.*;
 import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs21.service.GameService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.nio.file.Path;
 import java.util.Map;
 
 @RestController
@@ -178,5 +176,32 @@ public class GameController {
         User player = gameService.getOwnGameData(GameID, UserID, userWhoWantsToFetch);
 
         return DTOMapper.INSTANCE.convertEntityToPlayerInGameGetDTO(player);
+    }
+
+    /**
+     * Request used to decide whether or not to show ones cards in a showdown
+     * Sets the requesting users field wantsToShow according to the sent boolean
+     * Code: - 204 if successful
+     *       - 401 if the user or game could not be found
+     *       - 404 if the user requesting is not authorized to change the state of the requested user
+     * @param gameID used to search the game
+     * @param userID used to search the user
+     * @param userShowPutDTO used to get the token(Authentication) and a boolean deciding whether to show or not
+     */
+    @PutMapping("/games/{gameID}/{userID}/show")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseBody
+    public void showCards(@PathVariable Long gameID, @PathVariable Long userID, @RequestBody UserShowPutDTO userShowPutDTO) {
+        //search for user, finds only if user is in the game as active user
+        User user = gameService.getUserByIdInActiveUsers(gameID, userID);
+        System.out.println(userShowPutDTO.getToken());
+
+        //verify token
+        if(!user.getToken().equals(userShowPutDTO.getToken())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not authorized to decide");
+        }
+
+        GameEntity game = gameService.getGameById(gameID);
+        gameService.show(game, user, userShowPutDTO.isWantsToShow());
     }
 }
