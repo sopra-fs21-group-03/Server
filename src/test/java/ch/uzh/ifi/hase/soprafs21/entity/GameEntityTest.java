@@ -68,6 +68,14 @@ class GameEntityTest {
         return big;
     }
 
+    private void removeAllPlayersFromActiveExceptOne() {
+        int counter = 0;
+        while (counter < 4) {
+            testGame.getActiveUsers().remove(0);
+            counter++;
+        }
+    }
+
     private User getBigBlind_inactiveUsers() {
         User big = null;
         for (User user : testGame.getActiveUsers()) {
@@ -163,17 +171,11 @@ class GameEntityTest {
         User big = getBigBlind_inallUsers();
         User small = getSmallBlind_inallUsers();
         String userOnTurn = testGame.getOnTurn().getUsername();
-
-        int counter = 0;
-        while (counter < 4) {
-            testGame.getActiveUsers().remove(0);
-            counter++;
-        }
-
+        removeAllPlayersFromActiveExceptOne();
         testGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon("NotImportant");
         assertEquals(big.getUsername(), getSmallBlind_inallUsers().getUsername());
         assertEquals(Blind.SMALL, big.getBlind());
-        assertEquals(Blind.NEUTRAL,small.getBlind());
+        assertEquals(Blind.NEUTRAL, small.getBlind());
         assertEquals(Blind.BIG, getUser_providedUsername_inallUsers(userOnTurn).getBlind());
 
     }
