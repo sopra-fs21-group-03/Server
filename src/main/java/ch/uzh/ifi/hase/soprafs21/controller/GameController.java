@@ -49,7 +49,7 @@ public class GameController {
      * - 204 if the raise was successful. Nothing will be returned
      * - 404 if gameData was not found or the User was not found
      * - 401 if User is not authorized to perform this action or if he is not in turn
-     * - 409 if User does not have enough money or if generally a money problem occurs
+     * - 409 if User does not have enough money or if generally a money problem occurs (e.g. raiseamount is below 0)
      *
      * @param gameid get the gameID of the requested game
      * @param userid the id of the user who wants to perform this action
@@ -63,8 +63,13 @@ public class GameController {
         User raiserUserInput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
         User raiserUserFound = gameService.getUserByIdInActiveUsers(gameid, userid);
         if (raiserUserInput.getToken().equals(raiserUserFound.getToken())){
-            gameService.userCallsForRaising(gameid, userid);
-            gameService.userRaises(gameid, userid, raiseamount);
+            if(raiseamount>0){
+                gameService.userCallsForRaising(gameid, userid);
+                gameService.userRaises(gameid, userid, raiseamount);
+            } else{
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "The raise amount always has to be above 0!");
+            }
+
         }
         else{
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The User is not authorized... (In Raise process)");
