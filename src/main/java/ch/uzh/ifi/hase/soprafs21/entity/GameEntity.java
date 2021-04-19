@@ -441,7 +441,7 @@ public class GameEntity implements Serializable {
             allUsers.forEach(user -> user.setWantsToShow(Show.NOT_DECIDED));
         }
         else if (round == Round.SHOWDOWN) {
-            removeUserWithNoMoney();
+            //removeUserWithNoMoney();
             try {
                 setup();
             }
