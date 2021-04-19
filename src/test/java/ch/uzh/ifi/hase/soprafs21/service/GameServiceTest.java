@@ -3,17 +3,21 @@ package ch.uzh.ifi.hase.soprafs21.service;
 import ch.uzh.ifi.hase.soprafs21.constant.Blind;
 import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs21.constant.Round;
+import ch.uzh.ifi.hase.soprafs21.constant.Show;
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
+import ch.uzh.ifi.hase.soprafs21.rest.dto.PlayerInGameGetDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Optional;
 
 import java.util.ArrayList;
@@ -173,6 +177,145 @@ class GameServiceTest {
         Mockito.when(gameRepository.findById(testGame.getId())).thenReturn(Optional.ofNullable(testGame));
     }
 
+    /**
+     * fetch game data no one shows cards
+     * Example in game: No one has decided yet
+     */
+    @Test
+    void getDataDuringShowdown_success_nobodyHasDecidedYet(){
+        testGame.setShowdown(true);
+        List<User> gameEntityPlayers = new ArrayList<>(testGame.getAllUsers());
+        List<PlayerInGameGetDTO> players = gameService.getDataDuringShowdown(testGame.getId(), testUser);
+
+        int idx = 0;
+
+        for (PlayerInGameGetDTO player:players){
+            assertEquals(player.getBlind(), gameEntityPlayers.get(idx).getBlind());
+            assertEquals(player.getCards(), new ArrayList<>());
+            assertEquals(player.getMoney(), gameEntityPlayers.get(idx).getMoney());
+            assertEquals(player.getUsername(), gameEntityPlayers.get(idx).getUsername());
+
+            idx++;
+        }
+    }
+
+
+    /**
+     * Every user doesn't want to show his cards during showdown
+     */
+    @Test
+    void getDataDuringShowdown_success_nobodyWantsToShow(){
+        testGame.setShowdown(true);
+        for (User player: testGame.getAllUsers()){
+            player.setWantsToShow(Show.DONT_SHOW);
+        }
+
+        List<User> gameEntityPlayers = new ArrayList<>(testGame.getAllUsers());
+        List<PlayerInGameGetDTO> players = gameService.getDataDuringShowdown(testGame.getId(), testUser);
+
+        int idx = 0;
+
+        for (PlayerInGameGetDTO player:players){
+            assertEquals(player.getBlind(), gameEntityPlayers.get(idx).getBlind());
+            assertEquals(player.getCards(), new ArrayList<>());
+            assertEquals(player.getMoney(), gameEntityPlayers.get(idx).getMoney());
+            assertEquals(player.getUsername(), gameEntityPlayers.get(idx).getUsername());
+
+            idx++;
+        }
+
+    }
+
+    /**
+     * Mixed decisions only testUser and testUser3 want to show cards
+     */
+    @Test
+    void getDataDuringShowdown_success_mixedDecisions(){
+        testGame.setShowdown(true);
+        testUser.setWantsToShow(Show.SHOW);
+        testUser3.setWantsToShow(Show.SHOW);
+
+        List<User> gameEntityPlayers = new ArrayList<>(testGame.getAllUsers());
+        List<PlayerInGameGetDTO> players = gameService.getDataDuringShowdown(testGame.getId(), testUser);
+
+        int idx = 0;
+
+        for (PlayerInGameGetDTO player:players){
+            if (player.getUsername().equals(testUser.getUsername())){
+                assertEquals(player.getBlind(), testUser.getBlind());
+                assertEquals(player.getMoney(), testUser.getMoney());
+                assertEquals(player.getCards(), testUser.getCards());
+            } else if (player.getUsername().equals(testUser3.getUsername())){
+                assertEquals(player.getBlind(), testUser3.getBlind());
+                assertEquals(player.getMoney(), testUser3.getMoney());
+                assertEquals(player.getCards(), testUser3.getCards());
+            } else{
+                assertEquals(player.getBlind(), gameEntityPlayers.get(idx).getBlind());
+                assertEquals(player.getCards(), new ArrayList<>());
+                assertEquals(player.getMoney(), gameEntityPlayers.get(idx).getMoney());
+                assertEquals(player.getUsername(), gameEntityPlayers.get(idx).getUsername());
+            }
+            idx++;
+        }
+    }
+
+    /**
+     * fetch game data everyone shows cards
+     */
+    @Test
+    void getDataDuringShowdown_success_everyoneShowsCards(){
+        testGame.setShowdown(true);
+        for (User player: testGame.getAllUsers()){
+            player.setWantsToShow(Show.SHOW);
+        }
+        List<User> gameEntityPlayers = new ArrayList<>(testGame.getAllUsers());
+        List<PlayerInGameGetDTO> players = gameService.getDataDuringShowdown(testGame.getId(), testUser);
+
+        int idx = 0;
+
+        for (PlayerInGameGetDTO player:players){
+            assertEquals(player.getBlind(), gameEntityPlayers.get(idx).getBlind());
+            assertEquals(player.getCards(), gameEntityPlayers.get(idx).getCards());
+            assertEquals(player.getMoney(), gameEntityPlayers.get(idx).getMoney());
+            assertEquals(player.getUsername(), gameEntityPlayers.get(idx).getUsername());
+
+            idx++;
+        }
+
+    }
+
+    /**
+     * game not found when accessing data
+     */
+    @Test
+    void getDataDuringShowdown_notFound(){
+        testGame.setShowdown(true);
+        assertThrows(ResponseStatusException.class,
+                () -> gameService.getDataDuringShowdown(testGame.getId()+1, testUser));
+
+    }
+
+    /**
+     * Unauthorized user tries to get data during showdown
+     */
+    @Test
+    void getDataDuringShowdown_unauthorized(){
+        testGame.setShowdown(true);
+        User unauthorized = new User();
+        unauthorized.setToken("falseToken");
+
+        assertThrows(ResponseStatusException.class,
+                () -> gameService.getDataDuringShowdown(testGame.getId(), unauthorized));
+    }
+
+    /**
+     * Try to access showdown data while game is not yet in showdown
+     */
+    @Test
+    void getDataDuringShowdown_conflict(){
+        assertThrows(ResponseStatusException.class,
+                () -> gameService.getDataDuringShowdown(testGame.getId(), testUser));
+    }
 
     /**
      * Player got his own gameData
