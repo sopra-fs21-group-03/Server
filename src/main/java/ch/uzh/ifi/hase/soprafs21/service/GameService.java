@@ -446,7 +446,7 @@ public class GameService {
      * Used to get the data during the showdown round of a poker game
      * @param gameID ID of the requested game
      * @param userWhoWantsToFetch token needs to be set, used for authentication
-     * @return Lists of users in game
+     * @return Lists of users in game as PlayerInGameGetDTOs
      */
     public List<PlayerInGameGetDTO> getDataDuringShowdown(Long gameID, User userWhoWantsToFetch){
         GameEntity game = findGameEntity(gameID);
@@ -477,6 +477,9 @@ public class GameService {
             }
             playerInGameGetDTOS.add(placeHolder);
         }
+
+        if (!valid)
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not authorized to get this data");
 
         return playerInGameGetDTOS;
     }
