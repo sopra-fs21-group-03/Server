@@ -160,12 +160,7 @@ public class GameService {
                         // The "normal" case: the User has more money than the raise amount.
                         if (user.getMoney() > amount) {
                             //The amount should be removed from the User's money.
-                            try {
-                                user.removeMoney(amount);
-                            }
-                            catch (Exception e) {
-                                throw new ResponseStatusException(HttpStatus.CONFLICT, "Something went wrong when trying the remove the raise amount from the User's money!");
-                            }
+                            user.removeMoney(amount);
                             //put the money inside the pot
                             theGame.getPot().addMoney(user, amount);
                             //the User calling this method is the new User that raised last

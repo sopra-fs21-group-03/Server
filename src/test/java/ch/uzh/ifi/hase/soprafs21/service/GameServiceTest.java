@@ -233,6 +233,17 @@ class GameServiceTest {
         assertThrows(ResponseStatusException.class, () -> gameService.getGameData(testGame.getId(), falseTokenUser));
     }
 
+    @Test
+    void getGameEntity_NotFound() {
+        assertThrows(ResponseStatusException.class, () -> gameService.userFolds(33L, 1L));
+
+    }
+
+    @Test
+    void getUserByIdInActiveUsers_HeWasNotFound() {
+        assertThrows(ResponseStatusException.class, () -> gameService.getUserByIdInActiveUsers(testGame.getId(), 55L));
+    }
+
 
     @Test
     void getUserById_success() {
@@ -248,9 +259,7 @@ class GameServiceTest {
 
     @Test
     void getUserById_fails_userNotFound() {
-
         assertThrows(ResponseStatusException.class, () -> gameService.getUserByIdInAllUsers(1L, 6L));
-
     }
 
     @Test
@@ -266,6 +275,17 @@ class GameServiceTest {
             }
         }
 
+    }
+
+    @Test
+    void userFolds_notFound() {
+        assertThrows(ResponseStatusException.class, () -> gameService.userFolds(1L, 6L));
+    }
+
+    @Test
+    void userFolds_notOnTurn() {
+        Long idOfUserNotOnTurn = ((getIdOfUserOnTurn() + 1) % testGame.getAllUsers().size()) + 1;
+        assertThrows(ResponseStatusException.class, () -> gameService.userFolds(1L, idOfUserNotOnTurn));
     }
 
     @Test
@@ -293,10 +313,20 @@ class GameServiceTest {
     }
 
     @Test
-    void userRaises_toohighamount() {
-
+    void userRaises_success_playerGoesAllIn(){
         Long id = getIdOfUserOnTurn();
+        User user = getOnTurnUser();
 
+        gameService.userCallsForRaising(testGame.getId(), id);
+        gameService.userRaises(testGame.getId(), id, user.getMoney());
+        assertEquals(0, user.getMoney());
+        assertEquals(5300, testGame.getPot().getTotal());
+        assertEquals(user.getUsername(), testGame.getUserThatRaisedLast().getUsername());
+    }
+
+    @Test
+    void userRaises_toohighamount() {
+        Long id = getIdOfUserOnTurn();
         gameService.userCallsForRaising(testGame.getId(), id);
         assertThrows(ResponseStatusException.class, () -> gameService.userRaises(testGame.getId(), id, raiseamounttoomuch));
         assertNotEquals(id, testGame.getUserThatRaisedLast().getId());
@@ -305,7 +335,22 @@ class GameServiceTest {
     }
 
     @Test
-    void userRaises_butwasplayerthatraisedlast() {
+    void userRaises_negativeAmount_causesConflict() {
+        Long id = getIdOfUserOnTurn();
+        gameService.userCallsForRaising(testGame.getId(), id);
+        assertThrows(ResponseStatusException.class, () -> gameService.userRaises(testGame.getId(), id, -2));
+        assertNotEquals(id, testGame.getUserThatRaisedLast().getId());
+        assertEquals(500, testGame.getPot().getTotal());
+    }
+
+    @Test
+    void userRaises_butWasNotFound() {
+        assertThrows(ResponseStatusException.class, () -> gameService.userCallsForRaising(testGame.getId(), 6L));
+        assertThrows(ResponseStatusException.class, () -> gameService.userRaises(testGame.getId(), 6L, raiseamountpossible));
+    }
+
+    @Test
+    void userRaises_butwasplayerthatraisedlast_isNotOnTurn() {
         User user = getOnTurnUser();
         String username = user.getUsername();
         Long id = getIdOfUserOnTurn();
@@ -502,7 +547,7 @@ class GameServiceTest {
     }
 
     @Test
-    void playerWhoRaisedLastIsReached_NextRoundShouldStart(){
+    void playerWhoRaisedLastIsReached_NextRoundShouldStart() {
         int counter = 0;
         while (counter < 4) {
             gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
@@ -520,7 +565,7 @@ class GameServiceTest {
     }
 
     @Test
-    void playerWhoStartedTheRoundIsReachedAgain_EveryoneChecked_NextRoundShouldStart(){
+    void playerWhoStartedTheRoundIsReachedAgain_EveryoneChecked_NextRoundShouldStart() {
         int counter = 0;
         while (counter < 4) {
             gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
@@ -536,7 +581,7 @@ class GameServiceTest {
     }
 
     @Test
-    void flopRoundIsReached_3CardsAreRevealed(){
+    void flopRoundIsReached_3CardsAreRevealed() {
         int counter = 0;
         while (counter < 4) {
             gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
