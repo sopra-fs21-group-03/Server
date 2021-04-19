@@ -451,7 +451,7 @@ class GameControllerTest {
 
         UserPutDTO userPutDTO = new UserPutDTO();
         userPutDTO.setToken("1");
-        userPutDTO.setRaiseamount(10);
+        userPutDTO.setRaiseAmount(10);
 
         given(gameService.getUserByIdInActiveUsers(Mockito.any(), Mockito.any())).willReturn(testUser);
 
@@ -480,7 +480,7 @@ class GameControllerTest {
     void userraises_notallowed(){
         UserPutDTO userPutDTO = new UserPutDTO();
         userPutDTO.setToken("1");
-        userPutDTO.setRaiseamount(10);
+        userPutDTO.setRaiseAmount(10);
 
         //given() doesn't work with a void function
         given(gameService.getUserByIdInActiveUsers(Mockito.any(), Mockito.any())).willThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED,"The User is not found... (In Raise process)"));
@@ -515,7 +515,7 @@ class GameControllerTest {
         testUser.setGamestatus(GameStatus.READY);
         UserPutDTO userPutDTO = new UserPutDTO();
         userPutDTO.setToken("1");
-        userPutDTO.setRaiseamount(10);
+        userPutDTO.setRaiseAmount(10);
 
         //given() doesn't work with a void function
         given(gameService.getUserByIdInActiveUsers(Mockito.any(), Mockito.any())).willReturn(testUser);
@@ -548,7 +548,7 @@ class GameControllerTest {
 
         UserPutDTO userPutDTO = new UserPutDTO();
         userPutDTO.setToken("1");
-        userPutDTO.setRaiseamount(10);
+        userPutDTO.setRaiseAmount(10);
 
         given(gameService.getUserByIdInActiveUsers(Mockito.any(), Mockito.any())).willReturn(testUser);
 

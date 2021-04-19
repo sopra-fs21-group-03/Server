@@ -8,9 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.nio.file.Path;
-import java.util.Map;
-
 @RestController
 public class GameController {
 
@@ -62,7 +59,7 @@ public class GameController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public void userraises(@PathVariable("GameID") Long gameid, @PathVariable("UserID") Long userid, @RequestBody UserPutDTO userPutDTO){
-        int raiseamount = userPutDTO.getRaiseamount();
+        int raiseamount = userPutDTO.getRaiseAmount();
         User raiserUserInput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
         User raiserUserFound = gameService.getUserByIdInActiveUsers(gameid, userid);
         if (raiserUserInput.getToken().equals(raiserUserFound.getToken())){

@@ -7,14 +7,14 @@ public class UserPutDTO {
 
     private String token;
 
-    private int raiseamount;
+    private int raiseAmount;
 
-    public int getRaiseamount() {
-        return raiseamount;
+    public int getRaiseAmount() {
+        return raiseAmount;
     }
 
-    public void setRaiseamount(int raiseamount) {
-        this.raiseamount = raiseamount;
+    public void setRaiseAmount(int raiseAmount) {
+        this.raiseAmount = raiseAmount;
     }
 
 
