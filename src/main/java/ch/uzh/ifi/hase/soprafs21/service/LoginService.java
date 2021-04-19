@@ -139,9 +139,11 @@ public class LoginService {
          if game does not exist, create new game and add the user
          */
         optionalGame.ifPresent((game) -> {
-            addUserToGame(userToBeAdded, game);
+            if (!game.getAllUsers().contains(userToBeAdded)){
+                addUserToGame(userToBeAdded, game);
+            }
             // Check if there are already five players in the game
-            if (game.getAllUsers().size() == 5) {
+            if (game.getAllUsers().size() == 5 && game.isFirstGameSetup()) {
                 try {
                     game.setup();
                 }

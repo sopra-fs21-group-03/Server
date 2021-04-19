@@ -194,6 +194,13 @@ public class GameEntity implements Serializable {
         return showdown;
     }
 
+    public boolean isFirstGameSetup() {
+        return firstGameSetup;
+    }
+
+    public void setFirstGameSetup(boolean firstGameSetup) {
+        this.firstGameSetup = firstGameSetup;
+    }
 
     /**
      * @param theUser who has a partner in the gameround who is the potential next player in turn. If such a player exists, the function will return his
@@ -441,7 +448,7 @@ public class GameEntity implements Serializable {
             allUsers.forEach(user -> user.setWantsToShow(Show.NOT_DECIDED));
         }
         else if (round == Round.SHOWDOWN) {
-            removeUserWithNoMoney();
+            //removeUserWithNoMoney();
             try {
                 setup();
             }
@@ -583,15 +590,8 @@ public class GameEntity implements Serializable {
         }
         else {
             int index;
-            //this if Statement will be exectued if the activeUsers List is smaller than the allUsers List. This happens, if Users fold and don't show
-            // up in the activeUsers-List anymore
-            if (activeUsers.size() < allUsers.size()) {
-                for (User user : allUsers) {
-                    if (!activeUsers.contains(user)) {
-                        activeUsers.add(user);
-                    }
-                }
-            }
+            //Clone allUsers back into activeUsers to keep turn order right
+            activeUsers = new ArrayList<>(allUsers);
 
             for (User user : allUsers) {
                 if (user.getBlind() == Blind.SMALL) {
