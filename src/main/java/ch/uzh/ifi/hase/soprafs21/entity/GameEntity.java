@@ -194,6 +194,13 @@ public class GameEntity implements Serializable {
         return showdown;
     }
 
+    public boolean isFirstGameSetup() {
+        return firstGameSetup;
+    }
+
+    public void setFirstGameSetup(boolean firstGameSetup) {
+        this.firstGameSetup = firstGameSetup;
+    }
 
     /**
      * @param theUser who has a partner in the gameround who is the potential next player in turn. If such a player exists, the function will return his
