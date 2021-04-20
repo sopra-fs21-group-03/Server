@@ -518,12 +518,7 @@ public class GameService {
 
             //if all user decided distribute the pot
             game.distributePot();
-            try {
-                game.setup();
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
+            game.setNextRound();
         } else {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Not users turn");
         }

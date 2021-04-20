@@ -397,7 +397,7 @@ public class GameEntity implements Serializable {
     /**
      * The next Round should only start, if all Players made the same contribution
      */
-    private void setNextRound() {
+    public void setNextRound() {
         setCheckcounter(0);
 
         if (round == Round.PREFLOP) {
@@ -448,12 +448,14 @@ public class GameEntity implements Serializable {
             allUsers.forEach(user -> user.setWantsToShow(Show.NOT_DECIDED));
         }
         else if (round == Round.SHOWDOWN) {
-            //removeUserWithNoMoney();
             try {
                 setup();
             }
             catch (Exception e) {
                 e.printStackTrace();
+            }
+            finally {
+                removeUserWithNoMoney();
             }
         }
 
@@ -595,22 +597,38 @@ public class GameEntity implements Serializable {
 
             for (User user : allUsers) {
                 if (user.getBlind() == Blind.SMALL) {
-                    index = allUsers.indexOf(user);
-                    allUsers.get(index).setBlind(Blind.NEUTRAL);
+                    index = allUsers.indexOf(user) + 1; //+1 becaus in the do while loop it is incremented in the beginning
 
-                    User toGetSmallBlind = allUsers.get(Math.abs((index - 1 + allUsers.size()) % (allUsers.size())));
-                    User toGetBigBlind = allUsers.get(Math.abs((index - 2 + allUsers.size()) % (allUsers.size())));
+                    User toGetSmallBlind;
+                    User toGetBigBlind;
+                    do {
+                        index --;
+                        toGetSmallBlind = allUsers.get(Math.abs((index - 1 + allUsers.size()) % (allUsers.size())));
+                        if(toGetSmallBlind == user) {
+                            break;
+                        }
+                    } while(toGetSmallBlind.getMoney()<= 0); //While small blind has no money, he is out and the blind role is given to next user
 
+                    do {
+                        toGetBigBlind = allUsers.get(Math.abs((index - 2 + allUsers.size()) % (allUsers.size())));
+                        if(toGetBigBlind == user) {
+                            break;
+                        }
+                        index --;
+                    } while(toGetBigBlind.getMoney() <= 0);
                     /**
                      * Assumption that we made but which is not always true: that this onTurn User is active (therefore, this User still has money)
                      */
                     onTurn = new OnTurnGetDTO();
                     onTurn.setUsername(allUsers.get(Math.abs((index - 3 + allUsers.size()) % (allUsers.size()))).getUsername());
 
-
+                    for(User u: allUsers) {
+                        u.setBlind(Blind.NEUTRAL);
+                    }
                     toGetSmallBlind.setBlind(Blind.SMALL);
                     toGetBigBlind.setBlind(Blind.BIG);
                     setUserThatRaisedLast(toGetBigBlind);
+
 
                     pot.addMoney(toGetBigBlind, toGetBigBlind.removeMoney(200));
                     pot.addMoney(toGetSmallBlind, toGetSmallBlind.removeMoney(100));
@@ -666,10 +684,11 @@ public class GameEntity implements Serializable {
     private void removeUserWithNoMoney() {
         List<User> newSpectators = new ArrayList<>();
         for(User user: allUsers) {
-            if(user.getMoney() == 0) {
+            if(user.getMoney() == 0 && getPot().getUserContributionOfAUser(user) == 0) {
                 newSpectators.add(user);
             }
         }
+        newSpectators.forEach( user -> user.getCards().clear());
         spectators.addAll(newSpectators);
         allUsers.removeAll(newSpectators);
         activeUsers.removeAll(newSpectators);

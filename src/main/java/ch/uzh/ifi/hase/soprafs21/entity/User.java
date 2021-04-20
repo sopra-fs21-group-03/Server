@@ -86,6 +86,7 @@ public class User implements Serializable {
     public int removeMoney(int amount){
         /** Should not be below 0!*/
         if (this.money - amount <= 0) {
+            amount = this.money;
             this.money = 0;
         } else{
             this.money -= amount;
