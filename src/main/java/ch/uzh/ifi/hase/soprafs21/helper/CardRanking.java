@@ -672,7 +672,7 @@ public class CardRanking {
                 for(Card card: finalCards) {
                     if(card.getRank() == rank) {
                         count ++;
-                        if(count > 1) {
+                        if(count >= 4) {
                             rankOfFour = rank;
                             break;
                         }
