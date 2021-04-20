@@ -7,6 +7,7 @@ import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
+import ch.uzh.ifi.hase.soprafs21.rest.dto.PlayerInGameGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -160,12 +161,7 @@ public class GameService {
                         // The "normal" case: the User has more money than the raise amount.
                         if (user.getMoney() > amount) {
                             //The amount should be removed from the User's money.
-                            try {
-                                user.removeMoney(amount);
-                            }
-                            catch (Exception e) {
-                                throw new ResponseStatusException(HttpStatus.CONFLICT, "Something went wrong when trying the remove the raise amount from the User's money!");
-                            }
+                            user.removeMoney(amount);
                             //put the money inside the pot
                             theGame.getPot().addMoney(user, amount);
                             //the User calling this method is the new User that raised last
@@ -234,6 +230,7 @@ public class GameService {
             // userChecks will be called, since noone called before. ATTENTION: in the first round, where we have the
             // input of BIG and SMALL Blind, this function should not be called
             userChecks(gameid, userid);
+            return;
         }
 
         //In the function call, we got a userid. Give me this User
@@ -370,9 +367,9 @@ public class GameService {
     /**
      * Gets the gameData for a game
      *
-     * @param gameID
-     * @param userWhoWantsToFetch
-     * @return
+     * @param gameID ID of the game we would like to fetch
+     * @param userWhoWantsToFetch needs a token set
+     * @return GameEntity of the requested game
      */
     public GameEntity getGameData(long gameID, User userWhoWantsToFetch) {
         Optional<GameEntity> optionalGame = gameRepository.findById(gameID);
@@ -405,6 +402,13 @@ public class GameService {
         return game;
     }
 
+    /**
+     * Used to get own gameData during game(i.e own cards)
+     * @param gameID ID of the requested Game
+     * @param userID ID of the user requesting the data
+     * @param userWhoWantsToFetch needs a token set
+     * @return User Entity of the requested data
+     */
     public User getOwnGameData(Long gameID, Long userID, User userWhoWantsToFetch) {
         Optional<GameEntity> optionalGame = gameRepository.findById(gameID);
         boolean valid = false;
@@ -436,6 +440,48 @@ public class GameService {
         }
 
         return player;
+    }
+
+    /**
+     * Used to get the data during the showdown round of a poker game
+     * @param gameID ID of the requested game
+     * @param userWhoWantsToFetch token needs to be set, used for authentication
+     * @return Lists of users in game as PlayerInGameGetDTOs
+     */
+    public List<PlayerInGameGetDTO> getDataDuringShowdown(Long gameID, User userWhoWantsToFetch){
+        GameEntity game = findGameEntity(gameID);
+        // Copy all users to a new list
+        List<User> rawPlayers = new ArrayList<>(game.getAllUsers());
+
+        // Copy them as DTOs so when modifying them original objects are unchanged
+        List<PlayerInGameGetDTO> playerInGameGetDTOS = new ArrayList<>();
+
+        boolean valid = false;
+
+        //Check if game is already
+        if (!game.getShowdown()){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Showdown round hasn't started yet.");
+        }
+
+        for (User player : rawPlayers){
+            if (player.getToken().equals(userWhoWantsToFetch.getToken())){
+                valid = true;
+            }
+
+            PlayerInGameGetDTO placeHolder = DTOMapper.INSTANCE.convertEntityToPlayerInGameGetDTO(player);
+
+            // If the player doesn't want to show its cards replace it with an empty list
+            if (!player.getWantsToShow().equals(Show.SHOW)){
+                // Set cards to an empty list
+                placeHolder.setCards(new ArrayList<>());
+            }
+            playerInGameGetDTOS.add(placeHolder);
+        }
+
+        if (!valid)
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not authorized to get this data");
+
+        return playerInGameGetDTOS;
     }
 
     public void show(GameEntity game, User user, boolean wantsToShow) {

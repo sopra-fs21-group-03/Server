@@ -8,8 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.nio.file.Path;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 public class GameController {
@@ -52,7 +52,7 @@ public class GameController {
      * - 204 if the raise was successful. Nothing will be returned
      * - 404 if gameData was not found or the User was not found
      * - 401 if User is not authorized to perform this action or if he is not in turn
-     * - 409 if User does not have enough money or if generally a money problem occurs
+     * - 409 if User does not have enough money or if generally a money problem occurs (e.g. raiseamount is below 0)
      *
      * @param gameid get the gameID of the requested game
      * @param userid the id of the user who wants to perform this action
@@ -62,12 +62,17 @@ public class GameController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public void userraises(@PathVariable("GameID") Long gameid, @PathVariable("UserID") Long userid, @RequestBody UserPutDTO userPutDTO){
-        int raiseamount = userPutDTO.getRaiseamount();
+        int raiseamount = userPutDTO.getRaiseAmount();
         User raiserUserInput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
         User raiserUserFound = gameService.getUserByIdInActiveUsers(gameid, userid);
         if (raiserUserInput.getToken().equals(raiserUserFound.getToken())){
-            gameService.userCallsForRaising(gameid, userid);
-            gameService.userRaises(gameid, userid, raiseamount);
+            if(raiseamount>0){
+                gameService.userCallsForRaising(gameid, userid);
+                gameService.userRaises(gameid, userid, raiseamount);
+            } else{
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "The raise amount always has to be above 0!");
+            }
+
         }
         else{
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The User is not authorized... (In Raise process)");
@@ -176,6 +181,29 @@ public class GameController {
         User player = gameService.getOwnGameData(GameID, UserID, userWhoWantsToFetch);
 
         return DTOMapper.INSTANCE.convertEntityToPlayerInGameGetDTO(player);
+    }
+
+    /**
+     * Used to get information during the showdown
+     *  -200 if information is fetched
+     *  -401 if user is not authorized to get this information
+     *  -409 if game is not yet in showdown round
+     *  -404 if game could not be found
+     * @param GameID ID of the requested game
+     * @param token Token of user requesting the information
+     * @return List of all users that want to show their cards
+     */
+    @GetMapping("/games/{GameID}/showdown")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public List<PlayerInGameGetDTO> getGameDataDuringShowdown(@PathVariable Long GameID, @RequestHeader(value="Authorization") String token){
+        User userWhoWantsToFetch = new User();
+        userWhoWantsToFetch.setToken(token);
+
+        List<PlayerInGameGetDTO> playersDuringShowdown = gameService.getDataDuringShowdown(GameID, userWhoWantsToFetch);
+
+
+        return playersDuringShowdown;
     }
 
     /**

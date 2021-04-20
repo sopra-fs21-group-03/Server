@@ -39,6 +39,9 @@ public class GameEntity implements Serializable {
     private List<User> allUsers;
 
     @ElementCollection
+    private List<User> spectators;
+
+    @ElementCollection
     private List<OpponentInGameGetDTO> playersInTurnOrder;
 
     @Column
@@ -191,6 +194,13 @@ public class GameEntity implements Serializable {
         return showdown;
     }
 
+    public boolean isFirstGameSetup() {
+        return firstGameSetup;
+    }
+
+    public void setFirstGameSetup(boolean firstGameSetup) {
+        this.firstGameSetup = firstGameSetup;
+    }
 
     /**
      * @param theUser who has a partner in the gameround who is the potential next player in turn. If such a player exists, the function will return his
@@ -372,7 +382,7 @@ public class GameEntity implements Serializable {
             }
         }
         int counter = 0;
-        while (counter < activeUsers.size()) {
+        while (counter < allUsers.size()) {
             index = Math.abs((index - 1 + allUsers.size()) % (allUsers.size()));
             nextUser = allUsers.get(index);
             if (activeUsers.contains(nextUser)) {
@@ -438,6 +448,7 @@ public class GameEntity implements Serializable {
             allUsers.forEach(user -> user.setWantsToShow(Show.NOT_DECIDED));
         }
         else if (round == Round.SHOWDOWN) {
+            //removeUserWithNoMoney();
             try {
                 setup();
             }
@@ -579,15 +590,8 @@ public class GameEntity implements Serializable {
         }
         else {
             int index;
-            //this if Statement will be exectued if the activeUsers List is smaller than the allUsers List. This happens, if Users fold and don't show
-            // up in the activeUsers-List anymore
-            if (activeUsers.size() < allUsers.size()) {
-                for (User user : allUsers) {
-                    if (!activeUsers.contains(user)) {
-                        activeUsers.add(user);
-                    }
-                }
-            }
+            //Clone allUsers back into activeUsers to keep turn order right
+            activeUsers = new ArrayList<>(allUsers);
 
             for (User user : allUsers) {
                 if (user.getBlind() == Blind.SMALL) {
@@ -654,6 +658,21 @@ public class GameEntity implements Serializable {
         int currentIndex = activeUsers.indexOf(user);
         int nextIndex = Math.abs(currentIndex - 1 + activeUsers.size()) % activeUsers.size();
         onTurn.setUsername(activeUsers.get(nextIndex).getUsername());
+    }
+
+    /**
+     * changes allUsers playing, that have no money left to spectators
+     */
+    private void removeUserWithNoMoney() {
+        List<User> newSpectators = new ArrayList<>();
+        for(User user: allUsers) {
+            if(user.getMoney() == 0) {
+                newSpectators.add(user);
+            }
+        }
+        spectators.addAll(newSpectators);
+        allUsers.removeAll(newSpectators);
+        activeUsers.removeAll(newSpectators);
     }
 }
 
