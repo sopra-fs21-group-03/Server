@@ -6,6 +6,7 @@ import ch.uzh.ifi.hase.soprafs21.constant.Round;
 import ch.uzh.ifi.hase.soprafs21.constant.Show;
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
+import ch.uzh.ifi.hase.soprafs21.game.cards.Deck;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.PlayerInGameGetDTO;
 import org.junit.jupiter.api.BeforeEach;
@@ -445,6 +446,50 @@ class GameServiceTest {
     }
 
     @Test
+    void userFolds_isSmallBlind_specialCaseForTheFollowingRounds(){
+        User smallblind = getSmallBlind();
+        User bigblind = getBigBlind();
+        int counter = 0;
+        while (counter < 3) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        //Now: it's the turn of the Small Blind -> he folds
+        gameService.userFolds(testGame.getId(), getIdOfUserOnTurn());
+        gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+        assertEquals(Round.FLOP, testGame.getRound());
+        assertFalse(testGame.getActiveUsers().contains(smallblind));
+        assertEquals(getIdOfUserOnTurn(), bigblind.getId());
+        gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+
+    }
+
+    @Test
+    void userFolds_isSmallBlind_specialCaseForTheFollowingRounds_allTheOthersGoAllIn(){
+        User smallblind = getSmallBlind();
+        User bigblind = getBigBlind();
+        int counter = 0;
+        while (counter < 3) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        //Now: it's the turn of the Small Blind -> he folds
+        gameService.userFolds(testGame.getId(), getIdOfUserOnTurn());
+        gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+        assertEquals(Round.FLOP, testGame.getRound());
+        assertFalse(testGame.getActiveUsers().contains(smallblind));
+        assertEquals(getIdOfUserOnTurn(), bigblind.getId());
+        gameService.userRaises(testGame.getId(), getIdOfUserOnTurn(), 4800);
+        counter = 0;
+        while (counter < 3) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        assertEquals(Round.SHOWDOWN, testGame.getRound());
+
+    }
+
+    @Test
     void userRaises_success() {
         Long id = getIdOfUserOnTurn();
         User user = getOnTurnUser();
@@ -842,6 +887,43 @@ class GameServiceTest {
         assertEquals(Round.FLOP, testGame.getRound());
 
 
+    }
+
+    @Test
+    void riverCardRoundisReached_weHave5CardsInTheRiver(){
+        int counter = 0;
+        while (counter < 5) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        assertEquals(3, testGame.getRiver().getCards().size());
+        assertEquals(Round.FLOP, testGame.getRound());
+        counter = 0;
+        while (counter < 5) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        assertEquals(4, testGame.getRiver().getCards().size());
+        assertEquals(Round.TURNCARD, testGame.getRound());
+        counter = 0;
+        while (counter < 5) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        assertEquals(5, testGame.getRiver().getCards().size());
+        assertEquals(Round.RIVERCARD, testGame.getRound());
+    }
+
+    @Test
+    void testingNewDeck(){
+        Deck firstdeck = testGame.getDeck();
+        int counter = 0;
+        while (counter < 4) {
+            gameService.userFolds(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        Deck seconddeck = testGame.getDeck();
+        assertNotSame(firstdeck, seconddeck);
     }
 
     @Test
