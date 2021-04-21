@@ -48,6 +48,7 @@ class GameControllerTest {
 
     private User testUser;
 
+    
     /**
      * Test if own gameData could be fetched
      * Game set up
