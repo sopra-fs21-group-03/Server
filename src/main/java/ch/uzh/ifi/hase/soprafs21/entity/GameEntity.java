@@ -75,6 +75,9 @@ public class GameEntity implements Serializable {
     @Column
     private int checkcounter;
 
+    @Column
+    private boolean bigblindspecialcase;
+
 
     /* Constructor */
     public GameEntity() {
@@ -85,6 +88,7 @@ public class GameEntity implements Serializable {
         spectators = new ArrayList<>();
         Id = 1L;
         firstGameSetup = true;
+        bigblindspecialcase = true;
 
         deck = new Deck();
         pot = new Pot();
@@ -213,6 +217,14 @@ public class GameEntity implements Serializable {
 
     public boolean getShowdown() {
         return showdown;
+    }
+
+    public boolean isBigblindspecialcase() {
+        return bigblindspecialcase;
+    }
+
+    public void setBigblindspecialcase(boolean bigblindspecialcase) {
+        this.bigblindspecialcase = bigblindspecialcase;
     }
 
     public boolean isFirstGameSetup() {
@@ -500,6 +512,7 @@ public class GameEntity implements Serializable {
         river.clear();
         round = Round.PREFLOP;
         showdown = false;
+        bigblindspecialcase = true;
         distributeBlinds();
         distributeCards();
 

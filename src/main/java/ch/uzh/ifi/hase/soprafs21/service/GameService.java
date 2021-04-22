@@ -172,6 +172,7 @@ public class GameService {
                             String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(user);
                             //then, set the next User on turn or the next round or declare a winner.
                             theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(usernameOfPotentialNextUserInTurn);
+                            theGame.setBigblindspecialcase(false);
                             gameRepository.save(theGame);
                             return;
                         }
@@ -192,6 +193,7 @@ public class GameService {
                             String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(user);
                             //then, set the next User on turn or the next round or declare a winner.
                             theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(usernameOfPotentialNextUserInTurn);
+                            theGame.setBigblindspecialcase(false);
                             gameRepository.save(theGame);
                             return;
 
@@ -217,7 +219,7 @@ public class GameService {
     /**
      * @param gameid -> Id of the GameSession
      * @param userid -> Id of User that wants to call
-     *
+     *               <p>
      *               In this function, "All-In" will also be handeled
      */
     public void userCalls(Long gameid, Long userid) {
@@ -249,16 +251,8 @@ public class GameService {
             //This is the "normal" call process. The User has enough money
             if (thisUser.getMoney() + amountThisUserAlreadyHasInThePot >= totalPotContributionOfPlayerThatRaisedLast) {
                 int difference = totalPotContributionOfPlayerThatRaisedLast - amountThisUserAlreadyHasInThePot;
-
-                try {
-                    thisUser.removeMoney(difference);
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
-
+                thisUser.removeMoney(difference);
                 theGame.getPot().addMoney(thisUser, difference);
-
             }
             else {
                 /**
@@ -267,6 +261,11 @@ public class GameService {
                 theGame.getPot().addMoney(thisUser, thisUser.getMoney());
                 thisUser.setMoney(0);
             }
+            if (theGame.isBigblindspecialcase() && theGame.getRound() == Round.PREFLOP) {
+                theGame.setUserThatRaisedLast(thisUser);
+                theGame.setBigblindspecialcase(false);
+            }
+
             //This was not a check-action -> therefore, the counter, will be put to 0
             theGame.setCheckcounter(0);
             //Give me the username of the User that is potentially the next user on turn
@@ -281,10 +280,9 @@ public class GameService {
     }
 
     /**
-     *
      * @param gameid -> Id of the GameSession
      * @param userid -> Id of User that wants to call
-     *
+     *               <p>
      *               When a User is raising, before he can raise, he needs to call.
      */
     public void userCallsForRaising(Long gameid, Long userid) {
@@ -292,7 +290,7 @@ public class GameService {
 
         //give me the player that raise last
         User lastRaiser = theGame.getUserThatRaisedLast();
-        if(lastRaiser == null){
+        if (lastRaiser == null) {
             return;
         }
 
@@ -311,14 +309,7 @@ public class GameService {
 
             if (thisUser.getMoney() + amountThisUserAlreadyHasInThePot >= totalPotContributionOfPlayerThatRaisedLast) {
                 int difference = totalPotContributionOfPlayerThatRaisedLast - amountThisUserAlreadyHasInThePot;
-
-                try {
-                    thisUser.removeMoney(difference);
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
-
+                thisUser.removeMoney(difference);
                 theGame.getPot().addMoney(thisUser, difference);
 
             }
@@ -336,7 +327,6 @@ public class GameService {
     /**
      * @param gameid The id of the Game that should be analyzed
      * @param userid The id of the User that wants to perform the "Check" action.
-     *
      */
     public void userChecks(Long gameid, Long userid) {
         GameEntity theGame = findGameEntity(gameid);
@@ -367,7 +357,7 @@ public class GameService {
     /**
      * Gets the gameData for a game
      *
-     * @param gameID ID of the game we would like to fetch
+     * @param gameID              ID of the game we would like to fetch
      * @param userWhoWantsToFetch needs a token set
      * @return GameEntity of the requested game
      */
@@ -404,8 +394,9 @@ public class GameService {
 
     /**
      * Used to get own gameData during game(i.e own cards)
-     * @param gameID ID of the requested Game
-     * @param userID ID of the user requesting the data
+     *
+     * @param gameID              ID of the requested Game
+     * @param userID              ID of the user requesting the data
      * @param userWhoWantsToFetch needs a token set
      * @return User Entity of the requested data
      */
@@ -446,11 +437,12 @@ public class GameService {
 
     /**
      * Used to get the data during the showdown round of a poker game
-     * @param gameID ID of the requested game
+     *
+     * @param gameID              ID of the requested game
      * @param userWhoWantsToFetch token needs to be set, used for authentication
      * @return Lists of users in game as PlayerInGameGetDTOs
      */
-    public List<PlayerInGameGetDTO> getDataDuringShowdown(Long gameID, User userWhoWantsToFetch){
+    public List<PlayerInGameGetDTO> getDataDuringShowdown(Long gameID, User userWhoWantsToFetch) {
         GameEntity game = findGameEntity(gameID);
         // Copy all users to a new list
         List<User> rawPlayers = new ArrayList<>(game.getAllUsers());
@@ -461,19 +453,19 @@ public class GameService {
         boolean valid = false;
 
         //Check if game is already
-        if (!game.getShowdown()){
+        if (!game.getShowdown()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Showdown round hasn't started yet.");
         }
 
-        for (User player : rawPlayers){
-            if (player.getToken().equals(userWhoWantsToFetch.getToken())){
+        for (User player : rawPlayers) {
+            if (player.getToken().equals(userWhoWantsToFetch.getToken())) {
                 valid = true;
             }
 
             PlayerInGameGetDTO placeHolder = DTOMapper.INSTANCE.convertEntityToPlayerInGameGetDTO(player);
 
             // If the player doesn't want to show its cards replace it with an empty list
-            if (!player.getWantsToShow().equals(Show.SHOW)){
+            if (!player.getWantsToShow().equals(Show.SHOW)) {
                 // Set cards to an empty list
                 placeHolder.setCards(new ArrayList<>());
             }
@@ -487,7 +479,7 @@ public class GameService {
     }
 
     public void show(GameEntity game, User user, boolean wantsToShow) {
-        if(checkIfUserPerformingActionIsUserOnTurn(game.getId(), user)){
+        if (checkIfUserPerformingActionIsUserOnTurn(game.getId(), user)) {
             Show show;
             if (wantsToShow) {
                 show = Show.SHOW;
@@ -522,15 +514,17 @@ public class GameService {
             game.distributePot();
             game.setNextRound();
         } else {
+
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Not users turn");
         }
     }
 
     public GameEntity getGameById(Long gameId) {
         Optional<GameEntity> game = gameRepository.findById(gameId);
-        if(game.isEmpty()) {
+        if (game.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "game not found");
-        } else {
+        }
+        else {
             return game.get();
         }
     }
