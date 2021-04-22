@@ -372,7 +372,7 @@ public class GameService {
 
         GameEntity game = optionalGame.get();
 
-        for (User user : game.getAllUsers()) {
+        for (User user : game.getRawPlayersInTurnOrder()) {
             if (user.getToken().equals(userWhoWantsToFetch.getToken())) {
                 valid = true;
                 break;
@@ -383,7 +383,7 @@ public class GameService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not logged in");
         }
 
-        for (User player : game.getAllUsers()) {
+        for (User player : game.getRawPlayersInTurnOrder()) {
             opponents.add(DTOMapper.INSTANCE.convertEntityToOpponentInGameGetDTO(player));
         }
 
@@ -412,6 +412,8 @@ public class GameService {
         User player = null;
 
         List<User> players = new ArrayList<>(game.getAllUsers());
+        players.addAll(game.getSpectators());
+
         for (User user : players) {
             if (user.getId().equals(userID)) {
                 player = user;
@@ -510,14 +512,9 @@ public class GameService {
 
             //if all user decided distribute the pot
             game.distributePot();
-            try {
-                game.setup();
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        else {
+            game.setNextRound();
+        } else {
+
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Not users turn");
         }
     }

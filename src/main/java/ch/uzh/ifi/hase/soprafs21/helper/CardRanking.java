@@ -556,7 +556,7 @@ public class CardRanking {
                         thisRank = this.getRanksGivenFour(); //length should always be 2
                         otherRank = other.getRanksGivenFour(); //length should always be 2
                         for(int i = 0; i < thisRank.length; i++) {
-                            if(thisRank[i].ordinal() > otherRank[i].ordinal()) {
+                            if(thisRank[i].ordinal() > otherRank[i].ordinal()) { //nullPointerException?
                                 return true;
                             } else if(thisRank[i].ordinal() < otherRank[i].ordinal()) {
                                 return false;
@@ -672,7 +672,7 @@ public class CardRanking {
                 for(Card card: finalCards) {
                     if(card.getRank() == rank) {
                         count ++;
-                        if(count > 1) {
+                        if(count >= 4) {
                             rankOfFour = rank;
                             break;
                         }
