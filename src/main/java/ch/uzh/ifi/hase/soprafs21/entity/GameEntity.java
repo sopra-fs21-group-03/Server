@@ -10,6 +10,7 @@ import ch.uzh.ifi.hase.soprafs21.helper.CardRanking;
 import ch.uzh.ifi.hase.soprafs21.helper.UserDraw;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OnTurnGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
+import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -43,6 +44,9 @@ public class GameEntity implements Serializable {
 
     @ElementCollection
     private List<OpponentInGameGetDTO> playersInTurnOrder;
+
+    @ElementCollection
+    private List<User> rawPlayersInTurnOrder;
 
     @Column
     private River river;
@@ -78,6 +82,7 @@ public class GameEntity implements Serializable {
         allUsers = new ArrayList<>();
         activeUsers = new ArrayList<>();
         playersInTurnOrder = new ArrayList<>();
+        spectators = new ArrayList<>();
         Id = 1L;
         firstGameSetup = true;
 
@@ -143,6 +148,22 @@ public class GameEntity implements Serializable {
 
     public void setPlayersInTurnOrder(List<OpponentInGameGetDTO> opponents) {
         this.playersInTurnOrder = opponents;
+    }
+
+    public List<User> getSpectators() {
+        return spectators;
+    }
+
+    public void setSpectators(List<User> spectators) {
+        this.spectators = spectators;
+    }
+
+    public List<User> getRawPlayersInTurnOrder() {
+        return rawPlayersInTurnOrder;
+    }
+
+    public void setRawPlayersInTurnOrder(List<User> rawPlayersInTurnOrder) {
+        this.rawPlayersInTurnOrder = rawPlayersInTurnOrder;
     }
 
     public void setId(Long gameID) {
@@ -470,6 +491,10 @@ public class GameEntity implements Serializable {
         if (firstGameSetup) {
             setStartingPotForUsers();
             setUpPot();
+
+            List<User> players = new ArrayList<>(getAllUsers());
+
+            setRawPlayersInTurnOrder(players);
         }
         deck = new Deck();
         river.clear();
