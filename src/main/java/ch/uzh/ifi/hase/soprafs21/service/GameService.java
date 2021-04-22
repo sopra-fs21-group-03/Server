@@ -1,11 +1,14 @@
 package ch.uzh.ifi.hase.soprafs21.service;
 
 
+import ch.uzh.ifi.hase.soprafs21.constant.MessageType;
 import ch.uzh.ifi.hase.soprafs21.constant.Round;
 import ch.uzh.ifi.hase.soprafs21.constant.Show;
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
+import ch.uzh.ifi.hase.soprafs21.game.protocol.ProtocolElement;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
+import ch.uzh.ifi.hase.soprafs21.repository.ProtocolRepository;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.PlayerInGameGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
@@ -30,14 +33,16 @@ import java.util.Optional;
 public class GameService {
 
     private final GameRepository gameRepository;
+    private final ProtocolRepository protocolRepository;
 
     /**
      * @param gameRepository this is the Repository which the GameService will receive. Since the GameService is responsible for actions related to saved
      *                       games, we need a Repository that saves Games.
      */
     @Autowired
-    public GameService(@Qualifier("gameRepository") GameRepository gameRepository) {
+    public GameService(@Qualifier("gameRepository") GameRepository gameRepository, @Qualifier("protocolRepository")ProtocolRepository protocolRepository) {
         this.gameRepository = gameRepository;
+        this.protocolRepository = protocolRepository;
     }
 
     /**
@@ -98,6 +103,17 @@ public class GameService {
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The User could not be found...");
     }
 
+    public User getUserInGameById(Long gameId, Long userId) {
+        GameEntity theGame = findGameEntity(gameId);
+
+        for (User user : theGame.getRawPlayersInTurnOrder()) {
+            if (userId.equals(user.getId())) {
+                return user;
+            }
+        }
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The User could not be found...");
+    }
+
 
     /**
      * @param gameid The id of the Game that should be analyzed
@@ -124,6 +140,10 @@ public class GameService {
                     theGame.getActiveUsers().remove(user);
                     //then, set the next User on turn or the next round or declare a winner.
                     theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(usernameOfPotentialNextUserInTurn);
+                    ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s folds", user.getUsername()));
+                    element = protocolRepository.save(element);
+                    protocolRepository.flush();
+                    theGame.addProtocolElement(element);
                     gameRepository.save(theGame);
                     return;
 
@@ -527,5 +547,28 @@ public class GameService {
         else {
             return game.get();
         }
+    }
+
+    public List<ProtocolElement> test() {
+        GameEntity game = new GameEntity();
+        User user = new User();
+        user.setUsername("carlitos");
+        ProtocolElement element = new ProtocolElement(MessageType.LOG, user, "HelloWorld");
+        protocolRepository.save(element);
+        protocolRepository.flush();
+
+        game.addProtocolElement(element);
+
+        element = new ProtocolElement(MessageType.CHAT, user, "called");
+        protocolRepository.save(element);
+        protocolRepository.flush();
+
+        game.addProtocolElement(element);
+        return game.getProtocol();
+    }
+
+    public List<ProtocolElement> getProtocol(Long gameId) {
+        GameEntity game = getGameById(gameId);
+        return game.getProtocol();
     }
 }

@@ -65,6 +65,7 @@ public class LoginService {
          */
         setUpGame(newUser);
 
+
         log.debug("Created Information for User: {}", newUser);
         return newUser;
     }

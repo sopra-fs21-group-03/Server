@@ -8,6 +8,7 @@ import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.game.cards.Deck;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
+import ch.uzh.ifi.hase.soprafs21.repository.ProtocolRepository;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.PlayerInGameGetDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,9 @@ import static org.junit.jupiter.api.Assertions.*;
 class GameServiceTest {
     @Mock
     private GameRepository gameRepository;
+
+    @Mock
+    private ProtocolRepository protocolRepository;
 
     @InjectMocks
     private GameService gameService;
