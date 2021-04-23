@@ -164,7 +164,7 @@ class GameEntityTest {
         }
 
     }
-
+    
     @Test
     void blindRoleWillBeReassigned_success() {
         //After a gameround, each Blind role will be reassigned to the left player of the last Blind

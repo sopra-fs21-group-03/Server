@@ -6,6 +6,7 @@ import ch.uzh.ifi.hase.soprafs21.constant.Round;
 import ch.uzh.ifi.hase.soprafs21.constant.Show;
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
+import ch.uzh.ifi.hase.soprafs21.game.cards.Deck;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.PlayerInGameGetDTO;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.http.HttpStatus;
+
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -182,14 +183,14 @@ class GameServiceTest {
      * Example in game: No one has decided yet
      */
     @Test
-    void getDataDuringShowdown_success_nobodyHasDecidedYet(){
+    void getDataDuringShowdown_success_nobodyHasDecidedYet() {
         testGame.setShowdown(true);
         List<User> gameEntityPlayers = new ArrayList<>(testGame.getAllUsers());
         List<PlayerInGameGetDTO> players = gameService.getDataDuringShowdown(testGame.getId(), testUser);
 
         int idx = 0;
 
-        for (PlayerInGameGetDTO player:players){
+        for (PlayerInGameGetDTO player : players) {
             assertEquals(player.getBlind(), gameEntityPlayers.get(idx).getBlind());
             assertEquals(player.getCards(), new ArrayList<>());
             assertEquals(player.getMoney(), gameEntityPlayers.get(idx).getMoney());
@@ -204,9 +205,9 @@ class GameServiceTest {
      * Every user doesn't want to show his cards during showdown
      */
     @Test
-    void getDataDuringShowdown_success_nobodyWantsToShow(){
+    void getDataDuringShowdown_success_nobodyWantsToShow() {
         testGame.setShowdown(true);
-        for (User player: testGame.getAllUsers()){
+        for (User player : testGame.getAllUsers()) {
             player.setWantsToShow(Show.DONT_SHOW);
         }
 
@@ -215,7 +216,7 @@ class GameServiceTest {
 
         int idx = 0;
 
-        for (PlayerInGameGetDTO player:players){
+        for (PlayerInGameGetDTO player : players) {
             assertEquals(player.getBlind(), gameEntityPlayers.get(idx).getBlind());
             assertEquals(player.getCards(), new ArrayList<>());
             assertEquals(player.getMoney(), gameEntityPlayers.get(idx).getMoney());
@@ -230,7 +231,7 @@ class GameServiceTest {
      * Mixed decisions only testUser and testUser3 want to show cards
      */
     @Test
-    void getDataDuringShowdown_success_mixedDecisions(){
+    void getDataDuringShowdown_success_mixedDecisions() {
         testGame.setShowdown(true);
         testUser.setWantsToShow(Show.SHOW);
         testUser3.setWantsToShow(Show.SHOW);
@@ -240,16 +241,18 @@ class GameServiceTest {
 
         int idx = 0;
 
-        for (PlayerInGameGetDTO player:players){
-            if (player.getUsername().equals(testUser.getUsername())){
+        for (PlayerInGameGetDTO player : players) {
+            if (player.getUsername().equals(testUser.getUsername())) {
                 assertEquals(player.getBlind(), testUser.getBlind());
                 assertEquals(player.getMoney(), testUser.getMoney());
                 assertEquals(player.getCards(), testUser.getCards());
-            } else if (player.getUsername().equals(testUser3.getUsername())){
+            }
+            else if (player.getUsername().equals(testUser3.getUsername())) {
                 assertEquals(player.getBlind(), testUser3.getBlind());
                 assertEquals(player.getMoney(), testUser3.getMoney());
                 assertEquals(player.getCards(), testUser3.getCards());
-            } else{
+            }
+            else {
                 assertEquals(player.getBlind(), gameEntityPlayers.get(idx).getBlind());
                 assertEquals(player.getCards(), new ArrayList<>());
                 assertEquals(player.getMoney(), gameEntityPlayers.get(idx).getMoney());
@@ -263,9 +266,9 @@ class GameServiceTest {
      * fetch game data everyone shows cards
      */
     @Test
-    void getDataDuringShowdown_success_everyoneShowsCards(){
+    void getDataDuringShowdown_success_everyoneShowsCards() {
         testGame.setShowdown(true);
-        for (User player: testGame.getAllUsers()){
+        for (User player : testGame.getAllUsers()) {
             player.setWantsToShow(Show.SHOW);
         }
         List<User> gameEntityPlayers = new ArrayList<>(testGame.getAllUsers());
@@ -273,7 +276,7 @@ class GameServiceTest {
 
         int idx = 0;
 
-        for (PlayerInGameGetDTO player:players){
+        for (PlayerInGameGetDTO player : players) {
             assertEquals(player.getBlind(), gameEntityPlayers.get(idx).getBlind());
             assertEquals(player.getCards(), gameEntityPlayers.get(idx).getCards());
             assertEquals(player.getMoney(), gameEntityPlayers.get(idx).getMoney());
@@ -288,10 +291,10 @@ class GameServiceTest {
      * game not found when accessing data
      */
     @Test
-    void getDataDuringShowdown_notFound(){
+    void getDataDuringShowdown_notFound() {
         testGame.setShowdown(true);
         assertThrows(ResponseStatusException.class,
-                () -> gameService.getDataDuringShowdown(testGame.getId()+1, testUser));
+                () -> gameService.getDataDuringShowdown(testGame.getId() + 1, testUser));
 
     }
 
@@ -299,7 +302,7 @@ class GameServiceTest {
      * Unauthorized user tries to get data during showdown
      */
     @Test
-    void getDataDuringShowdown_unauthorized(){
+    void getDataDuringShowdown_unauthorized() {
         testGame.setShowdown(true);
         User unauthorized = new User();
         unauthorized.setToken("falseToken");
@@ -312,7 +315,7 @@ class GameServiceTest {
      * Try to access showdown data while game is not yet in showdown
      */
     @Test
-    void getDataDuringShowdown_conflict(){
+    void getDataDuringShowdown_conflict() {
         assertThrows(ResponseStatusException.class,
                 () -> gameService.getDataDuringShowdown(testGame.getId(), testUser));
     }
@@ -432,6 +435,61 @@ class GameServiceTest {
     }
 
     @Test
+    void userFolds_nextUserComesInTurn() {
+        User onTurn = getOnTurnUser();
+        int indexOfonTurn = testGame.getActiveUsers().indexOf(onTurn);
+        int indexOfUserAfteronTurn = Math.abs((indexOfonTurn - 1 + testGame.getAllUsers().size()) % (testGame.getAllUsers().size()));
+        User userAfteronTurn = testGame.getActiveUsers().get(indexOfUserAfteronTurn);
+
+        gameService.userFolds(testGame.getId(), onTurn.getId());
+        assertEquals(userAfteronTurn.getUsername(), testGame.getOnTurn().getUsername());
+    }
+
+    @Test
+    void userFolds_isSmallBlind_specialCaseForTheFollowingRounds(){
+        User smallblind = getSmallBlind();
+        User bigblind = getBigBlind();
+        int counter = 0;
+        while (counter < 3) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        //Now: it's the turn of the Small Blind -> he folds
+        gameService.userFolds(testGame.getId(), getIdOfUserOnTurn());
+        gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+        assertEquals(Round.FLOP, testGame.getRound());
+        assertFalse(testGame.getActiveUsers().contains(smallblind));
+        assertEquals(getIdOfUserOnTurn(), bigblind.getId());
+        gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+
+    }
+
+    @Test
+    void userFolds_isSmallBlind_specialCaseForTheFollowingRounds_allTheOthersGoAllIn(){
+        User smallblind = getSmallBlind();
+        User bigblind = getBigBlind();
+        int counter = 0;
+        while (counter < 3) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        //Now: it's the turn of the Small Blind -> he folds
+        gameService.userFolds(testGame.getId(), getIdOfUserOnTurn());
+        gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+        assertEquals(Round.FLOP, testGame.getRound());
+        assertFalse(testGame.getActiveUsers().contains(smallblind));
+        assertEquals(getIdOfUserOnTurn(), bigblind.getId());
+        gameService.userRaises(testGame.getId(), getIdOfUserOnTurn(), 4800);
+        counter = 0;
+        while (counter < 3) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        assertEquals(Round.SHOWDOWN, testGame.getRound());
+
+    }
+
+    @Test
     void userRaises_success() {
         Long id = getIdOfUserOnTurn();
         User user = getOnTurnUser();
@@ -456,7 +514,19 @@ class GameServiceTest {
     }
 
     @Test
-    void userRaises_success_playerGoesAllIn(){
+    void userRaises_nextUserComesInTurn() {
+        User onTurn = getOnTurnUser();
+        int indexOfonTurn = testGame.getActiveUsers().indexOf(onTurn);
+        int indexOfUserAfteronTurn = Math.abs((indexOfonTurn - 1 + testGame.getAllUsers().size()) % (testGame.getAllUsers().size()));
+        User userAfteronTurn = testGame.getActiveUsers().get(indexOfUserAfteronTurn);
+
+        gameService.userCallsForRaising(testGame.getId(), onTurn.getId());
+        gameService.userRaises(testGame.getId(), onTurn.getId(), 300);
+        assertEquals(userAfteronTurn.getUsername(), testGame.getOnTurn().getUsername());
+    }
+
+    @Test
+    void userRaises_success_playerGoesAllIn() {
         Long id = getIdOfUserOnTurn();
         User user = getOnTurnUser();
 
@@ -519,6 +589,45 @@ class GameServiceTest {
     }
 
     @Test
+    void userRaises_butDoesNotEvenHaveEnoughMoneyToCall() {
+        User winner;
+        int counter = 0;
+        while (counter < 5) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        counter = 0;
+        //Big Blind should be the winner -> Small Blind folds
+        gameService.userFolds(testGame.getId(), getIdOfUserOnTurn());
+        //Big Blind calls
+        gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+        //The rest of the players fold
+        while (counter < 3) {
+            gameService.userFolds(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        assertEquals(Round.PREFLOP, testGame.getRound());
+        //Remember: The old Big Blind won the previous round. This old Big Blind is the new Small Blind
+        counter = 0;
+        //In the PreFlop Round everyone should call
+        while (counter < 5) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        //Now we get some fun: The winner from the last round, the new Small Blind, should raise with an amount such that the next player has to go All-In
+        gameService.userRaises(testGame.getId(), getIdOfUserOnTurn(), 4599);
+
+        counter = 0;
+        while (counter < 4) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        gameService.userRaises(testGame.getId(), getIdOfUserOnTurn(), 2);
+        assertThrows(ResponseStatusException.class, () -> gameService.userCallsForRaising(testGame.getId(), getIdOfUserOnTurn()));
+
+    }
+
+    @Test
     void userCalls_success() {
         User myUser = getOnTurnUser();
         String username = myUser.getUsername();
@@ -542,6 +651,17 @@ class GameServiceTest {
     }
 
     @Test
+    void userCalls_nextUserComesInTurn() {
+        User onTurn = getOnTurnUser();
+        int indexOfonTurn = testGame.getActiveUsers().indexOf(onTurn);
+        int indexOfUserAfteronTurn = Math.abs((indexOfonTurn - 1 + testGame.getAllUsers().size()) % (testGame.getAllUsers().size()));
+        User userAfteronTurn = testGame.getActiveUsers().get(indexOfUserAfteronTurn);
+
+        gameService.userCalls(testGame.getId(), onTurn.getId());
+        assertEquals(userAfteronTurn.getUsername(), testGame.getOnTurn().getUsername());
+    }
+
+    @Test
     void userCalls_firstUserOnTurn_nooneraised_onlysmallandbigblindputtheirinput_success() {
         User onTurn = getOnTurnUser();
         Long id2 = getIdOfUserOnTurn();
@@ -551,10 +671,63 @@ class GameServiceTest {
     }
 
     @Test
-    void userchecks_success() {
+    void userCalls_HasToGoAllIn() {
+        User winner;
+        int counter = 0;
+        while (counter < 5) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        counter = 0;
+        //Big Blind should be the winner -> Small Blind folds
+        gameService.userFolds(testGame.getId(), getIdOfUserOnTurn());
+        //Big Blind calls
+        gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+        //The rest of the players fold
+        while (counter < 3) {
+            gameService.userFolds(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        assertEquals(Round.PREFLOP, testGame.getRound());
+        //Remember: The old Big Blind won the previous round. This old Big Blind is the new Small Blind
+        counter = 0;
+        //In the PreFlop Round everyone should call
+        while (counter < 5) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        //Now we get some fun: The winner from the last round, the new Small Blind, should raise with an amount such that the next player has to go All-In
+        gameService.userRaises(testGame.getId(), getIdOfUserOnTurn(), 5400);
+        User temporaryOnTurn = getOnTurnUser();
+        assertEquals(4600, temporaryOnTurn.getMoney());
+        gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+        assertEquals(0, temporaryOnTurn.getMoney());
+
+    }
+
+    @Test
+    void userWantsToCallButHasMinusMoney_specialCase_shouldThrowException() {
+        int counter = 0;
+        while (counter < 5) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        gameService.userRaises(testGame.getId(), getIdOfUserOnTurn(), 400);
+        for (User user : testGame.getActiveUsers()) {
+            if (user.getId().equals(getIdOfUserOnTurn())) {
+                user.setMoney(-1);
+                break;
+            }
+        }
+        assertThrows(ResponseStatusException.class, () -> gameService.userCalls(testGame.getId(), getIdOfUserOnTurn()));
+
+    }
+
+    @Test
+    void userChecks_success() {
         //for checking, we are going to be in the FLOP round
         int counter = 0;
-        while (counter < 4) {
+        while (counter < 5) {
             Long id = getIdOfUserOnTurn();
             gameService.userCalls(testGame.getId(), id);
             counter++;
@@ -577,7 +750,24 @@ class GameServiceTest {
     }
 
     @Test
-    void userChecks_youShallNotCheck() {
+    void userChecks_nextUserComesInTurn() {
+        int counter = 0;
+        while (counter < 5) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+
+        User onTurn = getOnTurnUser();
+        int indexOfonTurn = testGame.getActiveUsers().indexOf(onTurn);
+        int indexOfUserAfteronTurn = Math.abs((indexOfonTurn - 1 + testGame.getAllUsers().size()) % (testGame.getAllUsers().size()));
+        User userAfteronTurn = testGame.getActiveUsers().get(indexOfUserAfteronTurn);
+
+        gameService.userChecks(testGame.getId(), onTurn.getId());
+        assertEquals(userAfteronTurn.getUsername(), testGame.getOnTurn().getUsername());
+    }
+
+    @Test
+    void userChecks_youShallNotCheckBecauseWeAreInPreFlop() {
         Long id2 = getIdOfUserOnTurn();
         User theUser = getOnTurnUser();
 
@@ -585,6 +775,19 @@ class GameServiceTest {
         assertEquals(5000, theUser.getMoney());
         assertEquals(theUser.getUsername(), testGame.getOnTurn().getUsername());
         assertEquals(300, testGame.getPot().getTotal());
+
+    }
+
+    @Test
+    void userChecks_butIsNotOnTurn() {
+        int counter = 0;
+        while (counter < 5) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        Long id = getIdOfUserOnTurn();
+        gameService.userChecks(testGame.getId(), getIdOfUserOnTurn());
+        assertThrows(ResponseStatusException.class, () -> gameService.userChecks(testGame.getId(), id));
 
     }
 
@@ -608,7 +811,7 @@ class GameServiceTest {
         User smallBlind = getSmallBlind();
 
         int counter = 0;
-        while (counter < 4) {
+        while (counter < 5) {
             gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
             counter++;
         }
@@ -640,59 +843,9 @@ class GameServiceTest {
     }
 
     @Test
-    void playerFolds_nextUserComesInTurn() {
-        User onTurn = getOnTurnUser();
-        int indexOfonTurn = testGame.getActiveUsers().indexOf(onTurn);
-        int indexOfUserAfteronTurn = Math.abs((indexOfonTurn - 1 + testGame.getAllUsers().size()) % (testGame.getAllUsers().size()));
-        User userAfteronTurn = testGame.getActiveUsers().get(indexOfUserAfteronTurn);
-
-        gameService.userFolds(testGame.getId(), onTurn.getId());
-        assertEquals(userAfteronTurn.getUsername(), testGame.getOnTurn().getUsername());
-    }
-
-    @Test
-    void playerRaises_nextUserComesInTurn() {
-        User onTurn = getOnTurnUser();
-        int indexOfonTurn = testGame.getActiveUsers().indexOf(onTurn);
-        int indexOfUserAfteronTurn = Math.abs((indexOfonTurn - 1 + testGame.getAllUsers().size()) % (testGame.getAllUsers().size()));
-        User userAfteronTurn = testGame.getActiveUsers().get(indexOfUserAfteronTurn);
-
-        gameService.userRaises(testGame.getId(), onTurn.getId(), 300);
-        assertEquals(userAfteronTurn.getUsername(), testGame.getOnTurn().getUsername());
-    }
-
-    @Test
-    void playerCalls_nextUserComesInTurn() {
-        User onTurn = getOnTurnUser();
-        int indexOfonTurn = testGame.getActiveUsers().indexOf(onTurn);
-        int indexOfUserAfteronTurn = Math.abs((indexOfonTurn - 1 + testGame.getAllUsers().size()) % (testGame.getAllUsers().size()));
-        User userAfteronTurn = testGame.getActiveUsers().get(indexOfUserAfteronTurn);
-
-        gameService.userCalls(testGame.getId(), onTurn.getId());
-        assertEquals(userAfteronTurn.getUsername(), testGame.getOnTurn().getUsername());
-    }
-
-    @Test
-    void playerChecks_nextUserComesInTurn() {
+    void userWhoRaisedLastIsReached_NextRoundShouldStart() {
         int counter = 0;
-        while (counter < 4) {
-            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
-            counter++;
-        }
-
-        User onTurn = getOnTurnUser();
-        int indexOfonTurn = testGame.getActiveUsers().indexOf(onTurn);
-        int indexOfUserAfteronTurn = Math.abs((indexOfonTurn - 1 + testGame.getAllUsers().size()) % (testGame.getAllUsers().size()));
-        User userAfteronTurn = testGame.getActiveUsers().get(indexOfUserAfteronTurn);
-
-        gameService.userChecks(testGame.getId(), onTurn.getId());
-        assertEquals(userAfteronTurn.getUsername(), testGame.getOnTurn().getUsername());
-    }
-
-    @Test
-    void playerWhoRaisedLastIsReached_NextRoundShouldStart() {
-        int counter = 0;
-        while (counter < 4) {
+        while (counter < 5) {
             gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
             counter++;
         }
@@ -708,9 +861,9 @@ class GameServiceTest {
     }
 
     @Test
-    void playerWhoStartedTheRoundIsReachedAgain_EveryoneChecked_NextRoundShouldStart() {
+    void userWhoStartedTheRoundIsReachedAgain_EveryoneChecked_NextRoundShouldStart() {
         int counter = 0;
-        while (counter < 4) {
+        while (counter < 5) {
             gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
             counter++;
         }
@@ -726,7 +879,7 @@ class GameServiceTest {
     @Test
     void flopRoundIsReached_3CardsAreRevealed() {
         int counter = 0;
-        while (counter < 4) {
+        while (counter < 5) {
             gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
             counter++;
         }
@@ -736,6 +889,133 @@ class GameServiceTest {
 
     }
 
+    @Test
+    void riverCardRoundisReached_weHave5CardsInTheRiver(){
+        int counter = 0;
+        while (counter < 5) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        assertEquals(3, testGame.getRiver().getCards().size());
+        assertEquals(Round.FLOP, testGame.getRound());
+        counter = 0;
+        while (counter < 5) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        assertEquals(4, testGame.getRiver().getCards().size());
+        assertEquals(Round.TURNCARD, testGame.getRound());
+        counter = 0;
+        while (counter < 5) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        assertEquals(5, testGame.getRiver().getCards().size());
+        assertEquals(Round.RIVERCARD, testGame.getRound());
+    }
+
+    @Test
+    void testingNewDeck(){
+        Deck firstdeck = testGame.getDeck();
+        int counter = 0;
+        while (counter < 4) {
+            gameService.userFolds(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        Deck seconddeck = testGame.getDeck();
+        assertNotSame(firstdeck, seconddeck);
+    }
+
+    @Test
+    void specialCase_BigBlindCanRaiseEvenIfEveryOneCalled() {
+        User bigblind = getBigBlind();
+        int counter = 0;
+        while (counter < 4) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        assertEquals(bigblind.getId(), getIdOfUserOnTurn());
+        assertEquals(Round.PREFLOP, testGame.getRound());
+        gameService.userRaises(testGame.getId(), getIdOfUserOnTurn(), 1300);
+        counter = 0;
+        while (counter < 4) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        assertEquals(7500, testGame.getPot().getTotal());
+        assertEquals(Round.FLOP, testGame.getRound());
+        assertEquals(getSmallBlind().getId(), getIdOfUserOnTurn());
+
+
+    }
+
+    @Test
+    void specialCase_BigBlindCanFoldEvenIfEveryOneCalled() {
+        User bigblind = getBigBlind();
+        int counter = 0;
+        while (counter < 4) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        assertEquals(bigblind.getId(), getIdOfUserOnTurn());
+        assertEquals(Round.PREFLOP, testGame.getRound());
+        gameService.userFolds(testGame.getId(), getIdOfUserOnTurn());
+        assertEquals(Round.FLOP, testGame.getRound());
+        assertEquals(1000, testGame.getPot().getTotal());
+        assertEquals(getSmallBlind().getId(), getIdOfUserOnTurn());
+
+
+    }
+
+    @Test
+    void specialCase_BigBlindCanCallEvenIfEveryOneCalled() {
+        User bigblind = getBigBlind();
+        int counter = 0;
+        while (counter < 4) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        assertEquals(bigblind.getId(), getIdOfUserOnTurn());
+        assertEquals(Round.PREFLOP, testGame.getRound());
+        gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+        assertEquals(Round.FLOP, testGame.getRound());
+        assertEquals(1000, testGame.getPot().getTotal());
+        assertEquals(getSmallBlind().getId(), getIdOfUserOnTurn());
+    }
+
+    @Test
+    void callingIsTheSameAsCheckingWhenNobodyRaised_inFlopRound() {
+        int counter = 0;
+        while (counter < 5) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        assertEquals(Round.FLOP, testGame.getRound());
+        assertEquals(1000, testGame.getPot().getTotal());
+        assertEquals(getSmallBlind().getId(), getIdOfUserOnTurn());
+        gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+        assertEquals(Round.FLOP, testGame.getRound());
+        assertEquals(1000, testGame.getPot().getTotal());
+        assertEquals(getBigBlind().getId(), getIdOfUserOnTurn());
+    }
+
+
+    @Test
+    void userNeedsToCallBeforeRaisingButHasMinusMoney_specialCase_shouldThrowException() {
+        int counter = 0;
+        while (counter < 5) {
+            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+            counter++;
+        }
+        gameService.userRaises(testGame.getId(), getIdOfUserOnTurn(), 400);
+        for (User user : testGame.getActiveUsers()) {
+            if (user.getId().equals(getIdOfUserOnTurn())) {
+                user.setMoney(-1);
+                break;
+            }
+        }
+        assertThrows(ResponseStatusException.class, () -> gameService.userCallsForRaising(testGame.getId(), getIdOfUserOnTurn()));
+    }
 }
 
 
