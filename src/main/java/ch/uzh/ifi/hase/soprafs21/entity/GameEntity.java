@@ -576,9 +576,8 @@ public class GameEntity implements Serializable {
      * This function is used to set the starting pot for all users.
      * Currently sets it to 20'000.
      *
-     * @throws Exception lobby is not full
      */
-    private void setStartingPotForUsers() throws Exception {
+    private void setStartingPotForUsers() {
         for (User user : allUsers) {
             user.setMoney(5000);
         }
@@ -588,9 +587,9 @@ public class GameEntity implements Serializable {
 
     /**
      * Used to randomly distribute the small and big blind at the start of the game.
-     * ... to be further implemented
+     * randomly distributes them at first gameSetup, in turn if not first game setup
      */
-    private void distributeBlinds() throws Exception {
+    private void distributeBlinds() {
 
         if (firstGameSetup) {
             for (User user : allUsers) {
@@ -654,7 +653,7 @@ public class GameEntity implements Serializable {
                         }
                         index --;
                     } while(toGetBigBlind.getMoney() <= 0);
-                    /**
+                    /*
                      * Assumption that we made but which is not always true: that this onTurn User is active (therefore, this User still has money)
                      */
                     onTurn = new OnTurnGetDTO();
