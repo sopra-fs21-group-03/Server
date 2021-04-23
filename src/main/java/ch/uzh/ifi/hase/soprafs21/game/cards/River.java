@@ -2,12 +2,13 @@ package ch.uzh.ifi.hase.soprafs21.game.cards;
 
 import javax.persistence.ElementCollection;
 import javax.persistence.Embeddable;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 
 @Embeddable
-public class River {
+public class River implements Serializable {
 
     @ElementCollection
     private List<Card> cards = new ArrayList<>();

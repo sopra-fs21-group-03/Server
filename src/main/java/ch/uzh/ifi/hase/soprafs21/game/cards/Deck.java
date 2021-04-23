@@ -5,12 +5,13 @@ import ch.uzh.ifi.hase.soprafs21.constant.Suit;
 
 import javax.persistence.ElementCollection;
 import javax.persistence.Embeddable;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 @Embeddable
-public class Deck {
+public class Deck implements Serializable {
     @ElementCollection
     private final List<Card> theDeck;
 

@@ -3,9 +3,10 @@ package ch.uzh.ifi.hase.soprafs21.rest.dto;
 import ch.uzh.ifi.hase.soprafs21.constant.Blind;
 
 import javax.persistence.Embeddable;
+import java.io.Serializable;
 
 @Embeddable
-public class OpponentInGameGetDTO {
+public class OpponentInGameGetDTO implements Serializable {
     private String username;
     private int money;
     private Blind blind;
