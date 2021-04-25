@@ -1,9 +1,10 @@
 package ch.uzh.ifi.hase.soprafs21.rest.dto;
 
 import javax.persistence.Embeddable;
+import java.io.Serializable;
 
 @Embeddable
-public class OnTurnGetDTO {
+public class OnTurnGetDTO implements Serializable {
     private String username;
 
     public String getUsername() {

@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -223,7 +224,6 @@ public class GameController {
     public void showCards(@PathVariable Long gameID, @PathVariable Long userID, @RequestBody UserShowPutDTO userShowPutDTO) {
         //search for user, finds only if user is in the game as active user
         User user = gameService.getUserByIdInActiveUsers(gameID, userID);
-        System.out.println(userShowPutDTO.getToken());
 
         //verify token
         if(!user.getToken().equals(userShowPutDTO.getToken())) {
