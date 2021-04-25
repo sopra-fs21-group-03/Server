@@ -184,6 +184,11 @@ public class GameService {
                             user.removeMoney(amount);
                             //put the money inside the pot
                             theGame.getPot().addMoney(user, amount);
+                            //create log message
+                            ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s raised by %d. %s has %d in the pot", user.getUsername(), amount, user.getUsername(), theGame.getPot().getUserContributionOfAUser(user)));
+                            protocolRepository.save(element);
+                            protocolRepository.flush();
+                            theGame.addProtocolElement(element);
                             //the User calling this method is the new User that raised last
                             theGame.setUserThatRaisedLast(user);
                             //This was not a check-action -> therefore, the counter, will be put to 0
@@ -205,6 +210,11 @@ public class GameService {
                             user.setMoney(0);
                             //put the money inside the pot
                             theGame.getPot().addMoney(user, amount);
+                            //create log message
+                            ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s raised by %d. %s has %d in the pot", user.getUsername(), amount, user.getUsername(), theGame.getPot().getUserContributionOfAUser(user)));
+                            protocolRepository.save(element);
+                            protocolRepository.flush();
+                            theGame.addProtocolElement(element);
                             //the User calling this method is the new User that raised last
                             theGame.setUserThatRaisedLast(user);
                             //This was not a check-action -> therefore, the counter, will be put to 0
@@ -547,24 +557,6 @@ public class GameService {
         else {
             return game.get();
         }
-    }
-
-    public List<ProtocolElement> test() {
-        GameEntity game = new GameEntity();
-        User user = new User();
-        user.setUsername("carlitos");
-        ProtocolElement element = new ProtocolElement(MessageType.LOG, user, "HelloWorld");
-        protocolRepository.save(element);
-        protocolRepository.flush();
-
-        game.addProtocolElement(element);
-
-        element = new ProtocolElement(MessageType.CHAT, user, "called");
-        protocolRepository.save(element);
-        protocolRepository.flush();
-
-        game.addProtocolElement(element);
-        return game.getProtocol();
     }
 
     public List<ProtocolElement> getProtocol(Long gameId) {
