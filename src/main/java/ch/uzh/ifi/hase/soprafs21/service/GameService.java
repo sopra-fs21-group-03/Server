@@ -283,6 +283,10 @@ public class GameService {
                 int difference = totalPotContributionOfPlayerThatRaisedLast - amountThisUserAlreadyHasInThePot;
                 thisUser.removeMoney(difference);
                 theGame.getPot().addMoney(thisUser, difference);
+                // log
+                ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s called. %s has %d in the pot", thisUser.getUsername(), thisUser.getUsername(), difference));
+                protocolRepository.save(element);
+                theGame.addProtocolElement(element);
             }
             else {
                 /**
@@ -290,6 +294,10 @@ public class GameService {
                  */
                 theGame.getPot().addMoney(thisUser, thisUser.getMoney());
                 thisUser.setMoney(0);
+                // log
+                ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s went all in. %s has %d in the pot", thisUser.getUsername(), thisUser.getUsername(), theGame.getPot().getUserContributionOfAUser(thisUser)));
+                protocolRepository.save(element);
+                theGame.addProtocolElement(element);
             }
             if (theGame.isBigblindspecialcase() && theGame.getRound() == Round.PREFLOP) {
                 theGame.setUserThatRaisedLast(thisUser);
@@ -371,6 +379,10 @@ public class GameService {
                     throw new ResponseStatusException(HttpStatus.CONFLICT, "This User cannot check, since a different User has a different amount of money in the pot!");
                 }
             }
+            // log
+            ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s checked", thisUser.getUsername()));
+            protocolRepository.save(element);
+            theGame.addProtocolElement(element);
             //Checking happened -> increase the counter
             theGame.setCheckcounter(theGame.getCheckcounter() + 1);
             //Give me the username of the User that is potentially the next user on turn
