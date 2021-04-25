@@ -193,7 +193,7 @@ public class GameController {
      * @param token Token of user requesting the information
      * @return List of all users that want to show their cards
      */
-    @GetMapping("/games/{GameID}/showdown")
+    @DeleteMapping("/games/{GameID}/showdown")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public List<PlayerInGameGetDTO> getGameDataDuringShowdown(@PathVariable Long GameID, @RequestHeader(value="Authorization") String token){
