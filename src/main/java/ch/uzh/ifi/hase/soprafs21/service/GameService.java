@@ -1,11 +1,14 @@
 package ch.uzh.ifi.hase.soprafs21.service;
 
 
+import ch.uzh.ifi.hase.soprafs21.constant.MessageType;
 import ch.uzh.ifi.hase.soprafs21.constant.Round;
 import ch.uzh.ifi.hase.soprafs21.constant.Show;
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
+import ch.uzh.ifi.hase.soprafs21.game.protocol.ProtocolElement;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
+import ch.uzh.ifi.hase.soprafs21.repository.ProtocolRepository;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.PlayerInGameGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
@@ -30,14 +33,16 @@ import java.util.Optional;
 public class GameService {
 
     private final GameRepository gameRepository;
+    private final ProtocolRepository protocolRepository;
 
     /**
      * @param gameRepository this is the Repository which the GameService will receive. Since the GameService is responsible for actions related to saved
      *                       games, we need a Repository that saves Games.
      */
     @Autowired
-    public GameService(@Qualifier("gameRepository") GameRepository gameRepository) {
+    public GameService(@Qualifier("gameRepository") GameRepository gameRepository, @Qualifier("protocolRepository")ProtocolRepository protocolRepository) {
         this.gameRepository = gameRepository;
+        this.protocolRepository = protocolRepository;
     }
 
     /**
@@ -98,6 +103,17 @@ public class GameService {
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The User could not be found...");
     }
 
+    public User getUserInGameById(Long gameId, Long userId) {
+        GameEntity theGame = findGameEntity(gameId);
+
+        for (User user : theGame.getRawPlayersInTurnOrder()) {
+            if (userId.equals(user.getId())) {
+                return user;
+            }
+        }
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The User could not be found...");
+    }
+
 
     /**
      * @param gameid The id of the Game that should be analyzed
@@ -124,6 +140,10 @@ public class GameService {
                     theGame.getActiveUsers().remove(user);
                     //then, set the next User on turn or the next round or declare a winner.
                     theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(usernameOfPotentialNextUserInTurn);
+                    ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s folds", user.getUsername()));
+                    element = protocolRepository.save(element);
+                    protocolRepository.flush();
+                    theGame.addProtocolElement(element);
                     gameRepository.save(theGame);
                     return;
 
@@ -164,6 +184,11 @@ public class GameService {
                             user.removeMoney(amount);
                             //put the money inside the pot
                             theGame.getPot().addMoney(user, amount);
+                            //create log message
+                            ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s raised by %d. %s has %d in the pot", user.getUsername(), amount, user.getUsername(), theGame.getPot().getUserContributionOfAUser(user)));
+                            protocolRepository.save(element);
+                            protocolRepository.flush();
+                            theGame.addProtocolElement(element);
                             //the User calling this method is the new User that raised last
                             theGame.setUserThatRaisedLast(user);
                             //This was not a check-action -> therefore, the counter, will be put to 0
@@ -185,6 +210,11 @@ public class GameService {
                             user.setMoney(0);
                             //put the money inside the pot
                             theGame.getPot().addMoney(user, amount);
+                            //create log message
+                            ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s raised by %d. %s has %d in the pot", user.getUsername(), amount, user.getUsername(), theGame.getPot().getUserContributionOfAUser(user)));
+                            protocolRepository.save(element);
+                            protocolRepository.flush();
+                            theGame.addProtocolElement(element);
                             //the User calling this method is the new User that raised last
                             theGame.setUserThatRaisedLast(user);
                             //This was not a check-action -> therefore, the counter, will be put to 0
@@ -253,6 +283,10 @@ public class GameService {
                 int difference = totalPotContributionOfPlayerThatRaisedLast - amountThisUserAlreadyHasInThePot;
                 thisUser.removeMoney(difference);
                 theGame.getPot().addMoney(thisUser, difference);
+                // log
+                ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s called. %s has %d in the pot", thisUser.getUsername(), thisUser.getUsername(), difference));
+                protocolRepository.save(element);
+                theGame.addProtocolElement(element);
             }
             else {
                 /**
@@ -260,6 +294,10 @@ public class GameService {
                  */
                 theGame.getPot().addMoney(thisUser, thisUser.getMoney());
                 thisUser.setMoney(0);
+                // log
+                ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s went all in. %s has %d in the pot", thisUser.getUsername(), thisUser.getUsername(), theGame.getPot().getUserContributionOfAUser(thisUser)));
+                protocolRepository.save(element);
+                theGame.addProtocolElement(element);
             }
             if (theGame.isBigblindspecialcase() && theGame.getRound() == Round.PREFLOP) {
                 theGame.setUserThatRaisedLast(thisUser);
@@ -341,6 +379,10 @@ public class GameService {
                     throw new ResponseStatusException(HttpStatus.CONFLICT, "This User cannot check, since a different User has a different amount of money in the pot!");
                 }
             }
+            // log
+            ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s checked", thisUser.getUsername()));
+            protocolRepository.save(element);
+            theGame.addProtocolElement(element);
             //Checking happened -> increase the counter
             theGame.setCheckcounter(theGame.getCheckcounter() + 1);
             //Give me the username of the User that is potentially the next user on turn
@@ -527,5 +569,10 @@ public class GameService {
         else {
             return game.get();
         }
+    }
+
+    public List<ProtocolElement> getProtocol(Long gameId) {
+        GameEntity game = getGameById(gameId);
+        return game.getProtocol();
     }
 }
