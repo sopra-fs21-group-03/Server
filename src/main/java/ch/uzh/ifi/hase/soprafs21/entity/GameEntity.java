@@ -1,11 +1,13 @@
 package ch.uzh.ifi.hase.soprafs21.entity;
 
 import ch.uzh.ifi.hase.soprafs21.constant.Blind;
+import ch.uzh.ifi.hase.soprafs21.constant.MessageType;
 import ch.uzh.ifi.hase.soprafs21.constant.Round;
 import ch.uzh.ifi.hase.soprafs21.constant.Show;
 import ch.uzh.ifi.hase.soprafs21.game.Pot;
 import ch.uzh.ifi.hase.soprafs21.game.cards.Deck;
 import ch.uzh.ifi.hase.soprafs21.game.cards.River;
+import ch.uzh.ifi.hase.soprafs21.game.protocol.ProtocolElement;
 import ch.uzh.ifi.hase.soprafs21.helper.CardRanking;
 import ch.uzh.ifi.hase.soprafs21.helper.UserDraw;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OnTurnGetDTO;
@@ -21,7 +23,7 @@ import java.util.Random;
 
 @Entity
 @Table(name = "GAME")
-public class GameEntity implements Serializable {
+public class GameEntity implements Serializable, Name {
 
     private static final long serialVersionUID = 1L;
 
@@ -78,6 +80,20 @@ public class GameEntity implements Serializable {
     @Column
     private boolean bigblindspecialcase;
 
+    @OneToMany
+    private List<ProtocolElement> protocol;
+
+    public void addProtocolElement(ProtocolElement element) {
+        this.protocol.add(element);
+    }
+
+    public void setProtocol(List<ProtocolElement> protocol) {
+        this.protocol = protocol;
+    }
+
+    public List<ProtocolElement> getProtocol() {
+        return this.protocol;
+    }
 
     /* Constructor */
     public GameEntity() {
@@ -89,6 +105,7 @@ public class GameEntity implements Serializable {
         Id = 1L;
         firstGameSetup = true;
         bigblindspecialcase = true;
+        protocol = new ArrayList<>();
 
         deck = new Deck();
         pot = new Pot();
@@ -233,6 +250,10 @@ public class GameEntity implements Serializable {
 
     public void setFirstGameSetup(boolean firstGameSetup) {
         this.firstGameSetup = firstGameSetup;
+    }
+
+    public String getName() {
+        return "Dealer";
     }
 
     /**
@@ -507,6 +528,7 @@ public class GameEntity implements Serializable {
             List<User> players = new ArrayList<>(getAllUsers());
 
             setRawPlayersInTurnOrder(players);
+            //protocol.add(new ProtocolElement(MessageType.LOG, this, "game starts"));
         }
         deck = new Deck();
         river.clear();
@@ -515,7 +537,7 @@ public class GameEntity implements Serializable {
         bigblindspecialcase = true;
         distributeBlinds();
         distributeCards();
-
+        //protocol.add(new ProtocolElement(MessageType.LOG, this, "new round starts"));
     }
 
     /* Helper functions to set up a game */
@@ -555,6 +577,7 @@ public class GameEntity implements Serializable {
     public void addUserToAll(User userToAdd) {
         if (!allUsers.contains(userToAdd)) {
             allUsers.add(userToAdd);
+            //protocol.add(new ProtocolElement(MessageType.LOG, this, String.format("User %s joined the game", userToAdd.getUsername())));
         }
     }
 
@@ -729,6 +752,9 @@ public class GameEntity implements Serializable {
         spectators.addAll(newSpectators);
         allUsers.removeAll(newSpectators);
         activeUsers.removeAll(newSpectators);
+        for(User user: newSpectators) {
+            //protocol.add(new ProtocolElement(MessageType.LOG, this, String.format("User %s is now spectating", user)));
+        }
     }
 }
 

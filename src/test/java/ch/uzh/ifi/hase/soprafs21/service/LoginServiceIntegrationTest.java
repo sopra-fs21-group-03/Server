@@ -4,6 +4,7 @@ import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs21.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
+import ch.uzh.ifi.hase.soprafs21.repository.ProtocolRepository;
 import ch.uzh.ifi.hase.soprafs21.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,10 @@ public class LoginServiceIntegrationTest {
     @Autowired
     private GameRepository gameRepository;
 
+    @Qualifier("protocolRepository")
+    @Autowired
+    private ProtocolRepository protocolRepository;
+
     @Autowired
     private LoginService loginService;
 
@@ -39,6 +44,7 @@ public class LoginServiceIntegrationTest {
     public void setup() {
         gameRepository.deleteAll();
         userRepository.deleteAll();
+        protocolRepository.deleteAll();
     }
 
     @Test

@@ -1,6 +1,8 @@
 package ch.uzh.ifi.hase.soprafs21.controller;
+import ch.uzh.ifi.hase.soprafs21.constant.MessageType;
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
+import ch.uzh.ifi.hase.soprafs21.game.protocol.ProtocolElement;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.*;
 import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs21.service.GameService;
@@ -9,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
-import java.util.List;;
+import java.util.List;
 
 @RestController
 public class GameController {
@@ -193,7 +195,7 @@ public class GameController {
      * @param token Token of user requesting the information
      * @return List of all users that want to show their cards
      */
-    @GetMapping("/games/{GameID}/showdown")
+    @DeleteMapping("/games/{GameID}/showdown")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public List<PlayerInGameGetDTO> getGameDataDuringShowdown(@PathVariable Long GameID, @RequestHeader(value="Authorization") String token){
@@ -231,4 +233,16 @@ public class GameController {
         GameEntity game = gameService.getGameById(gameID);
         gameService.show(game, user, userShowPutDTO.isWantsToShow());
     }
+
+    @GetMapping("/games/{gameId}/{userId}/chats")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public List<ProtocolElement> getChat(@PathVariable Long gameId, @PathVariable Long userId, @RequestHeader(value="Authorization") String token) {
+        User user = gameService.getUserInGameById(gameId, userId);
+        if(!(token.equals(user.getToken()))) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authorized to see this chat");
+        }
+        return gameService.getProtocol(gameId);
+    }
+
 }

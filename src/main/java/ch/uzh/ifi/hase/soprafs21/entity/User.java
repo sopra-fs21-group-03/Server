@@ -20,7 +20,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "USER")
-public class User implements Serializable {
+public class User implements Serializable, Name{
 
     private static final long serialVersionUID = 1L;
 
@@ -153,5 +153,9 @@ public class User implements Serializable {
 
     public void setWantsToShow(Show wantsToShow) {
         this.wantsToShow = wantsToShow;
+    }
+
+    public String getName() {
+        return this.username;
     }
 }
