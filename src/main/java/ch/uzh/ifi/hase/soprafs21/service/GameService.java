@@ -35,6 +35,9 @@ public class GameService {
     private final GameRepository gameRepository;
     private final ProtocolRepository protocolRepository;
 
+    private static final String NOT_FOUND_MESSAGE = "The User could not be found...";
+    private static final String NOT_IN_TURN_MESSAGE = "This User is not in turn!";
+
     /**
      * @param gameRepository this is the Repository which the GameService will receive. Since the GameService is responsible for actions related to saved
      *                       games, we need a Repository that saves Games.
@@ -84,7 +87,7 @@ public class GameService {
                 return user;
             }
         }
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The User could not be found...");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE);
     }
 
     /**
@@ -100,7 +103,7 @@ public class GameService {
                 return user;
             }
         }
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The User could not be found...");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE);
     }
 
     public User getUserInGameById(Long gameId, Long userId) {
@@ -111,7 +114,7 @@ public class GameService {
                 return user;
             }
         }
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The User could not be found...");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE);
     }
 
 
@@ -149,11 +152,11 @@ public class GameService {
 
                 }
                 else {
-                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This User is not in turn!");
+                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_IN_TURN_MESSAGE);
                 }
             }
         }
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The User could not be found...");
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_FOUND_MESSAGE);
 
     }
 
@@ -238,11 +241,11 @@ public class GameService {
                     }
                 }
                 else {
-                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This User is not in turn!");
+                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_IN_TURN_MESSAGE);
                 }
             }
         }
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The User could not be found...");
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_FOUND_MESSAGE);
 
     }
 
@@ -313,7 +316,7 @@ public class GameService {
             gameRepository.save(theGame);
         }
         else {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This User is not in turn!");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_IN_TURN_MESSAGE);
         }
     }
 
@@ -358,7 +361,7 @@ public class GameService {
             gameRepository.save(theGame);
         }
         else {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This User is not in turn!");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,NOT_IN_TURN_MESSAGE);
         }
     }
 
@@ -392,7 +395,7 @@ public class GameService {
             gameRepository.save(theGame);
         }
         else {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This User is not in turn!");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_IN_TURN_MESSAGE);
         }
     }
 
@@ -529,7 +532,7 @@ public class GameService {
                     game.nextTurnInShowdown(user);
                 }
                 catch (Exception e) {
-                    throw new ResponseStatusException(HttpStatus.CONFLICT, "Not users turn");
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, NOT_IN_TURN_MESSAGE);
                 }
             }
             else {
@@ -538,7 +541,7 @@ public class GameService {
                     game.nextTurnInShowdown(user);
                 }
                 catch (Exception e) {
-                    throw new ResponseStatusException(HttpStatus.CONFLICT, "Not users turn");
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, NOT_FOUND_MESSAGE);
 
                 }
                 game.removeUserFromActive(user.getId());
@@ -557,7 +560,7 @@ public class GameService {
             game.setNextRound();
         } else {
 
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Not users turn");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, NOT_IN_TURN_MESSAGE);
         }
     }
 
