@@ -198,6 +198,7 @@ public class GameController {
     @GetMapping("/games/{GameID}/showdown")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
+    @CrossOrigin
     public List<PlayerInGameGetDTO> getGameDataDuringShowdown(@PathVariable Long GameID, @RequestHeader(value="Authorization") String token){
         User userWhoWantsToFetch = new User();
         userWhoWantsToFetch.setToken(token);
