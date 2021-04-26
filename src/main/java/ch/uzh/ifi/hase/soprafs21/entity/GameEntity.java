@@ -680,7 +680,7 @@ public class GameEntity implements Serializable, Name {
                      * Assumption that we made but which is not always true: that this onTurn User is active (therefore, this User still has money)
                      */
                     onTurn = new OnTurnGetDTO();
-                    onTurn.setUsername(allUsers.get(Math.abs((index - 3 + allUsers.size()) % (allUsers.size()))).getUsername());
+                    onTurn.setUsername(allUsers.get(Math.abs((index - 2 + allUsers.size()) % (allUsers.size()))).getUsername());
 
                     for(User u: allUsers) {
                         u.setBlind(Blind.NEUTRAL);
