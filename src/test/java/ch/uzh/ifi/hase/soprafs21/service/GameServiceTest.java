@@ -627,7 +627,9 @@ class GameServiceTest {
             counter++;
         }
         gameService.userRaises(testGame.getId(), getIdOfUserOnTurn(), 2);
-        assertThrows(ResponseStatusException.class, () -> gameService.userCallsForRaising(testGame.getId(), getIdOfUserOnTurn()));
+        long idOfUserOnTurn = getIdOfUserOnTurn();
+
+        assertThrows(ResponseStatusException.class, () -> gameService.userCallsForRaising(testGame.getId(), idOfUserOnTurn));
 
     }
 
@@ -723,7 +725,10 @@ class GameServiceTest {
                 break;
             }
         }
-        assertThrows(ResponseStatusException.class, () -> gameService.userCalls(testGame.getId(), getIdOfUserOnTurn()));
+
+        long idOfUserOnTurn = getIdOfUserOnTurn();
+
+        assertThrows(ResponseStatusException.class, () -> gameService.userCalls(testGame.getId(), idOfUserOnTurn));
 
     }
 
@@ -1018,7 +1023,9 @@ class GameServiceTest {
                 break;
             }
         }
-        assertThrows(ResponseStatusException.class, () -> gameService.userCallsForRaising(testGame.getId(), getIdOfUserOnTurn()));
+        Long idOfUserOnTurn = getIdOfUserOnTurn();
+
+        assertThrows(ResponseStatusException.class, () -> gameService.userCallsForRaising(testGame.getId(), idOfUserOnTurn));
     }
 }
 
