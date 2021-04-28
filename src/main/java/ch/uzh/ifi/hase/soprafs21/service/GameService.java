@@ -8,7 +8,6 @@ import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.game.protocol.ProtocolElement;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
-import ch.uzh.ifi.hase.soprafs21.repository.ProtocolRepository;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.PlayerInGameGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
@@ -33,16 +32,14 @@ import java.util.Optional;
 public class GameService {
 
     private final GameRepository gameRepository;
-    private final ProtocolRepository protocolRepository;
 
     /**
      * @param gameRepository this is the Repository which the GameService will receive. Since the GameService is responsible for actions related to saved
      *                       games, we need a Repository that saves Games.
      */
     @Autowired
-    public GameService(@Qualifier("gameRepository") GameRepository gameRepository, @Qualifier("protocolRepository")ProtocolRepository protocolRepository) {
+    public GameService(@Qualifier("gameRepository") GameRepository gameRepository) {
         this.gameRepository = gameRepository;
-        this.protocolRepository = protocolRepository;
     }
 
     /**
@@ -141,8 +138,6 @@ public class GameService {
                     //then, set the next User on turn or the next round or declare a winner.
                     theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(usernameOfPotentialNextUserInTurn);
                     ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s folds", user.getUsername()));
-                    element = protocolRepository.save(element);
-                    protocolRepository.flush();
                     theGame.addProtocolElement(element);
                     gameRepository.save(theGame);
                     return;
@@ -186,8 +181,6 @@ public class GameService {
                             theGame.getPot().addMoney(user, amount);
                             //create log message
                             ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s raised by %d. %s has %d in the pot", user.getUsername(), amount, user.getUsername(), theGame.getPot().getUserContributionOfAUser(user)));
-                            protocolRepository.save(element);
-                            protocolRepository.flush();
                             theGame.addProtocolElement(element);
                             //the User calling this method is the new User that raised last
                             theGame.setUserThatRaisedLast(user);
@@ -212,8 +205,6 @@ public class GameService {
                             theGame.getPot().addMoney(user, amount);
                             //create log message
                             ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s raised by %d. %s has %d in the pot", user.getUsername(), amount, user.getUsername(), theGame.getPot().getUserContributionOfAUser(user)));
-                            protocolRepository.save(element);
-                            protocolRepository.flush();
                             theGame.addProtocolElement(element);
                             //the User calling this method is the new User that raised last
                             theGame.setUserThatRaisedLast(user);
@@ -285,7 +276,6 @@ public class GameService {
                 theGame.getPot().addMoney(thisUser, difference);
                 // log
                 ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s called. %s has %d in the pot", thisUser.getUsername(), thisUser.getUsername(), difference));
-                protocolRepository.save(element);
                 theGame.addProtocolElement(element);
             }
             else {
@@ -296,7 +286,6 @@ public class GameService {
                 thisUser.setMoney(0);
                 // log
                 ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s went all in. %s has %d in the pot", thisUser.getUsername(), thisUser.getUsername(), theGame.getPot().getUserContributionOfAUser(thisUser)));
-                protocolRepository.save(element);
                 theGame.addProtocolElement(element);
             }
             if (theGame.isBigblindspecialcase() && theGame.getRound() == Round.PREFLOP) {
@@ -381,7 +370,6 @@ public class GameService {
             }
             // log
             ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s checked", thisUser.getUsername()));
-            protocolRepository.save(element);
             theGame.addProtocolElement(element);
             //Checking happened -> increase the counter
             theGame.setCheckcounter(theGame.getCheckcounter() + 1);
