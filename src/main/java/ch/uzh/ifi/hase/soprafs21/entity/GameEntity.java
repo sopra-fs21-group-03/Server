@@ -16,6 +16,7 @@ import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
@@ -80,7 +81,7 @@ public class GameEntity implements Serializable, Name {
     @Column
     private boolean bigblindspecialcase;
 
-    @OneToMany
+    @ElementCollection
     private List<ProtocolElement> protocol;
 
     public void addProtocolElement(ProtocolElement element) {
