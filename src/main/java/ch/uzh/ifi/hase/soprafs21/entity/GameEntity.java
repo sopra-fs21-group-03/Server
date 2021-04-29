@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 @Entity
 @Table(name = "GAME")
@@ -503,6 +504,8 @@ public class GameEntity implements Serializable, Name {
         }
         else if (round == Round.SHOWDOWN) {
             try {
+
+                TimeUnit.SECONDS.sleep(15);
                 setup();
             }
             catch (Exception e) {
