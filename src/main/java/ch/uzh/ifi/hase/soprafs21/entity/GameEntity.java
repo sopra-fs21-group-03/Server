@@ -13,8 +13,6 @@ import ch.uzh.ifi.hase.soprafs21.helper.UserDraw;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OnTurnGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
-import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -31,7 +29,7 @@ public class GameEntity implements Serializable, Name {
     private static final long serialVersionUID = 1L;
 
     @Id
-    private Long Id;
+    private Long id;
 
     //private Dealer dealer; maybe not necessary?!
 
@@ -105,7 +103,7 @@ public class GameEntity implements Serializable, Name {
         activeUsers = new ArrayList<>();
         playersInTurnOrder = new ArrayList<>();
         spectators = new ArrayList<>();
-        Id = 1L;
+        id = 1L;
         firstGameSetup = true;
         bigblindspecialcase = true;
         protocol = new ArrayList<>();
@@ -191,11 +189,11 @@ public class GameEntity implements Serializable, Name {
     }
 
     public void setId(Long gameID) {
-        this.Id = gameID;
+        this.id = gameID;
     }
 
     public Long getId() {
-        return Id;
+        return id;
     }
 
     public String getGameName() {
@@ -353,7 +351,7 @@ public class GameEntity implements Serializable, Name {
         else if (activeUsers.size() == 1) {
             //this remaining User has won
             //GIVE HIM HIS MONEY
-            UserDraw winnerUserDraw = new UserDraw();
+            var winnerUserDraw = new UserDraw();
             winnerUserDraw.addUser(activeUsers.get(0), pot.getUserContributionOfAUser(activeUsers.get(0)));
             ArrayList<UserDraw> winner = new ArrayList<UserDraw>();
             winner.add(winnerUserDraw);
@@ -384,7 +382,7 @@ public class GameEntity implements Serializable, Name {
             /**
              * This is again an All-In case. The User has no money left and therefore, the next user should start.
              */
-            int nomoneycounter = 0;
+            var nomoneycounter = 0;
             for (User startingUser : activeUsers) {
                 if (startingUser.getMoney() == 0) {
                     nomoneycounter++;
@@ -438,7 +436,7 @@ public class GameEntity implements Serializable, Name {
                 }
             }
         }
-        int counter = 0;
+        var counter = 0;
         while (counter < allUsers.size()) {
             index = Math.abs((index - 1 + allUsers.size()) % (allUsers.size()));
             nextUser = allUsers.get(index);
@@ -601,7 +599,6 @@ public class GameEntity implements Serializable, Name {
     /**
      * This function is used to set the starting pot for all users.
      * Currently sets it to 20'000.
-     *
      */
     private void setStartingPotForUsers() {
         for (User user : allUsers) {
@@ -623,21 +620,21 @@ public class GameEntity implements Serializable, Name {
             }
 
             // default value
-            int randomInt = 1;
+            var randomInt = 1;
 
             // Generate random integer between 1 and 4
-            Random random = new Random();
+            var random = new Random();
             OptionalInt optionalRandomInt = random.ints(0, allUsers.size()).findFirst();
 
             if (optionalRandomInt.isPresent()) {
                 randomInt = optionalRandomInt.getAsInt();
             }
 
-            User toGetBigBlind = allUsers.get(randomInt);
+            var toGetBigBlind = allUsers.get(randomInt);
             toGetBigBlind.setBlind(Blind.BIG);
 
 
-            User toGetSmallBlind = allUsers.get(Math.abs((randomInt + 1) + allUsers.size()) % (allUsers.size()));
+            var toGetSmallBlind = allUsers.get(Math.abs((randomInt + 1) + allUsers.size()) % (allUsers.size()));
 
             toGetSmallBlind.setBlind(Blind.SMALL);
 
@@ -665,27 +662,27 @@ public class GameEntity implements Serializable, Name {
                     User toGetSmallBlind;
                     User toGetBigBlind;
                     do {
-                        index --;
+                        index--;
                         toGetSmallBlind = allUsers.get(Math.abs((index - 1 + allUsers.size()) % (allUsers.size())));
-                        if(toGetSmallBlind == user) {
+                        if (toGetSmallBlind == user) {
                             break;
                         }
-                    } while(toGetSmallBlind.getMoney()<= 0); //While small blind has no money, he is out and the blind role is given to next user
+                    } while (toGetSmallBlind.getMoney() <= 0); //While small blind has no money, he is out and the blind role is given to next user
 
                     do {
                         toGetBigBlind = allUsers.get(Math.abs((index - 2 + allUsers.size()) % (allUsers.size())));
-                        if(toGetBigBlind == user) {
+                        if (toGetBigBlind == user) {
                             break;
                         }
-                        index --;
-                    } while(toGetBigBlind.getMoney() <= 0);
+                        index--;
+                    } while (toGetBigBlind.getMoney() <= 0);
                     /*
                      * Assumption that we made but which is not always true: that this onTurn User is active (therefore, this User still has money)
                      */
                     onTurn = new OnTurnGetDTO();
                     onTurn.setUsername(allUsers.get(Math.abs((index - 2 + allUsers.size()) % (allUsers.size()))).getUsername());
 
-                    for(User u: allUsers) {
+                    for (User u : allUsers) {
                         u.setBlind(Blind.NEUTRAL);
                     }
                     toGetSmallBlind.setBlind(Blind.SMALL);
@@ -709,7 +706,7 @@ public class GameEntity implements Serializable, Name {
             if (user.getCards().size() == 2) {
                 user.getCards().clear();
             }
-            for (int i = 0; i < 2; i++) {
+            for (var i = 0; i < 2; i++) {
                 user.addCard(this.deck.draw());
             }
         }
@@ -732,7 +729,7 @@ public class GameEntity implements Serializable, Name {
      * changes the onTurn user
      */
     public void nextTurnInShowdown(User user) throws Exception {
-        if(!activeUsers.contains(user) ) {
+        if (!activeUsers.contains(user)) {
             throw new Exception("User that played was not onTurn.");
         }
         String username = this.getOnTurn().getUsername();
@@ -746,12 +743,12 @@ public class GameEntity implements Serializable, Name {
      */
     private void removeUserWithNoMoney() {
         List<User> newSpectators = new ArrayList<>();
-        for(User user: allUsers) {
-            if(user.getMoney() == 0 && getPot().getUserContributionOfAUser(user) == 0) {
+        for (User user : allUsers) {
+            if (user.getMoney() == 0 && getPot().getUserContributionOfAUser(user) == 0) {
                 newSpectators.add(user);
             }
         }
-        newSpectators.forEach( user -> user.getCards().clear());
+        newSpectators.forEach(user -> user.getCards().clear());
         spectators.addAll(newSpectators);
         allUsers.removeAll(newSpectators);
         activeUsers.removeAll(newSpectators);

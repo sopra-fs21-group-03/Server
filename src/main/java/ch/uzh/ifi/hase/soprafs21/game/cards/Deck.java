@@ -19,7 +19,7 @@ public class Deck implements Serializable {
         theDeck = new ArrayList<Card>();
         for (Suit suit : Suit.values()){
             for(Rank rank: Rank.values()){
-                Card newCard = new Card(rank, suit);
+                var newCard = new Card(rank, suit);
                 theDeck.add(newCard);
             }
         }
@@ -32,7 +32,7 @@ public class Deck implements Serializable {
 
     public Card draw() throws Exception {
         if(size() > 0){
-        Card drawCard = new Card(theDeck.get(0).getRank(), theDeck.get(0).getSuit());
+        var drawCard = new Card(theDeck.get(0).getRank(), theDeck.get(0).getSuit());
         theDeck.remove(0);
         return drawCard;}
         else{
@@ -44,7 +44,6 @@ public class Deck implements Serializable {
     public void shuffle(){
         Collections.shuffle(theDeck);
     }
-
 
 
 }

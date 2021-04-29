@@ -37,8 +37,8 @@ public class GameController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public void userfolds(@PathVariable("GameID") Long gameid, @PathVariable("UserID") Long userid, @RequestBody UserPutDTO userPutDTO){
-        User folderuserinput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
-        User folderuserfound = gameService.getUserByIdInActiveUsers(gameid, userid);
+        var folderuserinput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
+        var folderuserfound = gameService.getUserByIdInActiveUsers(gameid, userid);
         if (folderuserfound.getToken().equals(folderuserinput.getToken())){
             gameService.userFolds(gameid, userid);
         }
@@ -65,8 +65,8 @@ public class GameController {
     @ResponseBody
     public void userraises(@PathVariable("GameID") Long gameid, @PathVariable("UserID") Long userid, @RequestBody UserPutDTO userPutDTO){
         int raiseamount = userPutDTO.getRaiseAmount();
-        User raiserUserInput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
-        User raiserUserFound = gameService.getUserByIdInActiveUsers(gameid, userid);
+        var raiserUserInput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
+        var raiserUserFound = gameService.getUserByIdInActiveUsers(gameid, userid);
         if (raiserUserInput.getToken().equals(raiserUserFound.getToken())){
             if(raiseamount>0){
                 gameService.userCallsForRaising(gameid, userid);
@@ -104,8 +104,8 @@ public class GameController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public void usercalls(@PathVariable("GameID") Long gameid, @PathVariable("UserID") Long userid, @RequestBody UserPutDTO userPutDTO){
-        User callerUserInput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
-        User callerUserFound = gameService.getUserByIdInActiveUsers(gameid, userid);
+        var callerUserInput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
+        var callerUserFound = gameService.getUserByIdInActiveUsers(gameid, userid);
         if (callerUserInput.getToken().equals(callerUserFound.getToken())){
             gameService.userCalls(gameid, userid);
         }
@@ -131,8 +131,8 @@ public class GameController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public void userchecks(@PathVariable("GameID") Long gameid, @PathVariable("UserID") Long userid, @RequestBody UserPutDTO userPutDTO){
-        User checkerUserInput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
-        User checkerUserFound = gameService.getUserByIdInActiveUsers(gameid, userid);
+        var checkerUserInput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
+        var checkerUserFound = gameService.getUserByIdInActiveUsers(gameid, userid);
         if (checkerUserInput.getToken().equals(checkerUserFound.getToken())){
             gameService.userChecks(gameid, userid);
         }
@@ -154,7 +154,7 @@ public class GameController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public GameGetDTO getGameData(@PathVariable Long GameID, @RequestHeader(value = "Authorization") String token){
-        User userWhoWantsToFetch = new User();
+        var userWhoWantsToFetch = new User();
         userWhoWantsToFetch.setToken(token);
 
         GameEntity game = gameService.getGameData(GameID, userWhoWantsToFetch);
@@ -177,7 +177,7 @@ public class GameController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public PlayerInGameGetDTO getOwnGameData(@PathVariable Long GameID, @PathVariable Long UserID, @RequestHeader(value = "Authorization") String token){
-        User userWhoWantsToFetch = new User();
+        var userWhoWantsToFetch = new User();
         userWhoWantsToFetch.setToken(token);
 
         User player = gameService.getOwnGameData(GameID, UserID, userWhoWantsToFetch);
@@ -199,7 +199,7 @@ public class GameController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public List<PlayerInGameGetDTO> getGameDataDuringShowdown(@PathVariable Long GameID, @RequestHeader(value="Authorization") String token){
-        User userWhoWantsToFetch = new User();
+        var userWhoWantsToFetch = new User();
         userWhoWantsToFetch.setToken(token);
 
         List<PlayerInGameGetDTO> playersDuringShowdown = gameService.getDataDuringShowdown(GameID, userWhoWantsToFetch);
@@ -223,7 +223,7 @@ public class GameController {
     @ResponseBody
     public void showCards(@PathVariable Long gameID, @PathVariable Long userID, @RequestBody UserShowPutDTO userShowPutDTO) {
         //search for user, finds only if user is in the game as active user
-        User user = gameService.getUserByIdInActiveUsers(gameID, userID);
+        var user = gameService.getUserByIdInActiveUsers(gameID, userID);
 
         //verify token
         if(!user.getToken().equals(userShowPutDTO.getToken())) {
@@ -238,7 +238,7 @@ public class GameController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public List<ProtocolElement> getChat(@PathVariable Long gameId, @PathVariable Long userId, @RequestHeader(value="Authorization") String token) {
-        User user = gameService.getUserInGameById(gameId, userId);
+        var user = gameService.getUserInGameById(gameId, userId);
         if(!(token.equals(user.getToken()))) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authorized to see this chat");
         }

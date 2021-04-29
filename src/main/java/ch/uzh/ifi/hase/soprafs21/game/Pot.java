@@ -90,7 +90,7 @@ public class Pot implements Serializable {
         for(UserDraw user: ranking) {
             while(!user.empty()) {
                 int invested = user.getMinimum();
-                int receives = 0;
+                var receives = 0;
                 //user collects money for all users - including himself - from the pot
                 for (User enemy : enemies) {
                     receives += collect(enemy, invested);

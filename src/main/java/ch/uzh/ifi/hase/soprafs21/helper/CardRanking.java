@@ -24,7 +24,7 @@ public class CardRanking {
 
         //all users that have a hand as good as others are collected in a UserDraw and added to the unsorted ranking list
         for(User user: activeUsers) {
-            UserDraw usersAsGood = new UserDraw();
+            var usersAsGood = new UserDraw();
             usersAsGood.addUser(user, game.getPot().getUserContributionOfAUser(user));
             List<User> otherUsers = new ArrayList<>(activeUsers);
             otherUsers.remove(user);
@@ -39,7 +39,7 @@ public class CardRanking {
         //eliminate duplicates
         ArrayList<UserDraw> noDuplicates = new ArrayList<>();
         for(UserDraw userDraw: unsorted) {
-            boolean add = true;
+            var add = true;
             for(UserDraw ud: noDuplicates) {
                 if(userDraw.equals(ud)) {
                     add = false;
@@ -53,7 +53,7 @@ public class CardRanking {
 
 
         ranking.add(unsorted.get(0));
-        for(int i = 1; i < unsorted.size(); i++) {
+        for(var i = 1; i < unsorted.size(); i++) {
             User user = null;
             for(User u: unsorted.get(i).getUsers()) {
                 user = u;
@@ -177,16 +177,16 @@ public class CardRanking {
 
         private boolean isStraightFlush() {
             if (isFlush()) {
-                Suit suit = finalCards.get(0).getSuit();
+                var suit = finalCards.get(0).getSuit();
                 ArrayList<Card> highEnds = new ArrayList<>();
                 ArrayList<Integer> cardRanks = new ArrayList<>();
                 for(Card card: this.cards) {
                     cardRanks.add(card.getRank().ordinal());
                 }
                 for(Card card: this.cards) {
-                    boolean isStraightFlush = true;
+                    var isStraightFlush = true;
                     int rank = card.getRank().ordinal();
-                    for(int i = 1; i <= 4; i++) {
+                    for(var i = 1; i <= 4; i++) {
                         int expectedRank = rank - i;
                         if(!cardRanks.contains(expectedRank) || card.getSuit() != suit) {
                             isStraightFlush = false;
@@ -208,7 +208,7 @@ public class CardRanking {
         }
 
         private void setFinalCardsForStraightFlush(Suit suit, int rankOfHighest) {
-            for(int i = 0; i < 5; i++) {
+            for(var i = 0; i < 5; i++) {
                 int expectedRank = rankOfHighest - i;
                 for(Card card: this.cards) {
                     if(card.getRank().ordinal() == expectedRank && card.getSuit() == suit) {
@@ -219,7 +219,7 @@ public class CardRanking {
         }
 
         private boolean isFourOfAKind() {
-            int count = 0;
+            var count = 0;
             for (Rank rank : Rank.values()) {
                 for (Card card : cards) {
                     if (card.getRank() == rank) {
@@ -251,9 +251,9 @@ public class CardRanking {
         private boolean isFullHouse() {
             Rank rankOfThrees = null;
             Rank rankOfPair = null;
-            boolean hasThreeOfAKind = false;
-            boolean hasPair = false;
-            int count = 0;
+            var hasThreeOfAKind = false;
+            var hasPair = false;
+            var count = 0;
             for (Rank rank : Rank.values()) {
                 count = 0;
                 for (Card card : cards) {
@@ -287,8 +287,8 @@ public class CardRanking {
 
         private void setFinalCardsForFullHouse(Rank rankOfThrees, Rank rankOfPair) {
             ArrayList<Card> cards = new ArrayList<>();
-            int countThree = 0;
-            int countPair = 0;
+            var countThree = 0;
+            var countPair = 0;
             for(Card card : this.cards) {
                     if(countThree < 3 && card.getRank() == rankOfThrees) {
                         cards.add(card);
@@ -302,7 +302,7 @@ public class CardRanking {
         }
 
         private boolean isFlush() {
-            int count = 0;
+            var count = 0;
             for (Suit suit : Suit.values()) {
                 for (Card card : cards) {
                     if (card.getSuit() == suit) {
@@ -338,9 +338,9 @@ public class CardRanking {
                 cardRanks.add(card.getRank().ordinal());
             }
             for(Card card: this.cards) {
-                boolean isStraight = true;
+                var isStraight = true;
                 int rank = card.getRank().ordinal();
-                for(int i = 1; i <= 4; i++) {
+                for(var i = 1; i <= 4; i++) {
                     int expectedRank = rank - i;
                     if(!cardRanks.contains(expectedRank)) {
                         isStraight = false;
@@ -360,7 +360,7 @@ public class CardRanking {
         }
 
         private void setFinalCardsForStraight(int rank) {
-            for(int i = 0; i <= 4; i++) {
+            for(var i = 0; i <= 4; i++) {
                 int expectedRank = rank - i;
                 for(Card card: this.cards) {
                     if(card.getRank().ordinal() == expectedRank) {
@@ -372,8 +372,8 @@ public class CardRanking {
         }
 
         private boolean isThreeOfAKind() {
-            boolean isThreeOfAKind = false;
-            int count = 0;
+            var isThreeOfAKind = false;
+            var count = 0;
             for (Rank rank : Rank.values()) {
                 for (Card card : cards) {
                     if (card.getRank() == rank) {
@@ -407,7 +407,7 @@ public class CardRanking {
         private boolean isTwoPair() {
             ArrayList<Rank> pairs = new ArrayList<>();
             for(Rank rank: Rank.values()) {
-                int count = 0;
+                var count = 0;
                 for(Card card: this.cards) {
                     if(card.getRank() == rank) {
                         count ++;
@@ -441,9 +441,9 @@ public class CardRanking {
                 }
             }
             ArrayList<Card> cards = new ArrayList<>(this.cards);
-            boolean oneMore = true;
+            var oneMore = true;
             while(oneMore) {
-                Card card = getHighestCard(cards);
+                var card = getHighestCard(cards);
                 cards.remove(card);
                 if(!finalCards.contains(card)) {
                     finalCards.add(card);
@@ -455,7 +455,7 @@ public class CardRanking {
         private boolean isPair() {
             ArrayList<Rank> pairs = new ArrayList<>();
             for(Rank rank: Rank.values()) {
-                int count = 0;
+                var count = 0;
                 for(Card card: this.cards) {
                     if(card.getRank() == rank) {
                         count ++;
@@ -483,9 +483,9 @@ public class CardRanking {
                 }
             }
             ArrayList<Card> cards = new ArrayList<>(this.cards);
-            int cardsNeeded = 3;
+            var cardsNeeded = 3;
             while(cardsNeeded > 0) {
-                Card card = getHighestCard(cards);
+                var card = getHighestCard(cards);
                 cards.remove(card);
                 if(!finalCards.contains(card)) {
                     finalCards.add(card);
@@ -504,7 +504,7 @@ public class CardRanking {
         }
 
         private Card removeLowestRankCard(ArrayList<Card> cards) {
-            Card lowest = cards.get(0);
+            var lowest = cards.get(0);
             for (Card card : cards) {
                 if (card.getRank().ordinal() < lowest.getRank().ordinal()) {
                     lowest = card;
@@ -515,7 +515,7 @@ public class CardRanking {
         }
 
         private Card getHighestCard(ArrayList<Card> cards) {
-            Card highest = cards.get(0);
+            var highest = cards.get(0);
             for (Card card : cards) {
                 if (card.getRank().ordinal() > highest.getRank().ordinal()) {
                     highest = card;
@@ -525,7 +525,7 @@ public class CardRanking {
         }
 
         private void removeLowestRank(ArrayList<Rank> ranks) {
-            Rank lowest = ranks.get(0);
+            var lowest = ranks.get(0);
             for(Rank rank: ranks) {
                 if(rank.ordinal() < lowest.ordinal()) {
                     lowest = rank;
@@ -555,7 +555,7 @@ public class CardRanking {
                     case FOUR_OF_A_KIND:
                         thisRank = this.getRanksGivenFour(); //length should always be 2
                         otherRank = other.getRanksGivenFour(); //length should always be 2
-                        for(int i = 0; i < thisRank.length; i++) {
+                        for(var i = 0; i < thisRank.length; i++) {
                             if(thisRank[i].ordinal() > otherRank[i].ordinal()) { //nullPointerException?
                                 return true;
                             } else if(thisRank[i].ordinal() < otherRank[i].ordinal()) {
@@ -566,7 +566,7 @@ public class CardRanking {
                     case FULL_HOUSE:
                         thisRank = this.getRanksGivenFullHouse();
                         otherRank = other.getRanksGivenFullHouse();
-                        for(int i = 0; i < thisRank.length; i++) {
+                        for(var i = 0; i < thisRank.length; i++) {
                             if(thisRank[i].ordinal() > otherRank[i].ordinal()) {
                                 return true;
                             } else if(thisRank[i].ordinal() < otherRank[i].ordinal()) {
@@ -580,12 +580,12 @@ public class CardRanking {
                         thisCards = new ArrayList<>(this.finalCards);
                         otherCards = new ArrayList<>(other.finalCards);
                         while(thisCards.size() >= 1) {
-                            Card card = getHighestCard(thisCards);
+                            var card = getHighestCard(thisCards);
                             thisCards.remove(card);
-                            Rank thisCurrentRank = card.getRank();
+                            var thisCurrentRank = card.getRank();
                             card = getHighestCard(otherCards);
                             otherCards.remove(card);
-                            Rank otherCurrentRank = card.getRank();
+                            var otherCurrentRank = card.getRank();
                             if(thisCurrentRank.ordinal() > otherCurrentRank.ordinal()) {
                                 return true;
                             } else if(thisCurrentRank.ordinal() < otherCurrentRank.ordinal()) {
@@ -602,7 +602,7 @@ public class CardRanking {
                     case THREE_OF_A_KIND:
                         thisRank = this.getRanksGivenThree(); //array length 3
                         otherRank = other.getRanksGivenThree(); // array length 3
-                        for(int i = 0; i < thisRank.length; i++) {
+                        for(var i = 0; i < thisRank.length; i++) {
                             if(thisRank[i].ordinal() > otherRank[i].ordinal()) {
                                 return true;
                             } else if(thisRank[i].ordinal() < otherRank[i].ordinal()) {
@@ -613,7 +613,7 @@ public class CardRanking {
                     case TWO_PAIR:
                         thisRank = this.getRanksGivenTwoPair(); //array length 3
                         otherRank = other.getRanksGivenTwoPair(); // array length 3
-                        for(int i = 0; i < thisRank.length; i++) {
+                        for(var i = 0; i < thisRank.length; i++) {
                             if(thisRank[i].ordinal() > otherRank[i].ordinal()) {
                                 return true;
                             } else if(thisRank[i].ordinal() < otherRank[i].ordinal()) {
@@ -624,7 +624,7 @@ public class CardRanking {
                     case ONE_PAIR:
                         thisRank = this.getRanksGivenOnePair(); //array length 4
                         otherRank = other.getRanksGivenOnePair(); // array length 4
-                        for(int i = 0; i < thisRank.length; i++) {
+                        for(var i = 0; i < thisRank.length; i++) {
                             if(thisRank[i].ordinal() > otherRank[i].ordinal()) {
                                 return true;
                             } else if(thisRank[i].ordinal() < otherRank[i].ordinal()) {
@@ -635,7 +635,7 @@ public class CardRanking {
                     case HIGH_CARD:
                         thisRank = this.getRanksOrdered();
                         otherRank = other.getRanksOrdered();
-                        for(int i = 0; i < thisRank.length; i++) {
+                        for(var i = 0; i < thisRank.length; i++) {
                             if(thisRank[i].ordinal() > otherRank[i].ordinal()) {
                                 return true;
                             } else if(thisRank[i].ordinal() < otherRank[i].ordinal()) {
@@ -668,7 +668,7 @@ public class CardRanking {
             Rank rankOfFour = null;
             Rank rankOther = null;
             for(Rank rank: Rank.values()) {
-                int count = 0;
+                var count = 0;
                 for(Card card: finalCards) {
                     if(card.getRank() == rank) {
                         count ++;
@@ -687,8 +687,7 @@ public class CardRanking {
                     }
                 }
             }
-            Rank[] ranks = {rankOfFour, rankOther};
-            return ranks;
+            return new Rank[]{rankOfFour, rankOther};
         }
 
         /**
@@ -699,9 +698,9 @@ public class CardRanking {
         private Rank[] getRanksGivenFullHouse() {
             Rank rankOfThree = null;
             Rank rankOfTwo = null;
-            for(int i = 0; i < finalCards.size(); i++) {
-                Rank rank = finalCards.get(i).getRank();
-                int count = 0;
+            for(var i = 0; i < finalCards.size(); i++) {
+                var rank = finalCards.get(i).getRank();
+                var count = 0;
                 for(Card card: finalCards) {
                     if(card.getRank() == rank) {
                         count ++;
@@ -713,8 +712,7 @@ public class CardRanking {
                     rankOfTwo = rank;
                 }
             }
-            Rank[] ranks = {rankOfThree,rankOfTwo};
-            return ranks;
+            return new Rank[]{rankOfThree,rankOfTwo};
         }
 
         /**
@@ -728,7 +726,7 @@ public class CardRanking {
             Rank rank1 = null; //rank of other card
             Rank rank2 = null; //rank of other card
             for(Rank rank: Rank.values()) {
-                int count = 0;
+                var count = 0;
                 for(Card card: finalCards) {
                     if(card.getRank() == rank) {
                         count ++;
@@ -745,12 +743,11 @@ public class CardRanking {
                 }
             }
             if(rank2.ordinal() > rank1.ordinal()) {
-                Rank placeholder = rank1;
+                var placeholder = rank1;
                 rank1 = rank2;
                 rank2 = placeholder;
             }
-            Rank[] ranks = {three, rank1, rank2};
-            return ranks;
+            return new Rank[]{three, rank1, rank2};
         }
 
         /**
@@ -764,7 +761,7 @@ public class CardRanking {
             Rank pair2 = null; //rank of other card
             Rank other = null; //rank of other card
             for(Rank rank: Rank.values()) {
-                int count = 0;
+                var count = 0;
                 for(Card card: finalCards) {
                     if(card.getRank() == rank) {
                         count ++;
@@ -785,8 +782,7 @@ public class CardRanking {
                 pair1 = pair2;
                 pair2 = placeholder;
             }
-            Rank[] ranks = {pair1, pair2, other};
-            return ranks;
+            return new Rank[]{pair1, pair2, other};
         }
 
         /**
@@ -796,11 +792,11 @@ public class CardRanking {
          * @return Rank[4] (Rank[0] being high pair, Rank[1] being lower pair, Rank[2] being last rank)
          */
         private Rank[] getRanksGivenOnePair() {
-            Rank[] ranks = new Rank[4];
+            var ranks = new Rank[4];
             ArrayList<Card> cards = new ArrayList<>(finalCards);
             Rank pair = null;
             for(Rank rank: Rank.values()) {
-                int count = 0;
+                var count = 0;
                 for(Card card: finalCards) {
                     if(card.getRank() == rank) {
                         count ++;
@@ -813,9 +809,9 @@ public class CardRanking {
                 }
             }
             //starts with index 1, since 0 is already in ranks (pair)
-            int i = 1;
+            var i = 1;
             while(cards.size() > 0) {
-                Card card = getHighestCard(cards);
+                var card = getHighestCard(cards);
                 cards.remove(card);
                 if(!(card.getRank() == pair)) {
                     ranks[i] = card.getRank();
@@ -831,10 +827,10 @@ public class CardRanking {
          * @return Rank[5]
          */
         private Rank[] getRanksOrdered() {
-            Rank[] ranks = new Rank[5];
+            var ranks = new Rank[5];
             ArrayList<Card> cards = new ArrayList<>(finalCards);
-            for(int i = 0; i < ranks.length; i++) {
-                Card card = getHighestCard(cards);
+            for(var i = 0; i < ranks.length; i++) {
+                var card = getHighestCard(cards);
                 cards.remove(card);
                 ranks[i] = card.getRank();
             }

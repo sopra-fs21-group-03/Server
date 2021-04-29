@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @WebAppConfiguration
 @SpringBootTest
-public class LoginServiceIntegrationTest {
+class LoginServiceIntegrationTest {
 
     @Qualifier("userRepository")
     @Autowired
@@ -42,7 +42,7 @@ public class LoginServiceIntegrationTest {
     }
 
     @Test
-    public void createUser_validInputs_success() {
+    void createUser_validInputs_success() {
         // given
         assertNull(userRepository.findByUsername("testUsername"));
 
@@ -64,7 +64,7 @@ public class LoginServiceIntegrationTest {
     }
 
     @Test
-    public void createUser_duplicateUsername_throwsException() {
+    void createUser_duplicateUsername_throwsException() {
         //given
         assertNull(userRepository.findByUsername("testUsername"));
 
