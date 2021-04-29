@@ -12,6 +12,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -377,6 +379,49 @@ class GameControllerTest {
         mockMvc.perform(getRequest).andExpect(status().isUnauthorized());
     }
 
+    /**
+     * Parameterized test case for when fold, raise, call and check are not allowed
+     * Makes tests more readable
+     */
+    @ParameterizedTest
+    @CsvSource({
+            // Parameters for fold
+            "/games/1/1/fold, 401 UNAUTHORIZED \"The User is not found... (In Fold process)\", (In Fold process)",
+            // Parameters for raise
+            "/games/1/1/raise, 401 UNAUTHORIZED \"The User is not found... (In Raise process)\", (In Raise process)",
+            // Parameters for call
+            "/games/1/1/call, 401 UNAUTHORIZED \"The User is not found... (In Call process)\", (In Call process)",
+            // Parameters for check
+            "/games/1/1/check, 401 UNAUTHORIZED \"The User is not found... (In Check process)\", (In Check process)",
+    })
+    void userActionDuringGame_notAllowed(String uri, String errorMessage, String process){
+        UserPutDTO userPutDTO = new UserPutDTO();
+        userPutDTO.setToken("1");
+
+        //given() doesn't work with a void function
+        given(gameService.getUserByIdInActiveUsers(Mockito.any(), Mockito.any())).willThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED,"The User is not found... " + process));
+
+
+        MockHttpServletRequestBuilder putRequest = put(uri)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(userPutDTO));
+
+        try {
+            mockMvc.perform(putRequest)
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(result -> assertTrue(result.getResolvedException() instanceof ResponseStatusException))
+                    .andExpect(result -> assertEquals(errorMessage, result.getResolvedException().getMessage()))
+            ;
+        }
+        catch (Exception e) {
+            /*
+             * Here, the Exception should not occur. If an Exception gets caught, the Test should fail.
+             */
+
+            fail();
+        }
+    }
+
     @Test
     void userfolds_success() {
         testUser = new User();
@@ -407,35 +452,6 @@ class GameControllerTest {
             /**
              * Here, the Exception should not occur. If an Exception gets caught, the Test should fail.
              */
-            fail();
-        }
-    }
-
-
-    @Test
-    void userfolds_notallowed() {
-        UserPutDTO userPutDTO = new UserPutDTO();
-        userPutDTO.setToken("1");
-
-        //given() doesn't work with a void function
-        given(gameService.getUserByIdInActiveUsers(Mockito.any(), Mockito.any())).willThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED,"The User is not found... (In Fold process)"));
-
-
-        MockHttpServletRequestBuilder putRequest = put("/games/1/1/fold")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(userPutDTO));
-
-        try {
-            mockMvc.perform(putRequest)
-                    .andExpect(status().isUnauthorized())
-                    .andExpect(result -> assertTrue(result.getResolvedException() instanceof ResponseStatusException))
-                    .andExpect(result -> assertEquals("401 UNAUTHORIZED \"The User is not found... (In Fold process)\"", result.getResolvedException().getMessage()))
-                    ;
-        }
-        catch (Exception e) {
-            /**
-             * Here, the Exception should not occur. If an Exception gets caught, the Test should fail.*/
-
             fail();
         }
     }
@@ -476,34 +492,6 @@ class GameControllerTest {
         }
 
     }
-
-    @Test
-    void userraises_notallowed(){
-        UserPutDTO userPutDTO = new UserPutDTO();
-        userPutDTO.setToken("1");
-        userPutDTO.setRaiseAmount(10);
-
-        //given() doesn't work with a void function
-        given(gameService.getUserByIdInActiveUsers(Mockito.any(), Mockito.any())).willThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED,"The User is not found... (In Raise process)"));
-
-
-        MockHttpServletRequestBuilder putRequest = put("/games/1/1/raise")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(userPutDTO));
-
-        try {
-            mockMvc.perform(putRequest)
-                    .andExpect(status().isUnauthorized())
-                    .andExpect(result -> assertTrue(result.getResolvedException() instanceof ResponseStatusException))
-                    .andExpect(result -> assertEquals("401 UNAUTHORIZED \"The User is not found... (In Raise process)\"", result.getResolvedException().getMessage()))
-            ;
-        }
-        catch (Exception e) {
-            /**
-             * Here, the Exception should not occur. If an Exception gets caught, the Test should fail.*/
-
-            fail();
-        }}
 
     @Test
     void userraises_notenoughmoney(){
@@ -573,36 +561,6 @@ class GameControllerTest {
         }
     }
 
-    @Test
-    void usercalls_notallowed(){
-        UserPutDTO userPutDTO = new UserPutDTO();
-        userPutDTO.setToken("1");
-
-
-        //given() doesn't work with a void function
-        given(gameService.getUserByIdInActiveUsers(Mockito.any(), Mockito.any())).willThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED,"The User is not found... (In Call process)"));
-
-
-        MockHttpServletRequestBuilder putRequest = put("/games/1/1/call")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(userPutDTO));
-
-        try {
-            mockMvc.perform(putRequest)
-                    .andExpect(status().isUnauthorized())
-                    .andExpect(result -> assertTrue(result.getResolvedException() instanceof ResponseStatusException))
-                    .andExpect(result -> assertEquals("401 UNAUTHORIZED \"The User is not found... (In Call process)\"", result.getResolvedException().getMessage()))
-            ;
-        }
-        catch (Exception e) {
-            /**
-             * Here, the Exception should not occur. If an Exception gets caught, the Test should fail.*/
-
-            fail();
-        }
-
-    }
-
 
 
     @Test
@@ -633,39 +591,9 @@ class GameControllerTest {
             assertEquals("", result.getResponse().getContentAsString());
         }
         catch (Exception e) {
-            /**
+            /*
              * Here, the Exception should not occur. If an Exception gets caught, the Test should fail.
              */
-            fail();
-        }
-
-    }
-
-    @Test
-    void userchecks_notallowed(){
-        UserPutDTO userPutDTO = new UserPutDTO();
-        userPutDTO.setToken("1");
-
-
-        //given() doesn't work with a void function
-        given(gameService.getUserByIdInActiveUsers(Mockito.any(), Mockito.any())).willThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED,"The User is not found... (In Check process)"));
-
-
-        MockHttpServletRequestBuilder putRequest = put("/games/1/1/check")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(userPutDTO));
-
-        try {
-            mockMvc.perform(putRequest)
-                    .andExpect(status().isUnauthorized())
-                    .andExpect(result -> assertTrue(result.getResolvedException() instanceof ResponseStatusException))
-                    .andExpect(result -> assertEquals("401 UNAUTHORIZED \"The User is not found... (In Check process)\"", result.getResolvedException().getMessage()))
-            ;
-        }
-        catch (Exception e) {
-            /**
-             * Here, the Exception should not occur. If an Exception gets caught, the Test should fail.*/
-
             fail();
         }
 

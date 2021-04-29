@@ -16,7 +16,7 @@ class DeckTest {
     }
 
     @Test
-    public void drawTest() {
+    void drawTest() {
         try {
             /**
              * Give my a Card (draw it)
@@ -53,7 +53,7 @@ class DeckTest {
     }
 
     @Test
-    public void drawTest_Exception_DeckIsEmpty() {
+    void drawTest_Exception_DeckIsEmpty() {
         try {
 
             /**

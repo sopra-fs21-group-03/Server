@@ -15,7 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class LoginServiceTest {
+class LoginServiceTest {
 
     @Mock
     private UserRepository userRepository;
@@ -47,7 +47,7 @@ public class LoginServiceTest {
 
     /* Tests for registering a user */
     @Test
-    public void createUser_validInputs_success() {
+    void createUser_validInputs_success() {
         // when -> any object is being save in the userRepository -> return the dummy testUser
         User createdUser = loginService.createUser(testUser);
 
@@ -62,7 +62,7 @@ public class LoginServiceTest {
     }
 
     @Test
-    public void createUser_duplicateName_throwsException() {
+    void createUser_duplicateName_throwsException() {
         // given -> a first user has already been created
         loginService.createUser(testUser);
 
@@ -74,7 +74,7 @@ public class LoginServiceTest {
     }
 
     @Test
-    public void createUser_duplicateInputs_throwsException() {
+    void createUser_duplicateInputs_throwsException() {
         // given -> a first user has already been created
         loginService.createUser(testUser);
 
@@ -87,7 +87,7 @@ public class LoginServiceTest {
 
     /* Tests for logging in a user */
     @Test
-    public void loginUser_validInputs_success(){
+    void loginUser_validInputs_success(){
 
         //given -> a user has already been created
         loginService.createUser(testUser);
@@ -105,7 +105,7 @@ public class LoginServiceTest {
     }
 
     @Test
-    public void loginUser_invalidInputs_errorThrown(){
+    void loginUser_invalidInputs_errorThrown(){
         //given -> a user has already been created
         loginService.createUser(testUser);
 
@@ -122,7 +122,7 @@ public class LoginServiceTest {
     /* Tests for logging out a user */
 
     @Test
-    public void logoutUser_validInputs_success(){
+    void logoutUser_validInputs_success(){
         //given -> a user has already been created
         loginService.createUser(testUser);
 
@@ -140,7 +140,7 @@ public class LoginServiceTest {
     }
 
     @Test
-    public void logoutUser_invalidInputs_notFound(){
+    void logoutUser_invalidInputs_notFound(){
         //given -> a user has already been created
         loginService.createUser(testUser);
 
@@ -157,7 +157,7 @@ public class LoginServiceTest {
     }
 
     @Test
-    public void logoutUser_invalidInputs_unauthorized(){
+    void logoutUser_invalidInputs_unauthorized(){
 
         //given -> a user has already been created
         loginService.createUser(testUser);

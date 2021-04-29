@@ -78,7 +78,7 @@ public class LoginService {
      * @return Token of the found user if credentials are checked successfully
      */
     public String checkLoginCredentials(User userToLogin) {
-        User fetched = userRepository.findByUsername(userToLogin.getUsername());
+        var fetched = userRepository.findByUsername(userToLogin.getUsername());
 
         // Check if password and username match
         boolean valid = fetched != null && fetched.getPassword().equals(userToLogin.getPassword());
@@ -172,7 +172,7 @@ public class LoginService {
      * @param firstUserInGame first user to join the game
      */
     private void createGame(User firstUserInGame) {
-        GameEntity game = new GameEntity();
+        var game = new GameEntity();
 
         game.addUserToAll(firstUserInGame);
         game.addUserToActive(firstUserInGame);
@@ -209,9 +209,9 @@ public class LoginService {
      * @see User
      */
     private void checkIfUserExists(User userToBeCreated) {
-        User userByUsername = userRepository.findByUsername(userToBeCreated.getUsername());
+        var userByUsername = userRepository.findByUsername(userToBeCreated.getUsername());
 
-        String baseErrorMessage = "The %s provided is not unique. Therefore, the user could not be created!";
+        var baseErrorMessage = "The %s provided is not unique. Therefore, the user could not be created!";
         if (userByUsername != null) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, String.format(baseErrorMessage, "username"));
         }

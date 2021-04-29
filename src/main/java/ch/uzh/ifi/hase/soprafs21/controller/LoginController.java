@@ -49,7 +49,7 @@ public class LoginController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public UserGetDTO getUserID(@RequestHeader(value = "Authorization") String token){
-        User userGetDTO = loginService.getUserId(token);
+        var userGetDTO = loginService.getUserId(token);
 
         return DTOMapper.INSTANCE.convertEntityToUserGetDTO(userGetDTO);
     }
@@ -65,10 +65,10 @@ public class LoginController {
     @ResponseBody
     public Map<String, String> createUser(@RequestBody UserPostDTO userPostDTO) {
         // convert API user to internal representation
-        User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
+        var userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
 
         // create user
-        User createdUser = loginService.createUser(userInput);
+        var createdUser = loginService.createUser(userInput);
 
         // Return String
         return Collections.singletonMap("token", createdUser.getToken());
@@ -84,7 +84,7 @@ public class LoginController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public Map<String, String> loginUser(@RequestBody UserPostDTO userPostDTO){
-        User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
+        var userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
 
         // If successful userStatus is set to online
         String token = loginService.checkLoginCredentials(userInput);
@@ -107,7 +107,7 @@ public class LoginController {
     @PutMapping("/users/{userID}/logout")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void logoutUser(@RequestBody UserPutDTO userPutDTO, @PathVariable(value="userID") Long userID){
-        User toLogout = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
+        var toLogout = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
 
         loginService.getUserToLogout(toLogout, userID);
 
