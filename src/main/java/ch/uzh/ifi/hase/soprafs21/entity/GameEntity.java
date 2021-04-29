@@ -9,11 +9,13 @@ import ch.uzh.ifi.hase.soprafs21.game.cards.River;
 import ch.uzh.ifi.hase.soprafs21.game.protocol.ProtocolElement;
 import ch.uzh.ifi.hase.soprafs21.helper.CardRanking;
 import ch.uzh.ifi.hase.soprafs21.helper.UserDraw;
+import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OnTurnGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
@@ -78,7 +80,7 @@ public class GameEntity implements Serializable, Name {
     @Column
     private boolean bigblindspecialcase;
 
-    @OneToMany
+    @ElementCollection
     private List<ProtocolElement> protocol;
 
     public void addProtocolElement(ProtocolElement element) {
@@ -459,6 +461,7 @@ public class GameEntity implements Serializable, Name {
                 river.addCard(deck.draw());
                 river.addCard(deck.draw());
                 river.addCard(deck.draw());
+                this.protocol.add(new ProtocolElement(MessageType.LOG, this, "Three cards are dealt."));
             }
             catch (Exception e) {
                 e.printStackTrace();
@@ -471,7 +474,7 @@ public class GameEntity implements Serializable, Name {
             userThatRaisedLast = null;
             try {
                 river.addCard(deck.draw());
-
+                this.protocol.add(new ProtocolElement(MessageType.LOG, this, "One more card is dealt."));
             }
             catch (Exception e) {
                 e.printStackTrace();
@@ -484,7 +487,7 @@ public class GameEntity implements Serializable, Name {
             userThatRaisedLast = null;
             try {
                 river.addCard(deck.draw());
-
+                this.protocol.add(new ProtocolElement(MessageType.LOG, this, "One more card is dealt."));
             }
             catch (Exception e) {
                 e.printStackTrace();
@@ -526,7 +529,6 @@ public class GameEntity implements Serializable, Name {
             List<User> players = new ArrayList<>(getAllUsers());
 
             setRawPlayersInTurnOrder(players);
-            //protocol.add(new ProtocolElement(MessageType.LOG, this, "game starts"));
         }
         deck = new Deck();
         river.clear();
@@ -535,7 +537,7 @@ public class GameEntity implements Serializable, Name {
         bigblindspecialcase = true;
         distributeBlinds();
         distributeCards();
-        //protocol.add(new ProtocolElement(MessageType.LOG, this, "new round starts"));
+        protocol.add(new ProtocolElement(MessageType.LOG, this, "New Round starts"));
     }
 
     /* Helper functions to set up a game */
@@ -575,7 +577,7 @@ public class GameEntity implements Serializable, Name {
     public void addUserToAll(User userToAdd) {
         if (!allUsers.contains(userToAdd)) {
             allUsers.add(userToAdd);
-            //protocol.add(new ProtocolElement(MessageType.LOG, this, String.format("User %s joined the game", userToAdd.getUsername())));
+            protocol.add(new ProtocolElement(MessageType.LOG, this, String.format("User %s joined the table", userToAdd.getUsername())));
         }
     }
 
@@ -677,7 +679,7 @@ public class GameEntity implements Serializable, Name {
                      * Assumption that we made but which is not always true: that this onTurn User is active (therefore, this User still has money)
                      */
                     onTurn = new OnTurnGetDTO();
-                    onTurn.setUsername(allUsers.get(Math.abs((index - 3 + allUsers.size()) % (allUsers.size()))).getUsername());
+                    onTurn.setUsername(allUsers.get(Math.abs((index - 2 + allUsers.size()) % (allUsers.size()))).getUsername());
 
                     for (User u : allUsers) {
                         u.setBlind(Blind.NEUTRAL);
@@ -749,8 +751,8 @@ public class GameEntity implements Serializable, Name {
         spectators.addAll(newSpectators);
         allUsers.removeAll(newSpectators);
         activeUsers.removeAll(newSpectators);
-        for (User user : newSpectators) {
-            //protocol.add(new ProtocolElement(MessageType.LOG, this, String.format("User %s is now spectating", user)));
+        for(User user: newSpectators) {
+            protocol.add(new ProtocolElement(MessageType.LOG, this, String.format("User %s is now spectating", user)));
         }
     }
 }
