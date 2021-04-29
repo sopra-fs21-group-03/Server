@@ -81,15 +81,11 @@ public class GameEntity implements Serializable, Name {
     @Column
     private boolean bigblindspecialcase;
 
-    @Embedded
+    @ElementCollection
     private List<ProtocolElement> protocol;
 
     public void addProtocolElement(ProtocolElement element) {
-        if(this.protocol == null) {
-            this.protocol = new ArrayList<>();
-        }
-        List<ProtectionDomain> newProtocol = new ArrayList<>(protocol);
-        this.setProtocol(this.protocol);
+        this.protocol.add(element);
     }
 
     public void setProtocol(List<ProtocolElement> protocol) {
