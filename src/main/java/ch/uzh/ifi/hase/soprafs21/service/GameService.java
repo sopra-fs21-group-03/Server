@@ -140,6 +140,7 @@ public class GameService {
                     theGame.getActiveUsers().remove(user);
                     //then, set the next User on turn or the next round or declare a winner.
                     theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(usernameOfPotentialNextUserInTurn);
+                    var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s folds", user.getUsername()));
                     theGame.addProtocolElement(element);
                     gameRepository.save(theGame);
                     return;
@@ -182,7 +183,7 @@ public class GameService {
                             //put the money inside the pot
                             theGame.getPot().addMoney(user, amount);
                             //create log message
-
+                            ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s raised by %d. %s has %d in the pot", user.getUsername(), amount, user.getUsername(), theGame.getPot().getUserContributionOfAUser(user)));
                             theGame.addProtocolElement(element);
                             //the User calling this method is the new User that raised last
                             theGame.setUserThatRaisedLast(user);
@@ -207,7 +208,7 @@ public class GameService {
                             theGame.getPot().addMoney(user, amount);
                             //create log message
 
-                            ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s raised by %d. %s has %d in the pot", user.getUsername(), amount, user.getUsername(), theGame.getPot().getUserContributionOfAUser(user)));
+                            var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s raised by %d. %s has %d in the pot", user.getUsername(), amount, user.getUsername(), theGame.getPot().getUserContributionOfAUser(user)));
                             theGame.addProtocolElement(element);
                             //the User calling this method is the new User that raised last
                             theGame.setUserThatRaisedLast(user);
