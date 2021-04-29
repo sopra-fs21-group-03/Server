@@ -753,7 +753,7 @@ public class GameEntity implements Serializable, Name {
         allUsers.removeAll(newSpectators);
         activeUsers.removeAll(newSpectators);
         for(User user: newSpectators) {
-            protocol.add(new ProtocolElement(MessageType.LOG, this, String.format("User %s is now spectating", user)));
+            protocol.add(new ProtocolElement(MessageType.LOG, this, String.format("User %s is now spectating", user.getUsername())));
         }
     }
 }
