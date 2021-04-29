@@ -36,19 +36,19 @@ public class GameEntity implements Serializable, Name {
     @Column
     private String gameName;
 
-    @ElementCollection
+    @OneToMany(fetch = FetchType.EAGER)
     private List<User> activeUsers;
 
-    @ElementCollection
+    @OneToMany
     private List<User> allUsers;
 
-    @ElementCollection
+    @OneToMany
     private List<User> spectators;
 
     @ElementCollection
     private List<OpponentInGameGetDTO> playersInTurnOrder;
 
-    @ElementCollection
+    @OneToMany
     private List<User> rawPlayersInTurnOrder;
 
     @Column
