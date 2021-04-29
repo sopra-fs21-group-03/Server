@@ -54,7 +54,7 @@ public class GameService {
      * @return true if the User that called this method is on turn. Else, return false
      */
     private boolean checkIfUserPerformingActionIsUserOnTurn(Long gameid, User user) {
-        GameEntity theGame = findGameEntity(gameid);
+        var theGame = findGameEntity(gameid);
         return theGame.getOnTurn().getUsername().equals(user.getUsername());
     }
 
@@ -80,7 +80,7 @@ public class GameService {
      * @return The User if there is a User with the id userid in allUsers. Else, if there is no User with such an id, a ResponseStatusException will be thrown
      */
     public User getUserByIdInAllUsers(Long gameid, Long userid) {
-        GameEntity theGame = findGameEntity(gameid);
+        var theGame = findGameEntity(gameid);
 
         for (User user : theGame.getAllUsers()) {
             if (userid.equals(user.getId())) {
@@ -96,7 +96,7 @@ public class GameService {
      * @return The User if there is a User with the id userid in activeUsers. Else, if there is no User with such an id, a ResponseStatusException will be thrown
      */
     public User getUserByIdInActiveUsers(Long gameid, Long userid) {
-        GameEntity theGame = findGameEntity(gameid);
+        var theGame = findGameEntity(gameid);
 
         for (User user : theGame.getActiveUsers()) {
             if (userid.equals(user.getId())) {
@@ -107,7 +107,7 @@ public class GameService {
     }
 
     public User getUserInGameById(Long gameId, Long userId) {
-        GameEntity theGame = findGameEntity(gameId);
+        var theGame = findGameEntity(gameId);
 
         for (User user : theGame.getRawPlayersInTurnOrder()) {
             if (userId.equals(user.getId())) {
@@ -124,7 +124,7 @@ public class GameService {
      */
     public void userFolds(Long gameid, Long userid) {
         //first, find the GameEntity (find it with the id called gameid)
-        GameEntity theGame = findGameEntity(gameid);
+        var theGame = findGameEntity(gameid);
         //then, find the User with the id userid. For performing an action, a User has to be in the activeUsers List.
         for (User user : theGame.getActiveUsers()) {
             //You found the User (.equals() method)
@@ -143,7 +143,7 @@ public class GameService {
                     theGame.getActiveUsers().remove(user);
                     //then, set the next User on turn or the next round or declare a winner.
                     theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(usernameOfPotentialNextUserInTurn);
-                    ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s folds", user.getUsername()));
+                    var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s folds", user.getUsername()));
                     element = protocolRepository.save(element);
                     protocolRepository.flush();
                     theGame.addProtocolElement(element);
@@ -171,7 +171,7 @@ public class GameService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "The raise amount always has to be above 0!");
         }
         //first, find the GameEntity (find it with the id called gameid)
-        GameEntity theGame = findGameEntity(gameid);
+        var theGame = findGameEntity(gameid);
 
         //then, find the User with the id userid. For performing an action, a User has to be in the activeUsers List.
         for (User user : theGame.getActiveUsers()) {
@@ -188,7 +188,7 @@ public class GameService {
                             //put the money inside the pot
                             theGame.getPot().addMoney(user, amount);
                             //create log message
-                            ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s raised by %d. %s has %d in the pot", user.getUsername(), amount, user.getUsername(), theGame.getPot().getUserContributionOfAUser(user)));
+                            var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s raised by %d. %s has %d in the pot", user.getUsername(), amount, user.getUsername(), theGame.getPot().getUserContributionOfAUser(user)));
                             protocolRepository.save(element);
                             protocolRepository.flush();
                             theGame.addProtocolElement(element);
@@ -214,7 +214,7 @@ public class GameService {
                             //put the money inside the pot
                             theGame.getPot().addMoney(user, amount);
                             //create log message
-                            ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s raised by %d. %s has %d in the pot", user.getUsername(), amount, user.getUsername(), theGame.getPot().getUserContributionOfAUser(user)));
+                            var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s raised by %d. %s has %d in the pot", user.getUsername(), amount, user.getUsername(), theGame.getPot().getUserContributionOfAUser(user)));
                             protocolRepository.save(element);
                             protocolRepository.flush();
                             theGame.addProtocolElement(element);
@@ -257,9 +257,9 @@ public class GameService {
      */
     public void userCalls(Long gameid, Long userid) {
         //first, find the GameEntity (find it with the id called gameid)
-        GameEntity theGame = findGameEntity(gameid);
+        var theGame = findGameEntity(gameid);
         //then: give me the player that raised last
-        User lastRaiser = theGame.getUserThatRaisedLast();
+        var lastRaiser = theGame.getUserThatRaisedLast();
         //If you are not in the PREFLOP round and noone raised -> calling is like checking
         if (lastRaiser == null && theGame.getRound() != Round.PREFLOP) {
             // userChecks will be called, since noone called before. ATTENTION: in the first round, where we have the
@@ -269,7 +269,7 @@ public class GameService {
         }
 
         //In the function call, we got a userid. Give me this User
-        User thisUser = getUserByIdInActiveUsers(gameid, userid);
+        var thisUser = getUserByIdInActiveUsers(gameid, userid);
         //is this User on turn?
         if (checkIfUserPerformingActionIsUserOnTurn(gameid, thisUser)) {
             //If a User has no money, he should not be able to make a turn again
@@ -280,14 +280,14 @@ public class GameService {
             //if someone wants to call -> he wants to have the same amount of money in the pot as the user that raised last
             int totalPotContributionOfPlayerThatRaisedLast = theGame.getPot().getUserContributionOfAUser(lastRaiser);
             // amount this User already has in the pot
-            int amountThisUserAlreadyHasInThePot = theGame.getPot().getUserContributionOfAUser(thisUser);
+            var amountThisUserAlreadyHasInThePot = theGame.getPot().getUserContributionOfAUser(thisUser);
             //This is the "normal" call process. The User has enough money
             if (thisUser.getMoney() + amountThisUserAlreadyHasInThePot >= totalPotContributionOfPlayerThatRaisedLast) {
                 int difference = totalPotContributionOfPlayerThatRaisedLast - amountThisUserAlreadyHasInThePot;
                 thisUser.removeMoney(difference);
                 theGame.getPot().addMoney(thisUser, difference);
                 // log
-                ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s called. %s has %d in the pot", thisUser.getUsername(), thisUser.getUsername(), difference));
+                var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s called. %s has %d in the pot", thisUser.getUsername(), thisUser.getUsername(), difference));
                 protocolRepository.save(element);
                 theGame.addProtocolElement(element);
             }
@@ -298,7 +298,7 @@ public class GameService {
                 theGame.getPot().addMoney(thisUser, thisUser.getMoney());
                 thisUser.setMoney(0);
                 // log
-                ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s went all in. %s has %d in the pot", thisUser.getUsername(), thisUser.getUsername(), theGame.getPot().getUserContributionOfAUser(thisUser)));
+                var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s went all in. %s has %d in the pot", thisUser.getUsername(), thisUser.getUsername(), theGame.getPot().getUserContributionOfAUser(thisUser)));
                 protocolRepository.save(element);
                 theGame.addProtocolElement(element);
             }
@@ -327,16 +327,16 @@ public class GameService {
      *               When a User is raising, before he can raise, he needs to call.
      */
     public void userCallsForRaising(Long gameid, Long userid) {
-        GameEntity theGame = findGameEntity(gameid);
+        var theGame = findGameEntity(gameid);
 
         //give me the player that raise last
-        User lastRaiser = theGame.getUserThatRaisedLast();
+        var lastRaiser = theGame.getUserThatRaisedLast();
         if (lastRaiser == null) {
             return;
         }
 
         //In the function call, we got a userid. Give me this User
-        User thisUser = getUserByIdInActiveUsers(gameid, userid);
+        var thisUser = getUserByIdInActiveUsers(gameid, userid);
         //is this User on turn?
         if (checkIfUserPerformingActionIsUserOnTurn(gameid, thisUser)) {
 
@@ -346,7 +346,7 @@ public class GameService {
 
             //if someone wants to call -> he wants to have the same amount of money in the pot as the user that raised last
             int totalPotContributionOfPlayerThatRaisedLast = theGame.getPot().getUserContributionOfAUser(lastRaiser);
-            int amountThisUserAlreadyHasInThePot = theGame.getPot().getUserContributionOfAUser(thisUser);
+            var amountThisUserAlreadyHasInThePot = theGame.getPot().getUserContributionOfAUser(thisUser);
 
             if (thisUser.getMoney() + amountThisUserAlreadyHasInThePot >= totalPotContributionOfPlayerThatRaisedLast) {
                 int difference = totalPotContributionOfPlayerThatRaisedLast - amountThisUserAlreadyHasInThePot;
@@ -370,10 +370,10 @@ public class GameService {
      * @param userid The id of the User that wants to perform the "Check" action.
      */
     public void userChecks(Long gameid, Long userid) {
-        GameEntity theGame = findGameEntity(gameid);
+        var theGame = findGameEntity(gameid);
 
         //In the function call, we got a userid. Give me this User
-        User thisUser = getUserByIdInActiveUsers(gameid, userid);
+        var thisUser = getUserByIdInActiveUsers(gameid, userid);
         //is this User on turn?
         if (checkIfUserPerformingActionIsUserOnTurn(gameid, thisUser)) {
             //If a User wants to check -> no one else should have more Contribution in the Pot than he has. For this, the method loops in activeUsers
@@ -383,7 +383,7 @@ public class GameService {
                 }
             }
             // log
-            ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s checked", thisUser.getUsername()));
+            var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s checked", thisUser.getUsername()));
             protocolRepository.save(element);
             theGame.addProtocolElement(element);
             //Checking happened -> increase the counter
@@ -408,7 +408,7 @@ public class GameService {
      */
     public GameEntity getGameData(long gameID, User userWhoWantsToFetch) {
         Optional<GameEntity> optionalGame = gameRepository.findById(gameID);
-        boolean valid = false;
+        var valid = false;
         ArrayList<OpponentInGameGetDTO> opponents = new ArrayList<>();
 
         if (optionalGame.isEmpty()) {
@@ -447,7 +447,7 @@ public class GameService {
      */
     public User getOwnGameData(Long gameID, Long userID, User userWhoWantsToFetch) {
         Optional<GameEntity> optionalGame = gameRepository.findById(gameID);
-        boolean valid = false;
+        var valid = false;
 
         if (optionalGame.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The game you requested was not found");
@@ -488,14 +488,14 @@ public class GameService {
      * @return Lists of users in game as PlayerInGameGetDTOs
      */
     public List<PlayerInGameGetDTO> getDataDuringShowdown(Long gameID, User userWhoWantsToFetch) {
-        GameEntity game = findGameEntity(gameID);
+        var game = findGameEntity(gameID);
         // Copy all users to a new list
         List<User> rawPlayers = new ArrayList<>(game.getAllUsers());
 
         // Copy them as DTOs so when modifying them original objects are unchanged
         List<PlayerInGameGetDTO> playerInGameGetDTOS = new ArrayList<>();
 
-        boolean valid = false;
+        var valid = false;
 
         //Check if game is already
         if (!game.getShowdown()) {
@@ -507,7 +507,7 @@ public class GameService {
                 valid = true;
             }
 
-            PlayerInGameGetDTO placeHolder = DTOMapper.INSTANCE.convertEntityToPlayerInGameGetDTO(player);
+            var placeHolder = DTOMapper.INSTANCE.convertEntityToPlayerInGameGetDTO(player);
 
             // If the player doesn't want to show its cards replace it with an empty list
             if (!player.getWantsToShow().equals(Show.SHOW)) {

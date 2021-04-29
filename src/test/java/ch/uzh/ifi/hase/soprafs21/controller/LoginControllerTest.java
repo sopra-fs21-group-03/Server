@@ -35,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * This tests if the UserController works.
  */
 @WebMvcTest(LoginController.class)
-public class LoginControllerTest {
+class LoginControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -45,7 +45,7 @@ public class LoginControllerTest {
 
     /* Test for getting all users (GET-Mapping) */
     @Test
-    public void givenUsers_whenGetUsers_thenReturnJsonArray() throws Exception {
+    void givenUsers_whenGetUsers_thenReturnJsonArray() throws Exception {
         // given
         User user = new User();
         user.setPassword("Firstname Lastname");
@@ -69,7 +69,7 @@ public class LoginControllerTest {
 
     /* Tests for registering a user (POST-Mapping) */
     @Test
-    public void createUser_validInput_userCreated() throws Exception {
+    void createUser_validInput_userCreated() throws Exception {
         // given
         User user = new User();
         user.setId(1L);
@@ -96,7 +96,7 @@ public class LoginControllerTest {
     }
 
     @Test
-    public void createUser_invalidInput_errorThrown() throws Exception{
+    void createUser_invalidInput_errorThrown() throws Exception{
         // given
         User user = new User();
         user.setId(1L);
@@ -123,7 +123,7 @@ public class LoginControllerTest {
 
     /* Tests for logging in a user (PUT-Mapping) */
     @Test
-    public void loginUser_validInput_userLoggedIn() throws Exception{
+    void loginUser_validInput_userLoggedIn() throws Exception{
         // given
         User user = new User();
         user.setId(1L);
@@ -148,7 +148,7 @@ public class LoginControllerTest {
     }
 
     @Test
-    public void loginUser_invalidInput_errorThrown() throws Exception{
+    void loginUser_invalidInput_errorThrown() throws Exception{
         // given
         User user = new User();
         user.setId(1L);
@@ -173,7 +173,7 @@ public class LoginControllerTest {
     /* Tests for logging out a User (PUT-Mapping)*/
 
     @Test
-    public void logoutUser_validInput_userLoggedOut() throws Exception{
+    void logoutUser_validInput_userLoggedOut() throws Exception{
         // given
         User user = new User();
         user.setId(1L);
@@ -193,7 +193,7 @@ public class LoginControllerTest {
     }
 
     @Test
-    public void logOutUser_invalidInput_notFound() throws Exception{
+    void logOutUser_invalidInput_notFound() throws Exception{
 
         // given
         User user = new User();
@@ -219,7 +219,7 @@ public class LoginControllerTest {
     }
 
     @Test
-    public void logOutUser_invalidInput_unauthorized() throws Exception{
+    void logOutUser_invalidInput_unauthorized() throws Exception{
 
 
         // given
