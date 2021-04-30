@@ -390,6 +390,7 @@ public class GameEntity implements Serializable, Name {
                 while (river.getCards().size() < 5) {
                     try {
                         river.addCard(deck.draw());
+                        this.protocol.add(new ProtocolElement(MessageType.LOG, this, "One more card is dealt."));
                     }
                     catch (Exception e) {
                         e.printStackTrace();
@@ -495,6 +496,7 @@ public class GameEntity implements Serializable, Name {
          Here, we get inside the Showdown. This needs to be implemented
          */
         else if (round == Round.RIVERCARD) {
+            this.protocol.add(new ProtocolElement(MessageType.LOG, this, "We have reached the Showdown! This is where the fun begins!"));
             round = Round.SHOWDOWN;
             showdown = true;
             allUsers.forEach(user -> user.setWantsToShow(Show.NOT_DECIDED));
@@ -547,7 +549,7 @@ public class GameEntity implements Serializable, Name {
         bigblindspecialcase = true;
         distributeBlinds();
         distributeCards();
-        protocol.add(new ProtocolElement(MessageType.LOG, this, "New Round starts"));
+        protocol.add(new ProtocolElement(MessageType.LOG, this, "New Gameround starts"));
     }}
 
     /* Helper functions to set up a game */
