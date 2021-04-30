@@ -10,18 +10,15 @@ import ch.uzh.ifi.hase.soprafs21.game.cards.River;
 import ch.uzh.ifi.hase.soprafs21.game.protocol.ProtocolElement;
 import ch.uzh.ifi.hase.soprafs21.helper.CardRanking;
 import ch.uzh.ifi.hase.soprafs21.helper.UserDraw;
-import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OnTurnGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 @Entity
 @Table(name = "GAME")
@@ -504,8 +501,6 @@ public class GameEntity implements Serializable, Name {
         }
         else if (round == Round.SHOWDOWN) {
             try {
-
-                TimeUnit.SECONDS.sleep(15);
                 setup();
             }
             catch (Exception e) {
