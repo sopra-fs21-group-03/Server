@@ -10,13 +10,12 @@ import ch.uzh.ifi.hase.soprafs21.game.cards.River;
 import ch.uzh.ifi.hase.soprafs21.game.protocol.ProtocolElement;
 import ch.uzh.ifi.hase.soprafs21.helper.CardRanking;
 import ch.uzh.ifi.hase.soprafs21.helper.UserDraw;
-import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OnTurnGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
+import org.springframework.scheduling.annotation.Async;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
@@ -451,6 +450,7 @@ public class GameEntity implements Serializable, Name {
     /**
      * The next Round should only start, if all Players made the same contribution
      */
+    @Async("threadPoolTaskExecutor")
     public void setNextRound() {
         setCheckcounter(0);
 
@@ -504,8 +504,7 @@ public class GameEntity implements Serializable, Name {
         }
         else if (round == Round.SHOWDOWN) {
             try {
-
-                TimeUnit.SECONDS.sleep(15);
+                Thread.sleep(5000);
                 setup();
             }
             catch (Exception e) {

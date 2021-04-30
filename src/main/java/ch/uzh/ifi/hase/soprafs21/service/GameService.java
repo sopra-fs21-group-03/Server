@@ -14,6 +14,7 @@ import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -21,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * GameService
@@ -536,6 +538,7 @@ public class GameService {
                 game.removeUserFromActive(user.getId());
             }
             user.setWantsToShow(show);
+            gameRepository.saveAndFlush(game);
 
             //check if all active users decided whether to show or not
             for (User activeUser : game.getActiveUsers()) {
