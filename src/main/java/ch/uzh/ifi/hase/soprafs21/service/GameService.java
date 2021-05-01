@@ -479,7 +479,7 @@ public class GameService {
     public List<PlayerInGameGetDTO> getDataDuringShowdown(Long gameID, User userWhoWantsToFetch) {
         var game = findGameEntity(gameID);
         // Copy all users to a new list
-        List<User> rawPlayers = new ArrayList<>(game.getAllUsers());
+        List<User> rawPlayers = new ArrayList<>(game.getRawPlayersInTurnOrder());
 
         // Copy them as DTOs so when modifying them original objects are unchanged
         List<PlayerInGameGetDTO> playerInGameGetDTOS = new ArrayList<>();
