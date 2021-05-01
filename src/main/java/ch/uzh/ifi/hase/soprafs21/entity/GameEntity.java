@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.Random;
+import java.util.Optional;
+
 
 @Entity
 @Table(name = "GAME")
@@ -500,9 +502,11 @@ public class GameEntity implements Serializable, Name {
             round = Round.SHOWDOWN;
             showdown = true;
             allUsers.forEach(user -> user.setWantsToShow(Show.NOT_DECIDED));
+            nextUser();
         }
         else if (round == Round.SHOWDOWN) {
             try {
+                allUsers.forEach(user -> user.setWantsToShow(Show.NOT_DECIDED));
                 setup();
             }
             catch (Exception e) {
@@ -513,6 +517,34 @@ public class GameEntity implements Serializable, Name {
             }
         }
 
+    }
+
+    private void nextUser() {
+        var user =  getUserInAllUsersByName(onTurn.getUsername());
+        if(user.isEmpty()) {
+            return;
+        }
+        if(user.isPresent()){
+            var u = user.get();
+            int i = allUsers.indexOf(user);
+            do {
+                i ++;
+            } while(!activeUsers.contains(allUsers.get(i)) && allUsers.get(i) != u);
+            var onTurn = new OnTurnGetDTO();
+            onTurn.setUsername(allUsers.get(i).getUsername());
+            setOnTurn(onTurn);
+        }
+    }
+
+    private Optional<User> getUserInAllUsersByName(String name) {
+        User user = null;
+        for(User u: allUsers) {
+            if(name.equals(u.getUsername())) {
+                user = u;
+            }
+        }
+        Optional<User> o = Optional.ofNullable(user);
+        return o;
     }
 
 
