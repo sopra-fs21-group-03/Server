@@ -34,19 +34,19 @@ public class GameEntity implements Serializable, Name {
     @Column
     private String gameName;
 
-    @ElementCollection
+    @OneToMany
     private List<User> activeUsers;
 
-    @ElementCollection
+    @OneToMany
     private List<User> allUsers;
 
-    @ElementCollection
+    @OneToMany
     private List<User> spectators;
 
     @ElementCollection
     private List<OpponentInGameGetDTO> playersInTurnOrder;
 
-    @ElementCollection
+    @OneToMany
     private List<User> rawPlayersInTurnOrder;
 
     @Column
@@ -523,6 +523,8 @@ public class GameEntity implements Serializable, Name {
     public void setup() throws Exception {
         if (firstGameSetup) {
             setStartingPotForUsers();
+            pot = new Pot();
+
             setUpPot();
 
             List<User> players = new ArrayList<>(getAllUsers());
@@ -576,6 +578,24 @@ public class GameEntity implements Serializable, Name {
         for (User arrayuser : activeUsers) {
             if (arrayuser.getId().equals(id)) {
                 activeUsers.remove(arrayuser);
+                break;
+            }
+        }
+    }
+
+    public void removeUserFromSpectators(Long id){
+        for (User spectator: spectators){
+            if(spectator.getId().equals(id)){
+                spectators.remove(spectator);
+                break;
+            }
+        }
+    }
+
+    public void removeUserFromRawPlayers(Long id){
+        for (User rawPlayer: rawPlayersInTurnOrder){
+            if(rawPlayer.getId().equals(id)){
+                spectators.remove(rawPlayer);
                 break;
             }
         }
