@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs21.service;
 
 import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
+import ch.uzh.ifi.hase.soprafs21.constant.Round;
 import ch.uzh.ifi.hase.soprafs21.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -168,6 +170,7 @@ public class LoginService {
 
         if (!gameEntity.isFirstGameSetup()) {
             gameEntity.setFirstGameSetup(true);
+            gameEntity.setProtocol(new ArrayList<>());
         }
     }
 
