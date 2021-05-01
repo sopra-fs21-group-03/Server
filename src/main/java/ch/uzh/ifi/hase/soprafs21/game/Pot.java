@@ -103,7 +103,12 @@ public class Pot implements Serializable {
             if(total == 0) {
                 break;
             }
-
+        }
+        if(total != 0) {
+            for( User user: userContribution.keySet()) {
+                user.addMoney(userContribution.get(user));
+                userContribution.put(user, 0);
+            }
         }
     }
 
