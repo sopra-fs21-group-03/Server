@@ -1,11 +1,9 @@
 package ch.uzh.ifi.hase.soprafs21.service;
 
-import ch.uzh.ifi.hase.soprafs21.constant.Blind;
-import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
-import ch.uzh.ifi.hase.soprafs21.constant.Round;
-import ch.uzh.ifi.hase.soprafs21.constant.Show;
+import ch.uzh.ifi.hase.soprafs21.constant.*;
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
+import ch.uzh.ifi.hase.soprafs21.game.Pot;
 import ch.uzh.ifi.hase.soprafs21.game.cards.Deck;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.PlayerInGameGetDTO;
@@ -1022,6 +1020,35 @@ class GameServiceTest {
         Long idOfUserOnTurn = getIdOfUserOnTurn();
 
         assertThrows(ResponseStatusException.class, () -> gameService.userCallsForRaising(testGame.getId(), idOfUserOnTurn));
+    }
+
+    @Test
+    void logCreatedForPlayerActions() {
+        var firstUser = getOnTurnUser();
+        gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
+        var secondUser = getOnTurnUser();
+        gameService.userRaises(testGame.getId(), getIdOfUserOnTurn(), 100);
+        var thirdUser = getOnTurnUser();
+        gameService.userFolds(testGame.getId(), getIdOfUserOnTurn());
+
+        var expectedType = MessageType.LOG;
+        var expectedName = testGame.getName();
+
+        var p = testGame.getProtocol();
+        var actualType = p.get(0).getMessageType();
+        var actualName = p.get(0).getName();
+        assertEquals(expectedName, actualName);
+        assertEquals(expectedType, actualType);
+
+        actualType = p.get(1).getMessageType();
+        actualName = p.get(1).getName();
+        assertEquals(expectedName, actualName);
+        assertEquals(expectedType, actualType);
+
+        actualType = p.get(2).getMessageType();
+        actualName = p.get(2).getName();
+        assertEquals(expectedName, actualName);
+        assertEquals(expectedType, actualType);
     }
 }
 
