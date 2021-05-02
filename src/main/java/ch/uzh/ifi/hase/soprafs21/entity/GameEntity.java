@@ -511,10 +511,10 @@ public class GameEntity implements Serializable, Name {
         }
         if (user.isPresent()) {
             var u = user.get();
-            int i = allUsers.indexOf(user);
+            int i = allUsers.indexOf(u);
             do {
-                i++;
-            } while (!activeUsers.contains(allUsers.get(i)) && allUsers.get(i) != u);
+                i = (i + allUsers.size() - 1 ) % allUsers.size();
+            } while(!activeUsers.contains(allUsers.get(i)) && allUsers.get(i) != u);
             var onTurn = new OnTurnGetDTO();
             onTurn.setUsername(allUsers.get(i).getUsername());
             setOnTurn(onTurn);
