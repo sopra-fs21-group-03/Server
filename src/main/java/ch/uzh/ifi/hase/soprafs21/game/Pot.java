@@ -110,6 +110,8 @@ public class Pot implements Serializable {
                 userContribution.put(user, 0);
             }
         }
+
+        total = 0;
     }
 
     private int collect(User user, int amount) {
