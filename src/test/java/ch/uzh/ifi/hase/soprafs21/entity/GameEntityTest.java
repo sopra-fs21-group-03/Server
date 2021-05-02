@@ -198,6 +198,7 @@ class GameEntityTest {
     void spectator() {
         testUser.setMoney(0);
         testGame.setRound(Round.SHOWDOWN);
+        testGame.getPot().getUserContribution().put(testUser, 0);
         testGame.setNextRound();
 
         List<User> expectedSpectator = new ArrayList<>();

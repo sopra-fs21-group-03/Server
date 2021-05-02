@@ -47,11 +47,11 @@ public class Pot implements Serializable {
         return total;
     }
 
-    void setUserContribution(Map<User, Integer> userContribution) {
+    public void setUserContribution(Map<User, Integer> userContribution) {
         this.userContribution = userContribution;
     }
 
-    Map<User, Integer> getUserContribution() {
+    public Map<User, Integer> getUserContribution() {
         return userContribution;
     }
 
