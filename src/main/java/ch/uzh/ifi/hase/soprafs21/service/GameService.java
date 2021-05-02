@@ -279,7 +279,7 @@ public class GameService {
                 thisUser.removeMoney(difference);
                 theGame.getPot().addMoney(thisUser, difference);
                 // log
-                var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s called. %s has %d in the pot", thisUser.getUsername(), thisUser.getUsername(), difference));
+                var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s called. %s has %d in the pot", thisUser.getUsername(), thisUser.getUsername(), theGame.getPot().getUserContributionOfAUser(thisUser)));
                 theGame.addProtocolElement(element);
             }
             else {
