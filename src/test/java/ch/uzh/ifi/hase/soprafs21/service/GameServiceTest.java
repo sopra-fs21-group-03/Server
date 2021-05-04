@@ -30,6 +30,7 @@ class GameServiceTest {
     @InjectMocks
     private GameService gameService;
 
+
     private User testUser;
     private User testUser2;
     private User testUser3;
@@ -444,7 +445,7 @@ class GameServiceTest {
     }
 
     @Test
-    void userFolds_isSmallBlind_specialCaseForTheFollowingRounds(){
+    void userFolds_isSmallBlind_specialCaseForTheFollowingRounds() {
         User smallblind = getSmallBlind();
         User bigblind = getBigBlind();
         int counter = 0;
@@ -463,7 +464,7 @@ class GameServiceTest {
     }
 
     @Test
-    void userFolds_isSmallBlind_specialCaseForTheFollowingRounds_allTheOthersGoAllIn(){
+    void userFolds_isSmallBlind_specialCaseForTheFollowingRounds_allTheOthersGoAllIn() {
         User smallblind = getSmallBlind();
         User bigblind = getBigBlind();
         int counter = 0;
@@ -893,7 +894,7 @@ class GameServiceTest {
     }
 
     @Test
-    void riverCardRoundisReached_weHave5CardsInTheRiver(){
+    void riverCardRoundisReached_weHave5CardsInTheRiver() {
         int counter = 0;
         while (counter < 5) {
             gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
@@ -918,7 +919,7 @@ class GameServiceTest {
     }
 
     @Test
-    void testingNewDeck(){
+    void testingNewDeck() {
         Deck firstdeck = testGame.getDeck();
         int counter = 0;
         while (counter < 4) {
