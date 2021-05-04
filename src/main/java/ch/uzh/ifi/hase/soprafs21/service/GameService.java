@@ -11,6 +11,9 @@ import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.PlayerInGameGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
+import ch.uzh.ifi.hase.soprafs21.timer.CentralScheduler;
+import ch.uzh.ifi.hase.soprafs21.timer.tasks.SkipUserIfAFK;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
@@ -32,9 +35,12 @@ import java.util.Optional;
 public class GameService {
 
     private final GameRepository gameRepository;
-
     private static final String NOT_FOUND_MESSAGE = "The User could not be found...";
     private static final String NOT_IN_TURN_MESSAGE = "This User is not in turn!";
+
+    // Turn time in ms
+    private static final long TURN_TIME = 5000L;
+
 
     /**
      * @param gameRepository this is the Repository which the GameService will receive. Since the GameService is responsible for actions related to saved
@@ -566,5 +572,15 @@ public class GameService {
     public List<ProtocolElement> getProtocol(Long gameId) {
         GameEntity game = getGameById(gameId);
         return game.getProtocol();
+    }
+
+    /**
+     * Helper function that resets the turnTimer of a user
+     */
+    public void resetTurnTimer(){
+        SkipUserIfAFK skipUserIfAFK = new SkipUserIfAFK(gameRepository, this);
+
+        CentralScheduler.getInstance().stopAll();
+        CentralScheduler.getInstance().start(skipUserIfAFK, TURN_TIME);
     }
 }
