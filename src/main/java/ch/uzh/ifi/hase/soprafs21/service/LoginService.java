@@ -1,9 +1,11 @@
 package ch.uzh.ifi.hase.soprafs21.service;
 
 import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
+import ch.uzh.ifi.hase.soprafs21.constant.Round;
 import ch.uzh.ifi.hase.soprafs21.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
+import ch.uzh.ifi.hase.soprafs21.game.Pot;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs21.repository.UserRepository;
 import org.slf4j.Logger;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -162,6 +165,13 @@ public class LoginService {
     private void deleteUserFromGame(Long UserID, GameEntity gameEntity) {
         gameEntity.removeUserFromAll(UserID);
         gameEntity.removeUserFromActive(UserID);
+        gameEntity.removeUserFromSpectators(UserID);
+        gameEntity.removeUserFromRawPlayers(UserID);
+
+        if (!gameEntity.isFirstGameSetup()) {
+            gameEntity.setFirstGameSetup(true);
+            gameEntity.setProtocol(new ArrayList<>());
+        }
     }
 
     /**

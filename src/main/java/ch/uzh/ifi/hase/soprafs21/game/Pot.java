@@ -47,11 +47,11 @@ public class Pot implements Serializable {
         return total;
     }
 
-    void setUserContribution(Map<User, Integer> userContribution) {
+    public void setUserContribution(Map<User, Integer> userContribution) {
         this.userContribution = userContribution;
     }
 
-    Map<User, Integer> getUserContribution() {
+    public Map<User, Integer> getUserContribution() {
         return userContribution;
     }
 
@@ -103,8 +103,15 @@ public class Pot implements Serializable {
             if(total == 0) {
                 break;
             }
-
         }
+        if(total != 0) {
+            for( User user: userContribution.keySet()) {
+                user.addMoney(userContribution.get(user));
+                userContribution.put(user, 0);
+            }
+        }
+
+        total = 0;
     }
 
     private int collect(User user, int amount) {

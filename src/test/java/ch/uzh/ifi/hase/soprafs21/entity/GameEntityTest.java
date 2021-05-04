@@ -2,10 +2,12 @@ package ch.uzh.ifi.hase.soprafs21.entity;
 
 import ch.uzh.ifi.hase.soprafs21.constant.Blind;
 import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
+import ch.uzh.ifi.hase.soprafs21.constant.Round;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -190,5 +192,24 @@ class GameEntityTest {
 
     @Test
     void setupTest() {
+    }
+
+    @Test
+    void spectator() {
+        testUser.setMoney(0);
+        testGame.setRound(Round.SHOWDOWN);
+        testGame.getPot().getUserContribution().put(testUser, 0);
+        testGame.setNextRound();
+
+        List<User> expectedSpectator = new ArrayList<>();
+        expectedSpectator.add(testUser);
+        List<User> expectedAllUsers = new ArrayList<>(testGame.getAllUsers());
+        expectedAllUsers.remove(testUser);
+        List<User> expectedActiveUsers = new ArrayList<>(testGame.getActiveUsers());
+        expectedActiveUsers.remove(testUser);
+
+        assertEquals(expectedActiveUsers, testGame.getActiveUsers());
+        assertEquals(expectedAllUsers, testGame.getAllUsers());
+        assertEquals(expectedSpectator, testGame.getSpectators());
     }
 }

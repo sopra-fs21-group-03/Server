@@ -6,5 +6,6 @@ public enum Round {
     FLOP,
     TURNCARD,
     RIVERCARD,
-    SHOWDOWN
+    SHOWDOWN,
+    ENDED
 }

@@ -279,7 +279,7 @@ public class GameService {
                 thisUser.removeMoney(difference);
                 theGame.getPot().addMoney(thisUser, difference);
                 // log
-                var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s called. %s has %d in the pot", thisUser.getUsername(), thisUser.getUsername(), difference));
+                var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s called. %s has %d in the pot", thisUser.getUsername(), thisUser.getUsername(), theGame.getPot().getUserContributionOfAUser(thisUser)));
                 theGame.addProtocolElement(element);
             }
             else {
@@ -479,7 +479,7 @@ public class GameService {
     public List<PlayerInGameGetDTO> getDataDuringShowdown(Long gameID, User userWhoWantsToFetch) {
         var game = findGameEntity(gameID);
         // Copy all users to a new list
-        List<User> rawPlayers = new ArrayList<>(game.getAllUsers());
+        List<User> rawPlayers = new ArrayList<>(game.getRawPlayersInTurnOrder());
 
         // Copy them as DTOs so when modifying them original objects are unchanged
         List<PlayerInGameGetDTO> playerInGameGetDTOS = new ArrayList<>();

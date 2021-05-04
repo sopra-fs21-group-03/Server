@@ -1,11 +1,13 @@
 package ch.uzh.ifi.hase.soprafs21.controller;
 
 import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
+import ch.uzh.ifi.hase.soprafs21.constant.Show;
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.game.cards.Card;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.UserPutDTO;
+import ch.uzh.ifi.hase.soprafs21.rest.dto.UserShowPutDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs21.service.GameService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -631,6 +633,44 @@ class GameControllerTest {
         catch (Exception e) {
             fail();
         }}
+
+    @Test
+    void showTest() {
+        testUser = new User();
+        testUser.setId(1L);
+        testUser.setPassword("testName");
+        testUser.setUsername("testUsername1");
+        testUser.setToken("1");
+        testUser.setMoney(10);
+        testUser.setGamestatus(GameStatus.READY);
+        testUser.setWantsToShow(Show.NOT_DECIDED);
+        var testGame = new GameEntity();
+        testGame.addUserToAll(testUser);
+        testGame.addUserToAll(testUser);
+
+        var userShowPutDTO = new UserShowPutDTO();
+        userShowPutDTO.setToken("1");
+        userShowPutDTO.setWantsToShow(true);
+
+        given(gameService.getUserByIdInActiveUsers(Mockito.any(), Mockito.any())).willReturn(testUser);
+        given(gameService.getGameById(Mockito.any())).willReturn(testGame);
+
+        MockHttpServletRequestBuilder putRequest = put("/games/1/1/show")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(userShowPutDTO));
+
+        try {
+            MvcResult result = mockMvc.perform(putRequest)
+                    .andExpect(status().isNoContent())
+                    .andReturn();
+        }
+        catch (Exception e) {
+            /**
+             * Here, the Exception should not occur. If an Exception gets caught, the Test should fail.
+             */
+            fail();
+        }
+    }
 
     /**
      * Helper Method to convert userPostDTO into a JSON string such that the input can be processed
