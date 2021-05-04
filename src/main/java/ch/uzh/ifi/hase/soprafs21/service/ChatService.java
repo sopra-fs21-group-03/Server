@@ -61,7 +61,7 @@ public class ChatService {
     public void addChatMessage(Long gameId, Long userId, String chatMessage){
         GameEntity game = findGameEntity(gameId);
         User chatterUser = getUserInGameById(gameId, userId);
-        var element = new ProtocolElement(MessageType.CHAT, game, String.format("User %s says: %s", chatterUser.getUsername(), chatMessage));
+        var element = new ProtocolElement(MessageType.CHAT, chatterUser, String.format("User %s says: %s", chatterUser.getUsername(), chatMessage));
         game.addProtocolElement(element);
         gameRepository.save(game);
 
