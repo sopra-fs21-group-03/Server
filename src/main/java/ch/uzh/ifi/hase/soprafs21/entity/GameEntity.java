@@ -36,6 +36,7 @@ public class GameEntity implements Serializable, Name {
     @Column
     private String gameName;
 
+
     @OneToMany
     private List<User> activeUsers;
 
