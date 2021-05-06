@@ -34,12 +34,12 @@ import java.util.Optional;
 public class GameService {
 
     private final GameRepository gameRepository;
+
     private static final String NOT_FOUND_MESSAGE = "The User could not be found...";
     private static final String NOT_IN_TURN_MESSAGE = "This User is not in turn!";
 
     // Turn time in ms
     private static final long TURN_TIME = 5000L;
-
 
     /**
      * @param gameRepository this is the Repository which the GameService will receive. Since the GameService is responsible for actions related to saved
@@ -125,6 +125,9 @@ public class GameService {
      * @param userid The id of the User that wants to perform the "Fold" action.
      */
     public void userFolds(Long gameid, Long userid) {
+
+        StopCurrentTurnTimer();
+
         //first, find the GameEntity (find it with the id called gameid)
         var theGame = findGameEntity(gameid);
         //then, find the User with the id userid. For performing an action, a User has to be in the activeUsers List.
@@ -148,6 +151,8 @@ public class GameService {
                     var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s folds", user.getUsername()));
                     theGame.addProtocolElement(element);
                     gameRepository.save(theGame);
+
+                    startTurnTimerForNextUser();
                     return;
 
                 }
@@ -576,10 +581,13 @@ public class GameService {
     /**
      * Helper function that resets the turnTimer of a user
      */
-    public void resetTurnTimer(){
-        SkipUserIfAFK skipUserIfAFK = new SkipUserIfAFK(gameRepository, this);
+    public void startTurnTimerForNextUser(){
+        var skipUserIfAFK = new SkipUserIfAFK(gameRepository, this);
 
-        CentralScheduler.getInstance().stopAll();
         CentralScheduler.getInstance().start(skipUserIfAFK, TURN_TIME);
+    }
+
+    public void StopCurrentTurnTimer(){
+        CentralScheduler.getInstance().stopAll();
     }
 }

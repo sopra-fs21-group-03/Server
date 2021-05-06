@@ -2,12 +2,9 @@ package ch.uzh.ifi.hase.soprafs21.timer.tasks;
 
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs21.service.GameService;
+import ch.uzh.ifi.hase.soprafs21.timer.CentralScheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -20,8 +17,7 @@ public class SkipUserIfAFK implements Runnable {
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
-    @Autowired
-    public SkipUserIfAFK(@Qualifier("gameRepository") GameRepository gameRepository, GameService gameService) {
+    public SkipUserIfAFK(GameRepository gameRepository, GameService gameService) {
         this.gameRepository = gameRepository;
         this.gameService = gameService;
     }
@@ -51,6 +47,7 @@ public class SkipUserIfAFK implements Runnable {
         }
         // Log date to see if timer is working
         log.info("The time is now {}", dateFormat.format(new Date()));
+
     }
 
 }

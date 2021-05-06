@@ -10,6 +10,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.ScheduledFuture;
+
 /**
  * Implements the Singleton pattern for a central scheduler
  */
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Component;
 public class CentralScheduler {
 
     private static AnnotationConfigApplicationContext CONTEXT = null;
+    private ScheduledFuture<?> scheduledFuture;
 
     @Autowired
     private ThreadPoolTaskScheduler scheduler;
@@ -50,14 +53,14 @@ public class CentralScheduler {
      * @param delay delay in which task should be performed
      */
     public void start(Runnable task, Long delay){
-        scheduler.scheduleWithFixedDelay(task, delay);
+        scheduledFuture = scheduler.scheduleAtFixedRate(task, delay);
     }
 
     /**
      * Stops all currently running tasks
      */
     public void stopAll(){
-        scheduler.shutdown();
+        scheduledFuture.cancel(false);
         CONTEXT.close();
     }
 

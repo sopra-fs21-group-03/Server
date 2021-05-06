@@ -1,5 +1,8 @@
 package ch.uzh.ifi.hase.soprafs21.game.cards;
 
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
+
 import javax.persistence.ElementCollection;
 import javax.persistence.Embeddable;
 import java.io.Serializable;
@@ -11,6 +14,7 @@ import java.util.List;
 public class River implements Serializable {
 
     @ElementCollection
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<Card> cards = new ArrayList<>();
 
     public ArrayList<Card> getCards() {
