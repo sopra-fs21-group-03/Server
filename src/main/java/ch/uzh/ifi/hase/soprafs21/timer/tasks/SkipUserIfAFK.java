@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs21.timer.tasks;
 
+import ch.uzh.ifi.hase.soprafs21.constant.Round;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs21.service.GameService;
 import org.slf4j.Logger;
@@ -40,7 +41,11 @@ public class SkipUserIfAFK implements Runnable {
         // Search for user
         for (var user : trueGame.getActiveUsers()) {
             if (user.getUsername().equals(onTurn.getUsername())) {
-                gameService.userFolds(1L, user.getId());
+                if (trueGame.getRound() == Round.SHOWDOWN){
+                    gameService.show(trueGame, user, false);
+                } else {
+                    gameService.userFolds(1L, user.getId());
+                }
                 break;
             }
         }
