@@ -5,6 +5,8 @@ import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs21.constant.Show;
 import ch.uzh.ifi.hase.soprafs21.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs21.game.cards.Card;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -50,6 +52,7 @@ public class User implements Serializable, Name{
     private Blind blind;
 
     @ElementCollection
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<Card> cards = new ArrayList<>();
 
     @Column

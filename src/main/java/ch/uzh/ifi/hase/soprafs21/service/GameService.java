@@ -11,6 +11,8 @@ import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.PlayerInGameGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
+import ch.uzh.ifi.hase.soprafs21.timer.CentralScheduler;
+import ch.uzh.ifi.hase.soprafs21.timer.tasks.SkipUserIfAFK;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
@@ -35,6 +37,9 @@ public class GameService {
 
     private static final String NOT_FOUND_MESSAGE = "The User could not be found...";
     private static final String NOT_IN_TURN_MESSAGE = "This User is not in turn!";
+
+    // Turn time in ms
+    private static final long TURN_TIME = 30000L;
 
     /**
      * @param gameRepository this is the Repository which the GameService will receive. Since the GameService is responsible for actions related to saved
@@ -105,12 +110,13 @@ public class GameService {
 
 
 
-
     /**
      * @param gameid The id of the Game that should be analyzed
      * @param userid The id of the User that wants to perform the "Fold" action.
      */
     public void userFolds(Long gameid, Long userid) {
+        startTurnTimerForNextUser();
+
         //first, find the GameEntity (find it with the id called gameid)
         var theGame = findGameEntity(gameid);
         //then, find the User with the id userid. For performing an action, a User has to be in the activeUsers List.
@@ -134,6 +140,7 @@ public class GameService {
                     var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s folds", user.getUsername()));
                     theGame.addProtocolElement(element);
                     gameRepository.save(theGame);
+
                     return;
 
                 }
@@ -152,6 +159,7 @@ public class GameService {
      * @param amount The User wants to raise by this amount.
      */
     public void userRaises(Long gameid, Long userid, int amount) {
+        startTurnTimerForNextUser();
         // You cannot raise by 0 or a negative number.
         if (amount <= 0) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "The raise amount always has to be above 0!");
@@ -239,6 +247,8 @@ public class GameService {
      *               In this function, "All-In" will also be handeled
      */
     public void userCalls(Long gameid, Long userid) {
+        startTurnTimerForNextUser();
+
         //first, find the GameEntity (find it with the id called gameid)
         var theGame = findGameEntity(gameid);
         //then: give me the player that raised last
@@ -308,6 +318,7 @@ public class GameService {
      *               When a User is raising, before he can raise, he needs to call.
      */
     public void userCallsForRaising(Long gameid, Long userid) {
+        startTurnTimerForNextUser();
         var theGame = findGameEntity(gameid);
 
         //give me the player that raise last
@@ -351,6 +362,7 @@ public class GameService {
      * @param userid The id of the User that wants to perform the "Check" action.
      */
     public void userChecks(Long gameid, Long userid) {
+        startTurnTimerForNextUser();
         var theGame = findGameEntity(gameid);
 
         //In the function call, we got a userid. Give me this User
@@ -504,6 +516,8 @@ public class GameService {
     }
 
     public void show(GameEntity game, User user, boolean wantsToShow) {
+        startTurnTimerForNextUser();
+
         if (checkIfUserPerformingActionIsUserOnTurn(game.getId(), user)) {
             Show show;
             if (wantsToShow) {
@@ -554,5 +568,17 @@ public class GameService {
         }
     }
 
+    /**
+     * Helper function that resets the turnTimer of a user
+     */
+    public void startTurnTimerForNextUser(){
+        SkipUserIfAFK skipUserIfAFK = new SkipUserIfAFK(this.gameRepository, this);
 
+        CentralScheduler.getInstance().reset(skipUserIfAFK, TURN_TIME);
+    }
+
+    public void startTurnTimer(){
+        SkipUserIfAFK skipUserIfAFK = new SkipUserIfAFK(this.gameRepository, this);
+        CentralScheduler.getInstance().start(skipUserIfAFK, TURN_TIME);
+    }
 }
