@@ -116,6 +116,17 @@ public class GameEntity implements Serializable, Name {
 
     /* Getter and setter */
 
+    public boolean getInGame() {
+        if(this.round == Round.NOTSTARTED) {
+            return false;
+        }
+        return true;
+    }
+
+    public int getPlayerCount() {
+        return allUsers.size() + spectators.size();
+    }
+
     public Round getRound() {
         return round;
     }
