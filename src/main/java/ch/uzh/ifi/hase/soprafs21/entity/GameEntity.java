@@ -12,7 +12,6 @@ import ch.uzh.ifi.hase.soprafs21.helper.CardRanking;
 import ch.uzh.ifi.hase.soprafs21.helper.UserDraw;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OnTurnGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
-import org.hibernate.Hibernate;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -38,7 +37,7 @@ public class GameEntity implements Serializable, Name {
     private String gameName;
 
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany
     private List<User> activeUsers;
 
     @OneToMany
