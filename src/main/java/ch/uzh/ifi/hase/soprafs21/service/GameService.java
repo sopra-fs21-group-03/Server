@@ -108,16 +108,7 @@ public class GameService {
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE);
     }
 
-    public User getUserInGameById(Long gameId, Long userId) {
-        var theGame = findGameEntity(gameId);
 
-        for (User user : theGame.getRawPlayersInTurnOrder()) {
-            if (userId.equals(user.getId())) {
-                return user;
-            }
-        }
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE);
-    }
 
     /**
      * @param gameid The id of the Game that should be analyzed
@@ -575,11 +566,6 @@ public class GameService {
         else {
             return game.get();
         }
-    }
-
-    public List<ProtocolElement> getProtocol(Long gameId) {
-        GameEntity game = getGameById(gameId);
-        return game.getProtocol();
     }
 
     /**
