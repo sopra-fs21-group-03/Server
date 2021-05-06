@@ -10,6 +10,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.ScheduledFuture;
 
 /**
@@ -19,7 +21,7 @@ import java.util.concurrent.ScheduledFuture;
 @EnableScheduling
 @ComponentScan
 @Component
-public class CentralScheduler {
+public class CentralScheduler{
 
     private static AnnotationConfigApplicationContext CONTEXT = null;
     private ScheduledFuture<?> scheduledFuture;
@@ -32,7 +34,7 @@ public class CentralScheduler {
      * Basically a Singleton pattern, since you really don't want multiple CentralSchedulers running concurrently
      * on your server
      */
-    public static CentralScheduler getInstance(){
+    public static CentralScheduler getInstance() {
         // Create new scheduler if it does not exist yet
         if (!isValidBean()) {
             CONTEXT = new AnnotationConfigApplicationContext(CentralScheduler.class);
@@ -43,31 +45,37 @@ public class CentralScheduler {
     }
 
     @Bean
-    public ThreadPoolTaskScheduler taskScheduler(){
+    public ThreadPoolTaskScheduler taskScheduler() {
         return new ThreadPoolTaskScheduler();
     }
 
     /**
      * Used to start a background thread
-     * @param task task that should be started
+     *
+     * @param task  task that should be started
      * @param delay delay in which task should be performed
      */
-    public void start(Runnable task, Long delay){
-        scheduledFuture = scheduler.scheduleAtFixedRate(task, delay);
+    public void start(Runnable task, Long delay) {
+        scheduledFuture = scheduler.schedule(task, Instant.now().plus(Duration.ofMillis(delay)));
     }
 
     /**
      * Stops all currently running tasks
      */
-    public void stopAll(){
-        scheduledFuture.cancel(false);
-        CONTEXT.close();
+    public void reset(Runnable task, Long delay) {
+        try {
+            scheduledFuture.cancel(false);
+
+            scheduledFuture = scheduler.schedule(task, Instant.now().plus(Duration.ofMillis(delay)));
+        } catch (NullPointerException ignored){
+        }
     }
 
     /**
      * Checks if it is a valid bean (Scheduler already exists)
+     *
      * @return true if CentralScheduler already exists
-     *         false if CentralScheduler still has to be created
+     * false if CentralScheduler still has to be created
      */
     private static boolean isValidBean() {
         if (CONTEXT == null || !CONTEXT.isActive()) {
@@ -76,7 +84,8 @@ public class CentralScheduler {
 
         try {
             CONTEXT.getBean(CentralScheduler.class);
-        } catch (NoSuchBeanDefinitionException ex) {
+        }
+        catch (NoSuchBeanDefinitionException ex) {
             return false;
         }
 

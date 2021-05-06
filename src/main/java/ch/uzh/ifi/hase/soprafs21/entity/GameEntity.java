@@ -12,8 +12,6 @@ import ch.uzh.ifi.hase.soprafs21.helper.CardRanking;
 import ch.uzh.ifi.hase.soprafs21.helper.UserDraw;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OnTurnGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
-import ch.uzh.ifi.hase.soprafs21.timer.CentralScheduler;
-import ch.uzh.ifi.hase.soprafs21.timer.tasks.SkipUserIfAFK;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 

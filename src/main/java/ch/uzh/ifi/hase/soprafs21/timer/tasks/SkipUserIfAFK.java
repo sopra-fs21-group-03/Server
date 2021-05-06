@@ -2,7 +2,6 @@ package ch.uzh.ifi.hase.soprafs21.timer.tasks;
 
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs21.service.GameService;
-import ch.uzh.ifi.hase.soprafs21.timer.CentralScheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.text.SimpleDateFormat;
@@ -47,7 +46,6 @@ public class SkipUserIfAFK implements Runnable {
         }
         // Log date to see if timer is working
         log.info("The time is now {}", dateFormat.format(new Date()));
-
     }
 
 }
