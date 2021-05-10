@@ -38,8 +38,12 @@ public class GameService {
     private static final String NOT_FOUND_MESSAGE = "The User could not be found...";
     private static final String NOT_IN_TURN_MESSAGE = "This User is not in turn!";
 
+
+    private static final int AMOUNT_OF_GAMES = 4;
+
     // Turn time in ms
     private static final long TURN_TIME = 30000L;
+
 
     /**
      * @param gameRepository this is the Repository which the GameService will receive. Since the GameService is responsible for actions related to saved
@@ -48,6 +52,15 @@ public class GameService {
     @Autowired
     public GameService(@Qualifier("gameRepository") GameRepository gameRepository) {
         this.gameRepository = gameRepository;
+        createGames();
+    }
+
+    private void createGames() {
+        for(Long i = 1L; i <= AMOUNT_OF_GAMES; i++) {
+            var game = new GameEntity(i);
+            gameRepository.save(game);
+        }
+        gameRepository.flush();
     }
 
     /**
