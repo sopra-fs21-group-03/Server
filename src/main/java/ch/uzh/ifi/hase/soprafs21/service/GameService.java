@@ -136,7 +136,7 @@ public class GameService {
                     //User folds -> he gets removed from the ActiveUsers List, not from the AllUsers List
                     theGame.getActiveUsers().remove(user);
                     //then, set the next User on turn or the next round or declare a winner.
-                    theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(usernameOfPotentialNextUserInTurn);
+                    theGame.roundHandler(usernameOfPotentialNextUserInTurn);
                     var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s folds", user.getUsername()));
                     theGame.addProtocolElement(element);
                     gameRepository.save(theGame);
@@ -191,7 +191,7 @@ public class GameService {
                             //Give me the username of the User that is potentially the next user on turn
                             String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(user);
                             //then, set the next User on turn or the next round or declare a winner.
-                            theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(usernameOfPotentialNextUserInTurn);
+                            theGame.roundHandler(usernameOfPotentialNextUserInTurn);
                             theGame.setBigblindspecialcase(false);
                             gameRepository.save(theGame);
                             return;
@@ -216,7 +216,7 @@ public class GameService {
                             //Give me the username of the User that is potentially the next user on turn
                             String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(user);
                             //then, set the next User on turn or the next round or declare a winner.
-                            theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(usernameOfPotentialNextUserInTurn);
+                            theGame.roundHandler(usernameOfPotentialNextUserInTurn);
                             theGame.setBigblindspecialcase(false);
                             gameRepository.save(theGame);
                             return;
@@ -303,7 +303,7 @@ public class GameService {
             //Give me the username of the User that is potentially the next user on turn
             String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(thisUser);
             //then, set the next User on turn or the next round or declare a winner.
-            theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(usernameOfPotentialNextUserInTurn);
+            theGame.roundHandler(usernameOfPotentialNextUserInTurn);
             gameRepository.save(theGame);
         }
         else {
@@ -383,7 +383,7 @@ public class GameService {
             //Give me the username of the User that is potentially the next user on turn
             String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(thisUser);
             //then, set the next User on turn or the next round or declare a winner.
-            theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(usernameOfPotentialNextUserInTurn);
+            theGame.roundHandler(usernameOfPotentialNextUserInTurn);
             gameRepository.save(theGame);
         }
         else {

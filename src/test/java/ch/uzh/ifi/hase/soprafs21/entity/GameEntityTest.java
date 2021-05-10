@@ -174,7 +174,7 @@ class GameEntityTest {
         User small = getSmallBlind_inallUsers();
         String userOnTurn = testGame.getOnTurn().getUsername();
         removeAllPlayersFromActiveExceptOne();
-        testGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon("NotImportant");
+        testGame.roundHandler("NotImportant");
         assertEquals(big.getUsername(), getSmallBlind_inallUsers().getUsername());
         assertEquals(Blind.SMALL, big.getBlind());
         assertEquals(Blind.NEUTRAL, small.getBlind());
