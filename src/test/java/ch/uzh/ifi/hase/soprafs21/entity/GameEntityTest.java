@@ -90,7 +90,7 @@ class GameEntityTest {
 
     @BeforeEach
     void setup() {
-        testGame = new GameEntity();
+        testGame = new GameEntity(1L);
         testUser = new User();
         testUser.setId(1L);
         testUser.setPassword("testName");
@@ -131,7 +131,7 @@ class GameEntityTest {
 
         testUser5.setGamestatus(GameStatus.READY);
 
-        testGame = new GameEntity();
+        testGame = new GameEntity(1L);
         testGame.setId(1L);
 
 

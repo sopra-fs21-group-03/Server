@@ -54,7 +54,7 @@ class LobbyControllerTest {
                 user5
         ));
 
-        game = new GameEntity();
+        game = new GameEntity(1L);
         game.setId(1L);
         game.setGameName("1");
         game.setAllUsers(allUsers);
@@ -65,7 +65,7 @@ class LobbyControllerTest {
         List<User> allUsers2 = new ArrayList<>();
         allUsers2.add(user6);
 
-        game2 = new GameEntity();
+        game2 = new GameEntity(1L);
         game2.setId(2L);
         game2.setGameName("2");
         game2.setAllUsers(allUsers2);

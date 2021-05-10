@@ -3,7 +3,6 @@ package ch.uzh.ifi.hase.soprafs21.service;
 import ch.uzh.ifi.hase.soprafs21.constant.*;
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
-import ch.uzh.ifi.hase.soprafs21.game.Pot;
 import ch.uzh.ifi.hase.soprafs21.game.cards.Deck;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.PlayerInGameGetDTO;
@@ -13,13 +12,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -133,7 +130,7 @@ class GameServiceTest {
         testUser5.setMoney(10);
         testUser5.setGamestatus(GameStatus.READY);
 
-        testGame = new GameEntity();
+        testGame = new GameEntity(1L);
         testGame.setId(1L);
 
 

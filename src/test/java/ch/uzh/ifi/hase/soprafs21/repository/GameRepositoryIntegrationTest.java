@@ -28,7 +28,7 @@ class GameRepositoryIntegrationTest {
     @Test
     void findByName_success() {
         // given
-        GameEntity game = new GameEntity();
+        GameEntity game = new GameEntity(1L);
         game.setAllUsers(new ArrayList<User>());
         game.setPot(new Pot());
 

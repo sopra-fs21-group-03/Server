@@ -97,21 +97,27 @@ public class GameEntity implements Serializable, Name {
     }
 
     /* Constructor */
-    public GameEntity() {
+    public GameEntity(Long id) {
         river = new River();
         allUsers = new ArrayList<>();
         activeUsers = new ArrayList<>();
         playersInTurnOrder = new ArrayList<>();
         spectators = new ArrayList<>();
-        id = 1L;
+        this.id = id;
         firstGameSetup = true;
         bigblindspecialcase = true;
         protocol = new ArrayList<>();
+        gameName = String.format("%d", id);
 
         deck = new Deck();
         pot = new Pot();
 
         round = Round.NOTSTARTED;
+    }
+
+    //Standard Constructor for spring
+    public GameEntity() {
+
     }
 
     /* Getter and setter */
