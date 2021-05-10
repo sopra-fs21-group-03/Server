@@ -50,4 +50,10 @@ public interface DTOMapper {
     @Mapping(source = "money", target = "money")
     @Mapping(source = "blind", target = "blind")
     PlayerInGameGetDTO convertEntityToPlayerInGameGetDTO(User player);
+
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "gameName", target = "name")
+    @Mapping(source = "playerCount", target = "playerCount")
+    @Mapping(source = "inGame", target = "inGame")
+    LobbyGetDTO convertEntityToLobbyGetDTO(GameEntity gameEntity);
 }
