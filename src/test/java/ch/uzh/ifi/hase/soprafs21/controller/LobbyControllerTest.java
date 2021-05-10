@@ -14,7 +14,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -55,6 +55,8 @@ class LobbyControllerTest {
         ));
 
         game = new GameEntity();
+        game.setId(1L);
+        game.setGameName("1");
         game.setAllUsers(allUsers);
 
         var user6 = new User();
@@ -64,6 +66,8 @@ class LobbyControllerTest {
         allUsers2.add(user6);
 
         game2 = new GameEntity();
+        game2.setId(2L);
+        game2.setGameName("2");
         game2.setAllUsers(allUsers2);
 
     }
@@ -75,7 +79,16 @@ class LobbyControllerTest {
         MockHttpServletRequestBuilder getRequest = get("/lobbies");
 
         mockMvc.perform(getRequest).andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)));
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].id", is(1)))
+                .andExpect(jsonPath("$[0].name", is("1")))
+                .andExpect(jsonPath("$[0].playerCount", is(5)))
+                .andExpect(jsonPath("$[0].inGame", is(false)))
+                .andExpect(jsonPath("$[1].id", is(2)))
+                .andExpect(jsonPath("$[1].name", is("2")))
+                .andExpect(jsonPath("$[1].playerCount", is(1)))
+                .andExpect(jsonPath("$[1].inGame", is(false)));
+
     }
 
 }
