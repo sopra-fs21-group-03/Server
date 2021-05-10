@@ -12,6 +12,8 @@ import ch.uzh.ifi.hase.soprafs21.helper.CardRanking;
 import ch.uzh.ifi.hase.soprafs21.helper.UserDraw;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OnTurnGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -36,13 +38,17 @@ public class GameEntity implements Serializable, Name {
     @Column
     private String gameName;
 
+
     @OneToMany
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<User> activeUsers;
 
     @OneToMany
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<User> allUsers;
 
     @OneToMany
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<User> spectators;
 
     @ElementCollection
@@ -82,6 +88,7 @@ public class GameEntity implements Serializable, Name {
     private boolean bigblindspecialcase;
 
     @ElementCollection
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<ProtocolElement> protocol;
 
     public void addProtocolElement(ProtocolElement element) {
@@ -312,6 +319,7 @@ public class GameEntity implements Serializable, Name {
      *                                          IMPORTANT ASSUMPTION: This username of this potentially next user in turn has to be in the activeUsers Array!
      */
     public void setNextUserOrNextRoundOrSomeoneHasAlreadyWon(String usernameOfPotentialNextUserInTurn) {
+
         if (activeUsers.size() > 1) {
             if (checkcounter < activeUsers.size()) {
                 int indexOfPotentialNextUserInTurn;
@@ -555,6 +563,7 @@ public class GameEntity implements Serializable, Name {
      * Gets called when all players are in the game
      */
     public void setup() throws Exception {
+
         if (firstGameSetup) {
             setStartingPotForUsers();
             pot = new Pot();

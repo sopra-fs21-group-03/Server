@@ -2,6 +2,8 @@ package ch.uzh.ifi.hase.soprafs21.game.cards;
 
 import ch.uzh.ifi.hase.soprafs21.constant.Rank;
 import ch.uzh.ifi.hase.soprafs21.constant.Suit;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.ElementCollection;
 import javax.persistence.Embeddable;
@@ -13,6 +15,7 @@ import java.util.List;
 @Embeddable
 public class Deck implements Serializable {
     @ElementCollection
+    @LazyCollection(LazyCollectionOption.FALSE)
     private final List<Card> theDeck;
 
     public Deck() {

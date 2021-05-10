@@ -33,11 +33,13 @@ public class LoginService {
 
     private final UserRepository userRepository;
     private final GameRepository gameRepository;
+    private final GameService gameService;
 
     @Autowired
-    public LoginService(@Qualifier("userRepository") UserRepository userRepository, @Qualifier("gameRepository") GameRepository gameRepository) {
+    public LoginService(@Qualifier("userRepository") UserRepository userRepository, @Qualifier("gameRepository") GameRepository gameRepository, GameService gameService) {
         this.userRepository = userRepository;
         this.gameRepository = gameRepository;
+        this.gameService = gameService;
     }
 
     public List<User> getUsers() {
@@ -147,6 +149,7 @@ public class LoginService {
             // Check if there are already five players in the game
             if (game.getAllUsers().size() == 5 && game.isFirstGameSetup()) {
                 try {
+                    gameService.startTurnTimer();
                     game.setup();
                 }
                 catch (Exception e) {

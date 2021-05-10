@@ -2,6 +2,8 @@ package ch.uzh.ifi.hase.soprafs21.game;
 
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.helper.UserDraw;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 
 import javax.persistence.ElementCollection;
@@ -16,6 +18,7 @@ import java.io.Serializable;
 public class Pot implements Serializable {
 
     @ElementCollection
+    @LazyCollection(LazyCollectionOption.FALSE)
     private Map<User, Integer> userContribution;
 
     // Only for sending the map to the client.
