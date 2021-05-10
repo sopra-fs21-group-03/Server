@@ -163,7 +163,7 @@ public class GameEntity implements Serializable, Name {
         return allUsers;
     }
 
-    public void setAllUsers(ArrayList<User> allUsers) {
+    public void setAllUsers(List<User> allUsers) {
         this.allUsers = allUsers;
     }
 
