@@ -7,16 +7,12 @@ import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.game.Pot;
 import ch.uzh.ifi.hase.soprafs21.game.cards.Card;
 import ch.uzh.ifi.hase.soprafs21.game.cards.River;
-import org.hibernate.type.descriptor.java.CharacterArrayTypeDescriptor;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.swing.*;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CardRankingTest {
 
@@ -71,7 +67,7 @@ class CardRankingTest {
 
     @Test
     void getRankingPairBetterThanHighCard() throws Exception {
-        GameEntity game = new GameEntity();
+        GameEntity game = new GameEntity(1L);
         River river = new River();
         game.setRiver(river);
         CardRanking cardRanking = new CardRanking();
@@ -119,7 +115,7 @@ class CardRankingTest {
 
     @Test
     void getRankingTwoPairBetterThanPair() throws Exception {
-        GameEntity game = new GameEntity();
+        GameEntity game = new GameEntity(1L);
         River river = new River();
         game.setRiver(river);
         CardRanking cardRanking = new CardRanking();
@@ -167,7 +163,7 @@ class CardRankingTest {
 
     @Test
     void getRankingThreeBetterThanTwoPair() throws Exception {
-        GameEntity game = new GameEntity();
+        GameEntity game = new GameEntity(1L);
         River river = new River();
         game.setRiver(river);
         CardRanking cardRanking = new CardRanking();
@@ -215,7 +211,7 @@ class CardRankingTest {
 
     @Test
     void getRankingStraightBetterThanThree() throws Exception {
-        GameEntity game = new GameEntity();
+        GameEntity game = new GameEntity(1L);
         River river = new River();
         game.setRiver(river);
         CardRanking cardRanking = new CardRanking();
@@ -263,7 +259,7 @@ class CardRankingTest {
 
     @Test
     void getRankingFlushBetterThanStraight() throws Exception {
-        GameEntity game = new GameEntity();
+        GameEntity game = new GameEntity(1L);
         River river = new River();
         game.setRiver(river);
         CardRanking cardRanking = new CardRanking();
@@ -311,7 +307,7 @@ class CardRankingTest {
 
     @Test
     void getRankingFullHouseBetterThanFlush() throws Exception {
-        GameEntity game = new GameEntity();
+        GameEntity game = new GameEntity(1L);
         River river = new River();
         game.setRiver(river);
         CardRanking cardRanking = new CardRanking();
@@ -359,7 +355,7 @@ class CardRankingTest {
 
     @Test
     void getRankingFourBetterThanFullHouse() throws Exception {
-        GameEntity game = new GameEntity();
+        GameEntity game = new GameEntity(1L);
         River river = new River();
         game.setRiver(river);
         CardRanking cardRanking = new CardRanking();
@@ -407,7 +403,7 @@ class CardRankingTest {
 
     @Test
     void getRankingStraightFlushBetterThanFour() throws Exception {
-        GameEntity game = new GameEntity();
+        GameEntity game = new GameEntity(1L);
         River river = new River();
         game.setRiver(river);
         CardRanking cardRanking = new CardRanking();
@@ -455,7 +451,7 @@ class CardRankingTest {
 
     @Test
     void getRankingRoyalFLushBetterThanStraightFlush() throws Exception {
-        GameEntity game = new GameEntity();
+        GameEntity game = new GameEntity(1L);
         River river = new River();
         game.setRiver(river);
         CardRanking cardRanking = new CardRanking();
@@ -503,7 +499,7 @@ class CardRankingTest {
 
     @Test
     void getRankingHighCard() throws Exception {
-        GameEntity game = new GameEntity();
+        GameEntity game = new GameEntity(1L);
         River river = new River();
         game.setRiver(river);
         CardRanking cardRanking = new CardRanking();
@@ -558,7 +554,7 @@ class CardRankingTest {
 
     @Test
     void getRankingPair() throws Exception {
-        GameEntity game = new GameEntity();
+        GameEntity game = new GameEntity(1L);
         River river = new River();
         game.setRiver(river);
         CardRanking cardRanking = new CardRanking();
@@ -614,7 +610,7 @@ class CardRankingTest {
 
     @Test
     void getRankingTwoPair() throws Exception {
-        GameEntity game = new GameEntity();
+        GameEntity game = new GameEntity(1L);
         River river = new River();
         game.setRiver(river);
         CardRanking cardRanking = new CardRanking();
@@ -669,7 +665,7 @@ class CardRankingTest {
 
     @Test
     void getRankingThree() throws Exception {
-        GameEntity game = new GameEntity();
+        GameEntity game = new GameEntity(1L);
         River river = new River();
         game.setRiver(river);
         CardRanking cardRanking = new CardRanking();
@@ -724,7 +720,7 @@ class CardRankingTest {
 
     @Test
     void getRankingStraight() throws Exception {
-        GameEntity game = new GameEntity();
+        GameEntity game = new GameEntity(1L);
         River river = new River();
         game.setRiver(river);
         CardRanking cardRanking = new CardRanking();
@@ -779,7 +775,7 @@ class CardRankingTest {
 
     @Test
     void getRankingFlush() throws Exception {
-        GameEntity game = new GameEntity();
+        GameEntity game = new GameEntity(1L);
         River river = new River();
         game.setRiver(river);
         CardRanking cardRanking = new CardRanking();
@@ -838,7 +834,7 @@ class CardRankingTest {
 
     @Test
     void getRankingFullHouse() throws Exception {
-        GameEntity game = new GameEntity();
+        GameEntity game = new GameEntity(1L);
         River river = new River();
         game.setRiver(river);
         CardRanking cardRanking = new CardRanking();
@@ -895,7 +891,7 @@ class CardRankingTest {
 
     @Test
     void getRankingStraightFLush() throws Exception {
-        GameEntity game = new GameEntity();
+        GameEntity game = new GameEntity(1L);
         River river = new River();
         game.setRiver(river);
         CardRanking cardRanking = new CardRanking();
