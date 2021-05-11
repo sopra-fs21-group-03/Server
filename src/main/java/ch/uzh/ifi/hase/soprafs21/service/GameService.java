@@ -12,6 +12,7 @@ import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.PlayerInGameGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs21.timer.CentralScheduler;
+import ch.uzh.ifi.hase.soprafs21.timer.tasks.PotDistributor;
 import ch.uzh.ifi.hase.soprafs21.timer.tasks.SkipUserIfAFK;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -44,6 +45,8 @@ public class GameService {
     // Turn time in ms
     private static final long TURN_TIME = 30000L;
 
+    // Time left at the end of showdown
+    private static final long SHOWDOWN_TIME = 4000L;
 
     /**
      * @param gameRepository this is the Repository which the GameService will receive. Since the GameService is responsible for actions related to saved
@@ -563,8 +566,10 @@ public class GameService {
             }
 
             //if all user decided distribute the pot
-            game.distributePot();
-            game.setNextRound();
+
+            // Create a thread that waits before distributing the pot
+            startShowdownTimerForLastUser(game);
+
         } else {
 
             throw new ResponseStatusException(HttpStatus.CONFLICT, NOT_IN_TURN_MESSAGE);
@@ -581,9 +586,17 @@ public class GameService {
         }
     }
 
+
     /**
-     * Helper function that resets the turnTimer of a user
+     * Helper functions for threading
      */
+
+    public void startShowdownTimerForLastUser(GameEntity game){
+        PotDistributor potDistributor = new PotDistributor(game, this.gameRepository);
+        CentralScheduler.getInstance().reset(potDistributor, SHOWDOWN_TIME);
+    }
+
+
     public void startTurnTimerForNextUser(){
         SkipUserIfAFK skipUserIfAFK = new SkipUserIfAFK(this.gameRepository, this);
 
