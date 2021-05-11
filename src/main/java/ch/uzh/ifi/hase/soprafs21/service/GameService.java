@@ -8,6 +8,7 @@ import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.game.protocol.ProtocolElement;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
+import ch.uzh.ifi.hase.soprafs21.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.PlayerInGameGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
@@ -35,6 +36,7 @@ import java.util.Optional;
 public class GameService {
 
     private final GameRepository gameRepository;
+    private final UserRepository userRepository;
 
     private static final String NOT_FOUND_MESSAGE = "The User could not be found...";
     private static final String NOT_IN_TURN_MESSAGE = "This User is not in turn!";
@@ -53,8 +55,9 @@ public class GameService {
      *                       games, we need a Repository that saves Games.
      */
     @Autowired
-    public GameService(@Qualifier("gameRepository") GameRepository gameRepository) {
+    public GameService(@Qualifier("gameRepository") GameRepository gameRepository, @Qualifier("userRepository") UserRepository userRepository) {
         this.gameRepository = gameRepository;
+        this.userRepository = userRepository;
         createGames();
     }
 
@@ -592,7 +595,7 @@ public class GameService {
      */
 
     public void startShowdownTimerForLastUser(GameEntity game){
-        PotDistributor potDistributor = new PotDistributor(game, this.gameRepository);
+        PotDistributor potDistributor = new PotDistributor(game, this.gameRepository, this.userRepository);
         CentralScheduler.getInstance().reset(potDistributor, SHOWDOWN_TIME);
     }
 
