@@ -149,7 +149,7 @@ public class LoginService {
             // Check if there are already five players in the game
             if (game.getAllUsers().size() == 5 && game.isFirstGameSetup()) {
                 try {
-                    gameService.startTurnTimer();
+                    gameService.startTurnTimer(game.getId());
                     game.setup();
                 }
                 catch (Exception e) {

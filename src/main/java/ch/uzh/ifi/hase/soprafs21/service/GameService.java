@@ -131,7 +131,7 @@ public class GameService {
      * @param userid The id of the User that wants to perform the "Fold" action.
      */
     public void userFolds(Long gameid, Long userid) {
-        startTurnTimerForNextUser();
+        startTurnTimerForNextUser(gameid);
 
         //first, find the GameEntity (find it with the id called gameid)
         var theGame = findGameEntity(gameid);
@@ -175,7 +175,7 @@ public class GameService {
      * @param amount The User wants to raise by this amount.
      */
     public void userRaises(Long gameid, Long userid, int amount) {
-        startTurnTimerForNextUser();
+        startTurnTimerForNextUser(gameid);
         // You cannot raise by 0 or a negative number.
         if (amount <= 0) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "The raise amount always has to be above 0!");
@@ -263,7 +263,7 @@ public class GameService {
      *               In this function, "All-In" will also be handeled
      */
     public void userCalls(Long gameid, Long userid) {
-        startTurnTimerForNextUser();
+        startTurnTimerForNextUser(gameid);
 
         //first, find the GameEntity (find it with the id called gameid)
         var theGame = findGameEntity(gameid);
@@ -334,7 +334,7 @@ public class GameService {
      *               When a User is raising, before he can raise, he needs to call.
      */
     public void userCallsForRaising(Long gameid, Long userid) {
-        startTurnTimerForNextUser();
+        startTurnTimerForNextUser(gameid);
         var theGame = findGameEntity(gameid);
 
         //give me the player that raise last
@@ -378,7 +378,7 @@ public class GameService {
      * @param userid The id of the User that wants to perform the "Check" action.
      */
     public void userChecks(Long gameid, Long userid) {
-        startTurnTimerForNextUser();
+        startTurnTimerForNextUser(gameid);
         var theGame = findGameEntity(gameid);
 
         //In the function call, we got a userid. Give me this User
@@ -532,7 +532,7 @@ public class GameService {
     }
 
     public void show(GameEntity game, User user, boolean wantsToShow) {
-        startTurnTimerForNextUser();
+        startTurnTimerForNextUser(game.getId());
 
         if (checkIfUserPerformingActionIsUserOnTurn(game.getId(), user)) {
             Show show;
@@ -597,14 +597,14 @@ public class GameService {
     }
 
 
-    public void startTurnTimerForNextUser(){
-        SkipUserIfAFK skipUserIfAFK = new SkipUserIfAFK(this.gameRepository, this);
+    public void startTurnTimerForNextUser(long gameID){
+        SkipUserIfAFK skipUserIfAFK = new SkipUserIfAFK(this.gameRepository, this, gameID);
 
         CentralScheduler.getInstance().reset(skipUserIfAFK, TURN_TIME);
     }
 
-    public void startTurnTimer(){
-        SkipUserIfAFK skipUserIfAFK = new SkipUserIfAFK(this.gameRepository, this);
+    public void startTurnTimer(long gameID){
+        SkipUserIfAFK skipUserIfAFK = new SkipUserIfAFK(this.gameRepository, this, gameID);
         CentralScheduler.getInstance().start(skipUserIfAFK, TURN_TIME);
     }
 }
