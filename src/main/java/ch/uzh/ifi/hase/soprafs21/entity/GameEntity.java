@@ -104,16 +104,17 @@ public class GameEntity implements Serializable, Name {
     }
 
     /* Constructor */
-    public GameEntity() {
+    public GameEntity(Long id) {
         river = new River();
         allUsers = new ArrayList<>();
         activeUsers = new ArrayList<>();
         playersInTurnOrder = new ArrayList<>();
         spectators = new ArrayList<>();
-        id = 1L;
+        this.id = id;
         firstGameSetup = true;
         bigblindspecialcase = true;
         protocol = new ArrayList<>();
+        gameName = String.format("%d", id);
 
         deck = new Deck();
         pot = new Pot();
@@ -121,7 +122,23 @@ public class GameEntity implements Serializable, Name {
         round = Round.NOTSTARTED;
     }
 
+    //Standard Constructor for spring
+    public GameEntity() {
+
+    }
+
     /* Getter and setter */
+
+    public boolean getInGame() {
+        if(this.round == Round.NOTSTARTED) {
+            return false;
+        }
+        return true;
+    }
+
+    public int getPlayerCount() {
+        return allUsers.size() + spectators.size();
+    }
 
     public Round getRound() {
         return round;
@@ -159,7 +176,7 @@ public class GameEntity implements Serializable, Name {
         return allUsers;
     }
 
-    public void setAllUsers(ArrayList<User> allUsers) {
+    public void setAllUsers(List<User> allUsers) {
         this.allUsers = allUsers;
     }
 
@@ -271,24 +288,21 @@ public class GameEntity implements Serializable, Name {
     public String getUsernameOfPotentialNextUserInTurn(User theUser) {
         if (activeUsers.size() > 1) {
             int indexOfPotentialNextUserInTurn;
-            for (User user : activeUsers) {
-                //I found the User who performed the action
-                if (user.getId().equals(theUser.getId())) {
-                    /**
-                     * This is an All-In Case: the potentially next User in turn does not have any money left ( .getMoney() returns 0)
-                     * Therefore, the next next (übernächster) User should be the next user in turn
-                     */
-                    int index = -1;
-                    do {
-                        indexOfPotentialNextUserInTurn = Math.abs(activeUsers.indexOf(user) + index + activeUsers.size()) % activeUsers.size();
-                        index--;
-                    } while (activeUsers.get(indexOfPotentialNextUserInTurn).getMoney() <= 0 && !activeUsers.get(indexOfPotentialNextUserInTurn).getUsername().equals(theUser.getUsername()));
-                    if(activeUsers.get(indexOfPotentialNextUserInTurn).getUsername().equals(theUser.getUsername())){
-                        checkcounter = activeUsers.size();
-                    }
+            User user = getUserInActiveUsersWithId(theUser.getId());
+            int index = -1;
+            do {
+                indexOfPotentialNextUserInTurn = Math.abs(activeUsers.indexOf(user) + index + activeUsers.size()) % activeUsers.size();
+                index--;
+                if (userThatRaisedLast != null && activeUsers.get(indexOfPotentialNextUserInTurn).getId().equals(userThatRaisedLast.getId())) {
                     return activeUsers.get(indexOfPotentialNextUserInTurn).getUsername();
                 }
+            } while (activeUsers.get(indexOfPotentialNextUserInTurn).getMoney() <= 0 && !activeUsers.get(indexOfPotentialNextUserInTurn).getUsername().equals(theUser.getUsername()));
+            if (activeUsers.get(indexOfPotentialNextUserInTurn).getUsername().equals(theUser.getUsername())) {
+                checkcounter = activeUsers.size();
             }
+            return activeUsers.get(indexOfPotentialNextUserInTurn).getUsername();
+
+
         }
         throw new IllegalStateException("You cannot get the Username of the next User in turn since only one User or less are inside active Users and therefore, there" +
                 "is no next User");
@@ -299,44 +313,30 @@ public class GameEntity implements Serializable, Name {
      * @param usernameOfPotentialNextUserInTurn this is the username of the potential next user of the perspective of the User who called an Action, such
      *                                          as Fold, Raise, Check or Call.
      *                                          <p>
+     *                                          Here, the next User how will be on turn will be set, the next round will be set if the previous round is finnished
+     *                                          or if only one player is left in the activeUsers Array, he should be the winner and the function should handle this.
+     *                                          <p>
      *                                          IMPORTANT ASSUMPTION: This username of this potentially next user in turn has to be in the activeUsers Array!
      */
-    public void setNextUserOrNextRoundOrSomeoneHasAlreadyWon(String usernameOfPotentialNextUserInTurn) {
-
+    public void roundHandler(String usernameOfPotentialNextUserInTurn) {
         if (activeUsers.size() > 1) {
-            if (checkcounter < activeUsers.size()) {
+            if (checkcounter < getNumberOfActiveUsersWithMoney()) {
                 int indexOfPotentialNextUserInTurn;
-                for (User user : activeUsers) {
-                    //I found the User who is potentially the next User in turn
-                    if (user.getUsername().equals(usernameOfPotentialNextUserInTurn)) {
-                        indexOfPotentialNextUserInTurn = activeUsers.indexOf(user);
-                        //if there is a user that raised last and its the user that is potentially next in turn -> he won't be in turn, because the next round has to start.
-                        if (userThatRaisedLast != null && activeUsers.get(indexOfPotentialNextUserInTurn).getUsername().equals(userThatRaisedLast.getUsername())) {
-                            setNextRound();
-                        }
-                        else {
-                            //only if the User who is potentially next in turn has enough money, he is allowed to be the player next in turn
-                            if (user.getMoney() > 0) {
-                                onTurn = new OnTurnGetDTO();
-                                onTurn.setUsername(activeUsers.get(indexOfPotentialNextUserInTurn).getUsername());
-                            }
-                            //this potentially next User in turn has no money -> the next User should be in turn
-                            else if (user.getMoney() == 0) {
-                                throw new IllegalStateException("A User on turn should never have no money!");
-                            }
-                            else {
-                                throw new IllegalStateException("A User should never have 'minus money'!");
-                            }
-                        }
-                        break;
-                    }
+                User user = getUserInActiveUsersWithUsername(usernameOfPotentialNextUserInTurn);
+                indexOfPotentialNextUserInTurn = activeUsers.indexOf(user);
+                //if there is a user that raised last and its the user that is potentially next in turn -> he won't be in turn, because the next round has to start.
+                if (userThatRaisedLast != null && activeUsers.get(indexOfPotentialNextUserInTurn).getUsername().equals(userThatRaisedLast.getUsername())) {
+                    setNextRound();
+                }
+                else {
+                    onTurn = new OnTurnGetDTO();
+                    onTurn.setUsername(activeUsers.get(indexOfPotentialNextUserInTurn).getUsername());
                 }
             }
             //everyone has checked/folded -> the next Round should start
             else {
                 setNextRound();
             }
-
         }
         //there is only one active Player left -> give him his winnings
         else if (activeUsers.size() == 1) {
@@ -347,24 +347,57 @@ public class GameEntity implements Serializable, Name {
             ArrayList<UserDraw> winner = new ArrayList<UserDraw>();
             winner.add(winnerUserDraw);
             pot.distribute(winner);
-            //does this work???
-
             //then: a new gameround starts
-
             try {
                 setup();
             }
             catch (Exception e) {
-                e.printStackTrace();
+                System.out.println(e.getMessage());
             }
 
         }
         else {
             throw new IllegalStateException("There should always be atleast one active user!");
         }
+
     }
 
-    private void setStartingPlayer(User user) {
+    public int getNumberOfActiveUsersWithMoney() {
+        int counter = 0;
+        for (User user : activeUsers) {
+            if (user.getMoney() > 0) {
+                counter++;
+            }
+        }
+        return counter;
+    }
+
+    private User getUserInActiveUsersWithUsername(String username) {
+        User returnUser = null;
+        for (User user : activeUsers) {
+            //I found the User who is potentially the next User in turn
+            if (user.getUsername().equals(username)) {
+                returnUser = user;
+                break;
+            }
+        }
+        return returnUser;
+    }
+
+    private User getUserInActiveUsersWithId(Long id) {
+        User returnUser = null;
+        for (User user : activeUsers) {
+            //I found the User who is potentially the next User in turn
+            if (user.getId().equals(id)) {
+                returnUser = user;
+                break;
+            }
+        }
+        return returnUser;
+    }
+
+
+    private void setPlayerWhoStartsAtNewRound(User user) {
         if (user.getMoney() > 0) {
             onTurn = new OnTurnGetDTO();
             onTurn.setUsername(user.getUsername());
@@ -411,7 +444,7 @@ public class GameEntity implements Serializable, Name {
     }
 
     //this always happens at the begin of a new round
-    private void setSmallBlindAsPlayerInTurn_orSomeoneElse() {
+    private void handlePlayerWhoStartsAtNewRound() {
         //is the SMALL Blind still in the activeUsers Array? allUsers certainly will contain the Small Blind
         int index = -1;
         User nextUser;
@@ -420,7 +453,7 @@ public class GameEntity implements Serializable, Name {
                 index = allUsers.indexOf(uservar);
                 nextUser = uservar;
                 if (activeUsers.contains(nextUser)) {
-                    setStartingPlayer(nextUser);
+                    setPlayerWhoStartsAtNewRound(nextUser);
                     return;
                 }
                 else {
@@ -433,7 +466,7 @@ public class GameEntity implements Serializable, Name {
             index = Math.abs((index - 1 + allUsers.size()) % (allUsers.size()));
             nextUser = allUsers.get(index);
             if (activeUsers.contains(nextUser)) {
-                setStartingPlayer(nextUser);
+                setPlayerWhoStartsAtNewRound(nextUser);
                 return;
             }
             counter++;
@@ -459,7 +492,7 @@ public class GameEntity implements Serializable, Name {
             catch (Exception e) {
                 e.printStackTrace();
             }
-            setSmallBlindAsPlayerInTurn_orSomeoneElse();
+            handlePlayerWhoStartsAtNewRound();
         }
 
         else if (round == Round.FLOP) {
@@ -472,7 +505,7 @@ public class GameEntity implements Serializable, Name {
             catch (Exception e) {
                 e.printStackTrace();
             }
-            setSmallBlindAsPlayerInTurn_orSomeoneElse();
+            handlePlayerWhoStartsAtNewRound();
         }
 
         else if (round == Round.TURNCARD) {
@@ -485,7 +518,7 @@ public class GameEntity implements Serializable, Name {
             catch (Exception e) {
                 e.printStackTrace();
             }
-            setSmallBlindAsPlayerInTurn_orSomeoneElse();
+            handlePlayerWhoStartsAtNewRound();
         }
         /**
          Here, we get inside the Showdown. This needs to be implemented
@@ -495,7 +528,7 @@ public class GameEntity implements Serializable, Name {
             round = Round.SHOWDOWN;
             showdown = true;
             allUsers.forEach(user -> user.setWantsToShow(Show.NOT_DECIDED));
-            nextUser();
+            firstTimeNextUserInShowdown();
         }
         else if (round == Round.SHOWDOWN) {
             try {
@@ -512,7 +545,7 @@ public class GameEntity implements Serializable, Name {
 
     }
 
-    private void nextUser() {
+    private void firstTimeNextUserInShowdown() {
         var user = getUserInAllUsersByName(onTurn.getUsername());
         if (user.isEmpty()) {
             return;
@@ -521,8 +554,8 @@ public class GameEntity implements Serializable, Name {
             var u = user.get();
             int i = allUsers.indexOf(u);
             do {
-                i = (i + allUsers.size() - 1 ) % allUsers.size();
-            } while(!activeUsers.contains(allUsers.get(i)) && allUsers.get(i) != u);
+                i = (i + allUsers.size() - 1) % allUsers.size();
+            } while (!activeUsers.contains(allUsers.get(i)) && allUsers.get(i) != u);
             var onTurn = new OnTurnGetDTO();
             onTurn.setUsername(allUsers.get(i).getUsername());
             setOnTurn(onTurn);
@@ -546,15 +579,11 @@ public class GameEntity implements Serializable, Name {
      * Gets called when all players are in the game
      */
     public void setup() throws Exception {
-
         if (firstGameSetup) {
             setStartingPotForUsers();
             pot = new Pot();
-
             setUpPot();
-
             List<User> players = new ArrayList<>(getAllUsers());
-
             setRawPlayersInTurnOrder(players);
         }
         if (numberOfBrokeUsersInAllUsers() + 1 == allUsers.size()) {
@@ -569,14 +598,12 @@ public class GameEntity implements Serializable, Name {
             protocol.add(new ProtocolElement(MessageType.LOG, this, "The GameSession has ended! User " + usernameOfUserWhoWon() + " has won!"));
         }
         else {
-
-
             deck = new Deck();
             river.clear();
             round = Round.PREFLOP;
             showdown = false;
             bigblindspecialcase = true;
-            distributeBlinds();
+            distributeBlindsHandler();
             distributeCards();
             protocol.add(new ProtocolElement(MessageType.LOG, this, "New Gameround starts"));
         }
@@ -671,99 +698,97 @@ public class GameEntity implements Serializable, Name {
      * Used to randomly distribute the small and big blind at the start of the game.
      * randomly distributes them at first gameSetup, in turn if not first game setup
      */
-    private void distributeBlinds() {
 
+    private User getSmallBlindInAllUsers() {
+        User returnUser = null;
+        for (User user : allUsers) {
+            if (user.getBlind() == Blind.SMALL) {
+                returnUser = user;
+            }
+        }
+        return returnUser;
+    }
+
+    private void distributeBlindsHandler() {
         if (firstGameSetup) {
-            for (User user : allUsers) {
-                user.setBlind(Blind.NEUTRAL);
-            }
-
-            // default value
-            var randomInt = 1;
-
-            // Generate random integer between 1 and 4
-            var random = new Random();
-            OptionalInt optionalRandomInt = random.ints(0, allUsers.size()).findFirst();
-
-            if (optionalRandomInt.isPresent()) {
-                randomInt = optionalRandomInt.getAsInt();
-            }
-
-            var toGetBigBlind = allUsers.get(randomInt);
-            toGetBigBlind.setBlind(Blind.BIG);
-
-
-            var toGetSmallBlind = allUsers.get(Math.abs((randomInt + 1) + allUsers.size()) % (allUsers.size()));
-
-            toGetSmallBlind.setBlind(Blind.SMALL);
-
-
-            onTurn = new OnTurnGetDTO();
-
-            onTurn.setUsername(allUsers.get(Math.abs((randomInt - 1) + allUsers.size()) % (allUsers.size())).getUsername());
-
-
-            pot.addMoney(toGetBigBlind, toGetBigBlind.removeMoney(200));
-            pot.addMoney(toGetSmallBlind, toGetSmallBlind.removeMoney(100));
-            setUserThatRaisedLast(toGetBigBlind);
-            firstGameSetup = false;
-
+            distributeBlindsFirstTime();
         }
         else {
-            int index;
-            //Clone allUsers back into activeUsers to keep turn order right
-            activeUsers = new ArrayList<>(allUsers);
-
-            for (User user : allUsers) {
-                if (user.getBlind() == Blind.SMALL) {
-                    index = allUsers.indexOf(user) + 1; //+1 becaus in the do while loop it is incremented in the beginning
-
-                    User toGetSmallBlind;
-                    User toGetBigBlind;
-                    do {
-                        index--;
-                        toGetSmallBlind = allUsers.get(Math.abs((index - 1 + allUsers.size()) % (allUsers.size())));
-                        if (toGetSmallBlind == user) {
-                            break;
-                        }
-                    } while (toGetSmallBlind.getMoney() <= 0); //While small blind has no money, he is out and the blind role is given to next user
-
-                    do {
-                        toGetBigBlind = allUsers.get(Math.abs((index - 2 + allUsers.size()) % (allUsers.size())));
-                        if (toGetBigBlind == user) {
-                            break;
-                        }
-                        index--;
-                    } while (toGetBigBlind.getMoney() <= 0);
-                    /*
-                     * Assumption that we made but which is not always true: that this onTurn User is active (therefore, this User still has money)
-                     */
-                    index = allUsers.indexOf(toGetBigBlind);
-                    User onTurnUser;
-                    do {
-                        onTurnUser = allUsers.get(Math.abs((index - 1 + allUsers.size()) % (allUsers.size())));
-                        index--;
-                    } while (onTurnUser.getMoney() <= 0);
-
-
-                    onTurn = new OnTurnGetDTO();
-                    onTurn.setUsername(onTurnUser.getUsername());
-
-                    for (User u : allUsers) {
-                        u.setBlind(Blind.NEUTRAL);
-                    }
-                    toGetSmallBlind.setBlind(Blind.SMALL);
-                    toGetBigBlind.setBlind(Blind.BIG);
-                    setUserThatRaisedLast(toGetBigBlind);
-
-
-                    pot.addMoney(toGetBigBlind, toGetBigBlind.removeMoney(200));
-                    pot.addMoney(toGetSmallBlind, toGetSmallBlind.removeMoney(100));
-                    break;
-                }
-
-            }
+            passBlind();
         }
+    }
+
+    private void passBlind() {
+        int index;
+        //Clone allUsers back into activeUsers to keep turn order right
+        activeUsers = new ArrayList<>(allUsers);
+        User user = getSmallBlindInAllUsers();
+        index = allUsers.indexOf(user) + 1; //+1 becaus in the do while loop it is incremented in the beginning
+        User toGetSmallBlind;
+        User toGetBigBlind;
+        do {
+            index--;
+            toGetSmallBlind = allUsers.get(Math.abs((index - 1 + allUsers.size()) % (allUsers.size())));
+            if (toGetSmallBlind == user) {
+                break;
+            }
+        } while (toGetSmallBlind.getMoney() <= 0); //While small blind has no money, he is out and the blind role is given to next user
+
+        do {
+            toGetBigBlind = allUsers.get(Math.abs((index - 2 + allUsers.size()) % (allUsers.size())));
+            if (toGetBigBlind == user) {
+                break;
+            }
+            index--;
+        } while (toGetBigBlind.getMoney() <= 0);
+        /*
+         * Assumption that we made but which is not always true: that this onTurn User is active (therefore, this User still has money)
+         */
+        index = allUsers.indexOf(toGetBigBlind);
+        User onTurnUser;
+        do {
+            onTurnUser = allUsers.get(Math.abs((index - 1 + allUsers.size()) % (allUsers.size())));
+            index--;
+        } while (onTurnUser.getMoney() <= 0);
+
+
+        onTurn = new OnTurnGetDTO();
+        onTurn.setUsername(onTurnUser.getUsername());
+
+        for (User u : allUsers) {
+            u.setBlind(Blind.NEUTRAL);
+        }
+        toGetSmallBlind.setBlind(Blind.SMALL);
+        toGetBigBlind.setBlind(Blind.BIG);
+        setUserThatRaisedLast(toGetBigBlind);
+
+        pot.addMoney(toGetBigBlind, toGetBigBlind.removeMoney(200));
+        pot.addMoney(toGetSmallBlind, toGetSmallBlind.removeMoney(100));
+    }
+
+    private void distributeBlindsFirstTime() {
+        for (User user : allUsers) {
+            user.setBlind(Blind.NEUTRAL);
+        }
+        // default value
+        var randomInt = 1;
+        // Generate random integer between 1 and 4
+        var random = new Random();
+        OptionalInt optionalRandomInt = random.ints(0, allUsers.size()).findFirst();
+
+        if (optionalRandomInt.isPresent()) {
+            randomInt = optionalRandomInt.getAsInt();
+        }
+        var toGetBigBlind = allUsers.get(randomInt);
+        toGetBigBlind.setBlind(Blind.BIG);
+        var toGetSmallBlind = allUsers.get(Math.abs((randomInt + 1) + allUsers.size()) % (allUsers.size()));
+        toGetSmallBlind.setBlind(Blind.SMALL);
+        onTurn = new OnTurnGetDTO();
+        onTurn.setUsername(allUsers.get(Math.abs((randomInt - 1) + allUsers.size()) % (allUsers.size())).getUsername());
+        pot.addMoney(toGetBigBlind, toGetBigBlind.removeMoney(200));
+        pot.addMoney(toGetSmallBlind, toGetSmallBlind.removeMoney(100));
+        setUserThatRaisedLast(toGetBigBlind);
+        firstGameSetup = false;
 
     }
 

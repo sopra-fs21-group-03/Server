@@ -183,7 +183,7 @@ public class LoginService {
      * @param firstUserInGame first user to join the game
      */
     private void createGame(User firstUserInGame) {
-        var game = new GameEntity();
+        var game = new GameEntity(1L);
 
         game.addUserToAll(firstUserInGame);
         game.addUserToActive(firstUserInGame);

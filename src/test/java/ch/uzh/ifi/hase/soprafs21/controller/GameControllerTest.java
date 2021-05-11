@@ -60,7 +60,7 @@ class GameControllerTest {
     @Test
     void getOwnGameData_gameSetUp_success() throws Exception{
         //given
-        GameEntity gameEntity = new GameEntity();
+        GameEntity gameEntity = new GameEntity(1L);
         ArrayList<OpponentInGameGetDTO> playersInGame = new ArrayList<>();
 
         User user1 = new User();
@@ -122,7 +122,7 @@ class GameControllerTest {
     @Test
     void getOwnGameData_gameNotSetUp_success() throws Exception{
         //given
-        GameEntity gameEntity = new GameEntity();
+        GameEntity gameEntity = new GameEntity(1L);
         ArrayList<OpponentInGameGetDTO> playersInGame = new ArrayList<>();
 
         User user1 = new User();
@@ -207,7 +207,7 @@ class GameControllerTest {
     @Test
     void getGameData_gameSetUp_success() throws Exception {
         //given
-        GameEntity gameEntity = new GameEntity();
+        GameEntity gameEntity = new GameEntity(1L);
         ArrayList<OpponentInGameGetDTO> playersInGame = new ArrayList<>();
 
         User user1 = new User();
@@ -276,7 +276,7 @@ class GameControllerTest {
     @Test
     void getGameData_gameNotSetUp_success() throws Exception {
         //given
-        GameEntity gameEntity = new GameEntity();
+        GameEntity gameEntity = new GameEntity(1L);
         ArrayList<OpponentInGameGetDTO> opponents = new ArrayList<>();
 
         User user1 = new User();
@@ -644,7 +644,7 @@ class GameControllerTest {
         testUser.setMoney(10);
         testUser.setGamestatus(GameStatus.READY);
         testUser.setWantsToShow(Show.NOT_DECIDED);
-        var testGame = new GameEntity();
+        var testGame = new GameEntity(1L);
         testGame.addUserToAll(testUser);
         testGame.addUserToAll(testUser);
 

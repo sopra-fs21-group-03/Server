@@ -1,6 +1,5 @@
 package ch.uzh.ifi.hase.soprafs21.service;
 
-import ch.uzh.ifi.hase.soprafs21.constant.Blind;
 import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
@@ -83,7 +82,7 @@ class ChatServiceTest {
         testUser5.setMoney(10);
         testUser5.setGamestatus(GameStatus.READY);
 
-        testGame = new GameEntity();
+        testGame = new GameEntity(1L);
         testGame.setId(1L);
 
 

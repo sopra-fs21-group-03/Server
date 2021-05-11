@@ -90,7 +90,7 @@ class GameEntityTest {
 
     @BeforeEach
     void setup() {
-        testGame = new GameEntity();
+        testGame = new GameEntity(1L);
         testUser = new User();
         testUser.setId(1L);
         testUser.setPassword("testName");
@@ -131,7 +131,7 @@ class GameEntityTest {
 
         testUser5.setGamestatus(GameStatus.READY);
 
-        testGame = new GameEntity();
+        testGame = new GameEntity(1L);
         testGame.setId(1L);
 
 
@@ -174,7 +174,7 @@ class GameEntityTest {
         User small = getSmallBlind_inallUsers();
         String userOnTurn = testGame.getOnTurn().getUsername();
         removeAllPlayersFromActiveExceptOne();
-        testGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon("NotImportant");
+        testGame.roundHandler("NotImportant");
         assertEquals(big.getUsername(), getSmallBlind_inallUsers().getUsername());
         assertEquals(Blind.SMALL, big.getBlind());
         assertEquals(Blind.NEUTRAL, small.getBlind());

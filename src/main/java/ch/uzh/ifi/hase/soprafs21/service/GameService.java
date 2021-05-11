@@ -38,8 +38,12 @@ public class GameService {
     private static final String NOT_FOUND_MESSAGE = "The User could not be found...";
     private static final String NOT_IN_TURN_MESSAGE = "This User is not in turn!";
 
+
+    private static final int AMOUNT_OF_GAMES = 4;
+
     // Turn time in ms
     private static final long TURN_TIME = 30000L;
+
 
     /**
      * @param gameRepository this is the Repository which the GameService will receive. Since the GameService is responsible for actions related to saved
@@ -48,6 +52,15 @@ public class GameService {
     @Autowired
     public GameService(@Qualifier("gameRepository") GameRepository gameRepository) {
         this.gameRepository = gameRepository;
+        createGames();
+    }
+
+    private void createGames() {
+        for(Long i = 1L; i <= AMOUNT_OF_GAMES; i++) {
+            var game = new GameEntity(i);
+            gameRepository.save(game);
+        }
+        gameRepository.flush();
     }
 
     /**
@@ -136,7 +149,7 @@ public class GameService {
                     //User folds -> he gets removed from the ActiveUsers List, not from the AllUsers List
                     theGame.getActiveUsers().remove(user);
                     //then, set the next User on turn or the next round or declare a winner.
-                    theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(usernameOfPotentialNextUserInTurn);
+                    theGame.roundHandler(usernameOfPotentialNextUserInTurn);
                     var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s folds", user.getUsername()));
                     theGame.addProtocolElement(element);
                     gameRepository.save(theGame);
@@ -191,7 +204,7 @@ public class GameService {
                             //Give me the username of the User that is potentially the next user on turn
                             String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(user);
                             //then, set the next User on turn or the next round or declare a winner.
-                            theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(usernameOfPotentialNextUserInTurn);
+                            theGame.roundHandler(usernameOfPotentialNextUserInTurn);
                             theGame.setBigblindspecialcase(false);
                             gameRepository.save(theGame);
                             return;
@@ -216,7 +229,7 @@ public class GameService {
                             //Give me the username of the User that is potentially the next user on turn
                             String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(user);
                             //then, set the next User on turn or the next round or declare a winner.
-                            theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(usernameOfPotentialNextUserInTurn);
+                            theGame.roundHandler(usernameOfPotentialNextUserInTurn);
                             theGame.setBigblindspecialcase(false);
                             gameRepository.save(theGame);
                             return;
@@ -303,7 +316,7 @@ public class GameService {
             //Give me the username of the User that is potentially the next user on turn
             String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(thisUser);
             //then, set the next User on turn or the next round or declare a winner.
-            theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(usernameOfPotentialNextUserInTurn);
+            theGame.roundHandler(usernameOfPotentialNextUserInTurn);
             gameRepository.save(theGame);
         }
         else {
@@ -383,7 +396,7 @@ public class GameService {
             //Give me the username of the User that is potentially the next user on turn
             String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(thisUser);
             //then, set the next User on turn or the next round or declare a winner.
-            theGame.setNextUserOrNextRoundOrSomeoneHasAlreadyWon(usernameOfPotentialNextUserInTurn);
+            theGame.roundHandler(usernameOfPotentialNextUserInTurn);
             gameRepository.save(theGame);
         }
         else {
