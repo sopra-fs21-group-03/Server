@@ -76,7 +76,7 @@ class LobbyControllerTest {
     void getLobbyOverviewSuccess() throws Exception {
         given(lobbyService.getAllGames()).willReturn(List.of(game, game2));
 
-        MockHttpServletRequestBuilder getRequest = get("/lobbies");
+        MockHttpServletRequestBuilder getRequest = get("/lobbies").header("Authorization", "3");
 
         mockMvc.perform(getRequest).andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))

@@ -46,7 +46,7 @@ public class LoginService {
         return this.userRepository.findAll();
     }
 
-    public User getUserId(String token){
+    public User getUserByToken(String token){
         return userRepository.findByToken(token);
     }
 

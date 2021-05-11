@@ -1,9 +1,6 @@
 package ch.uzh.ifi.hase.soprafs21.entity;
 
-import ch.uzh.ifi.hase.soprafs21.constant.Blind;
-import ch.uzh.ifi.hase.soprafs21.constant.MessageType;
-import ch.uzh.ifi.hase.soprafs21.constant.Round;
-import ch.uzh.ifi.hase.soprafs21.constant.Show;
+import ch.uzh.ifi.hase.soprafs21.constant.*;
 import ch.uzh.ifi.hase.soprafs21.game.Pot;
 import ch.uzh.ifi.hase.soprafs21.game.cards.Deck;
 import ch.uzh.ifi.hase.soprafs21.game.cards.River;
@@ -12,6 +9,7 @@ import ch.uzh.ifi.hase.soprafs21.helper.CardRanking;
 import ch.uzh.ifi.hase.soprafs21.helper.UserDraw;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OnTurnGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
+import ch.uzh.ifi.hase.soprafs21.rest.dto.PlayerInLobbyGetDTO;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
@@ -38,7 +36,6 @@ public class GameEntity implements Serializable, Name {
     @Column
     private String gameName;
 
-
     @OneToMany
     @LazyCollection(LazyCollectionOption.FALSE)
     private List<User> activeUsers;
@@ -53,6 +50,9 @@ public class GameEntity implements Serializable, Name {
 
     @ElementCollection
     private List<OpponentInGameGetDTO> playersInTurnOrder;
+
+    @ElementCollection
+    private List <PlayerInLobbyGetDTO> lobbyplayers;
 
     @OneToMany
     private List<User> rawPlayersInTurnOrder;
@@ -109,6 +109,7 @@ public class GameEntity implements Serializable, Name {
         allUsers = new ArrayList<>();
         activeUsers = new ArrayList<>();
         playersInTurnOrder = new ArrayList<>();
+        lobbyplayers = new ArrayList<>();
         spectators = new ArrayList<>();
         this.id = id;
         firstGameSetup = true;
@@ -134,6 +135,16 @@ public class GameEntity implements Serializable, Name {
             return false;
         }
         return true;
+    }
+
+    public boolean getGameCanStart(){
+        int readyCounter = 0;
+        for (User user : allUsers){
+            if(user.getGamestatus() == GameStatus.READY){
+                readyCounter++;
+            }
+        }
+        return allUsers.size() == 5 && readyCounter == 5;
     }
 
     public int getPlayerCount() {
@@ -206,6 +217,14 @@ public class GameEntity implements Serializable, Name {
 
     public List<User> getRawPlayersInTurnOrder() {
         return rawPlayersInTurnOrder;
+    }
+
+    public List<PlayerInLobbyGetDTO> getLobbyplayers() {
+        return lobbyplayers;
+    }
+
+    public void setLobbyplayers(List<PlayerInLobbyGetDTO> lobbyplayers) {
+        this.lobbyplayers = lobbyplayers;
     }
 
     public void setRawPlayersInTurnOrder(List<User> rawPlayersInTurnOrder) {
@@ -293,6 +312,7 @@ public class GameEntity implements Serializable, Name {
             do {
                 indexOfPotentialNextUserInTurn = Math.abs(activeUsers.indexOf(user) + index + activeUsers.size()) % activeUsers.size();
                 index--;
+                //the userThatRaisedLast should not be skipped!
                 if (userThatRaisedLast != null && activeUsers.get(indexOfPotentialNextUserInTurn).getId().equals(userThatRaisedLast.getId())) {
                     return activeUsers.get(indexOfPotentialNextUserInTurn).getUsername();
                 }

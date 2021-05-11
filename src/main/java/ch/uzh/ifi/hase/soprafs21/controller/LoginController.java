@@ -49,7 +49,7 @@ public class LoginController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public UserGetDTO getUserID(@RequestHeader(value = "Authorization") String token){
-        var userGetDTO = loginService.getUserId(token);
+        var userGetDTO = loginService.getUserByToken(token);
 
         return DTOMapper.INSTANCE.convertEntityToUserGetDTO(userGetDTO);
     }
