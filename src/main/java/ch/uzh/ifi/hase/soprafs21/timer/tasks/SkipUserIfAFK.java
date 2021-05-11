@@ -11,15 +11,16 @@ import java.util.Date;
 public class SkipUserIfAFK implements Runnable {
     private final GameRepository gameRepository;
     private final GameService gameService;
-
+    private final long gameID;
 
     private static final Logger log = LoggerFactory.getLogger(SkipUserIfAFK.class);
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
-    public SkipUserIfAFK(GameRepository gameRepository, GameService gameService) {
+    public SkipUserIfAFK(GameRepository gameRepository, GameService gameService, long gameID) {
         this.gameRepository = gameRepository;
         this.gameService = gameService;
+        this.gameID = gameID;
     }
 
 
@@ -44,7 +45,7 @@ public class SkipUserIfAFK implements Runnable {
                 if (trueGame.getRound() == Round.SHOWDOWN){
                     gameService.show(trueGame, user, false);
                 } else {
-                    gameService.userFolds(1L, user.getId());
+                    gameService.userFolds(this.gameID, user.getId());
                 }
                 break;
             }

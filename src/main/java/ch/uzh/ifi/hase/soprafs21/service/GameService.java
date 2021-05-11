@@ -8,10 +8,12 @@ import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.game.protocol.ProtocolElement;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
+import ch.uzh.ifi.hase.soprafs21.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.PlayerInGameGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs21.timer.CentralScheduler;
+import ch.uzh.ifi.hase.soprafs21.timer.tasks.PotDistributor;
 import ch.uzh.ifi.hase.soprafs21.timer.tasks.SkipUserIfAFK;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -34,6 +36,7 @@ import java.util.Optional;
 public class GameService {
 
     private final GameRepository gameRepository;
+    private final UserRepository userRepository;
 
     private static final String NOT_FOUND_MESSAGE = "The User could not be found...";
     private static final String NOT_IN_TURN_MESSAGE = "This User is not in turn!";
@@ -44,14 +47,17 @@ public class GameService {
     // Turn time in ms
     private static final long TURN_TIME = 30000L;
 
+    // Time left at the end of showdown
+    private static final long SHOWDOWN_TIME = 4000L;
 
     /**
      * @param gameRepository this is the Repository which the GameService will receive. Since the GameService is responsible for actions related to saved
      *                       games, we need a Repository that saves Games.
      */
     @Autowired
-    public GameService(@Qualifier("gameRepository") GameRepository gameRepository) {
+    public GameService(@Qualifier("gameRepository") GameRepository gameRepository, @Qualifier("userRepository") UserRepository userRepository) {
         this.gameRepository = gameRepository;
+        this.userRepository = userRepository;
         createGames();
     }
 
@@ -128,7 +134,7 @@ public class GameService {
      * @param userid The id of the User that wants to perform the "Fold" action.
      */
     public void userFolds(Long gameid, Long userid) {
-        startTurnTimerForNextUser();
+        startTurnTimerForNextUser(gameid);
 
         //first, find the GameEntity (find it with the id called gameid)
         var theGame = findGameEntity(gameid);
@@ -172,7 +178,7 @@ public class GameService {
      * @param amount The User wants to raise by this amount.
      */
     public void userRaises(Long gameid, Long userid, int amount) {
-        startTurnTimerForNextUser();
+        startTurnTimerForNextUser(gameid);
         // You cannot raise by 0 or a negative number.
         if (amount <= 0) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "The raise amount always has to be above 0!");
@@ -260,7 +266,7 @@ public class GameService {
      *               In this function, "All-In" will also be handeled
      */
     public void userCalls(Long gameid, Long userid) {
-        startTurnTimerForNextUser();
+        startTurnTimerForNextUser(gameid);
 
         //first, find the GameEntity (find it with the id called gameid)
         var theGame = findGameEntity(gameid);
@@ -331,7 +337,7 @@ public class GameService {
      *               When a User is raising, before he can raise, he needs to call.
      */
     public void userCallsForRaising(Long gameid, Long userid) {
-        startTurnTimerForNextUser();
+        startTurnTimerForNextUser(gameid);
         var theGame = findGameEntity(gameid);
 
         //give me the player that raise last
@@ -375,7 +381,7 @@ public class GameService {
      * @param userid The id of the User that wants to perform the "Check" action.
      */
     public void userChecks(Long gameid, Long userid) {
-        startTurnTimerForNextUser();
+        startTurnTimerForNextUser(gameid);
         var theGame = findGameEntity(gameid);
 
         //In the function call, we got a userid. Give me this User
@@ -529,7 +535,7 @@ public class GameService {
     }
 
     public void show(GameEntity game, User user, boolean wantsToShow) {
-        startTurnTimerForNextUser();
+        startTurnTimerForNextUser(game.getId());
 
         if (checkIfUserPerformingActionIsUserOnTurn(game.getId(), user)) {
             Show show;
@@ -563,8 +569,10 @@ public class GameService {
             }
 
             //if all user decided distribute the pot
-            game.distributePot();
-            game.setNextRound();
+
+            // Create a thread that waits before distributing the pot
+            startShowdownTimerForLastUser(game);
+
         } else {
 
             throw new ResponseStatusException(HttpStatus.CONFLICT, NOT_IN_TURN_MESSAGE);
@@ -581,17 +589,25 @@ public class GameService {
         }
     }
 
+
     /**
-     * Helper function that resets the turnTimer of a user
+     * Helper functions for threading
      */
-    public void startTurnTimerForNextUser(){
-        SkipUserIfAFK skipUserIfAFK = new SkipUserIfAFK(this.gameRepository, this);
+
+    public void startShowdownTimerForLastUser(GameEntity game){
+        PotDistributor potDistributor = new PotDistributor(game, this.gameRepository, this.userRepository);
+        CentralScheduler.getInstance().reset(potDistributor, SHOWDOWN_TIME);
+    }
+
+
+    public void startTurnTimerForNextUser(long gameID){
+        SkipUserIfAFK skipUserIfAFK = new SkipUserIfAFK(this.gameRepository, this, gameID);
 
         CentralScheduler.getInstance().reset(skipUserIfAFK, TURN_TIME);
     }
 
-    public void startTurnTimer(){
-        SkipUserIfAFK skipUserIfAFK = new SkipUserIfAFK(this.gameRepository, this);
+    public void startTurnTimer(long gameID){
+        SkipUserIfAFK skipUserIfAFK = new SkipUserIfAFK(this.gameRepository, this, gameID);
         CentralScheduler.getInstance().start(skipUserIfAFK, TURN_TIME);
     }
 }
