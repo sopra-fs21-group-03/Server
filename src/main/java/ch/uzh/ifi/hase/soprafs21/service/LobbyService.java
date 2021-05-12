@@ -5,9 +5,9 @@ import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs21.repository.UserRepository;
-import ch.uzh.ifi.hase.soprafs21.rest.dto.OpponentInGameGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.PlayerInLobbyGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -24,11 +24,14 @@ public class LobbyService {
 
     private final GameRepository gameRepository;
     private final UserRepository userRepository;
+    private final GameService gameService;
     private static final String NOT_FOUND_MESSAGE = "The User could not be found...";
 
-    public LobbyService(@Qualifier("gameRepository") GameRepository gameRepository, @Qualifier("userRepository") UserRepository userRepository) {
+    @Autowired
+    public LobbyService(@Qualifier("gameRepository") GameRepository gameRepository, @Qualifier("userRepository") UserRepository userRepository, GameService gameService) {
         this.gameRepository = gameRepository;
         this.userRepository = userRepository;
+        this.gameService = gameService;
     }
 
     public List<User> getUsers() {
@@ -52,21 +55,6 @@ public class LobbyService {
         }
     }
 
-    /**
-     * @param userid The id of the User that should be analyzed
-     * @return the User with the corresponding userid, if it exists. Else, if there is no User with such an id, a ResponseStatusException will be thrown.
-     */
-    private User findUserById(Long userid) {
-        Optional<User> potentialUser = userRepository.findById(userid);
-        User theUser = null;
-        if (potentialUser.isPresent()) {
-            theUser = potentialUser.get();
-            return theUser;
-        }
-        else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE);
-        }
-    }
 
     public void checkIfUserExists_ByToken(String token) {
         Optional<User> potentialUser = Optional.ofNullable(userRepository.findByToken(token));
@@ -159,4 +147,35 @@ public class LobbyService {
         }
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User is not registered in the Lobby Session and therefore is not allowed to get more data about the Lobby!");
     }
+
+    public void checkIfUserIsAlreadyInAnOtherLobby(String token) {
+        List<GameEntity> gameList = getAllGames();
+        for (GameEntity entity : gameList) {
+            for (User user : entity.getAllUsers()) {
+                if (user.getToken().equals(token)) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "The User is already in an other Lobby and therefore can not join this Lobby!");
+                }
+            }
+
+            for (User user2 : entity.getSpectators()) {
+                if (user2.getToken().equals(token)) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "The User is already in an other Lobby and therefore can not join this Lobby!");
+                }
+            }
+        }
+    }
+
+    public void setUpGame(GameEntity game) {
+        // Check if there are already five players in the game
+        if (game.getGameCanStart() && game.isFirstGameSetup()) {
+            try {
+                gameService.startTurnTimer(game.getId());
+                game.setup();
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }

@@ -436,7 +436,7 @@ public class GameService {
         }
 
         if (!valid) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not logged in");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not allowed to get data about this game, since he was not found in the Session!");
         }
 
         for (User player : game.getRawPlayersInTurnOrder()) {
@@ -586,6 +586,18 @@ public class GameService {
         }
         else {
             return game.get();
+        }
+    }
+
+    private void deleteUserFromGame(Long UserID, GameEntity gameEntity) {
+        gameEntity.removeUserFromAll(UserID);
+        gameEntity.removeUserFromActive(UserID);
+        gameEntity.removeUserFromSpectators(UserID);
+        gameEntity.removeUserFromRawPlayers(UserID);
+
+        if (!gameEntity.isFirstGameSetup()) {
+            gameEntity.setFirstGameSetup(true);
+            gameEntity.setProtocol(new ArrayList<>());
         }
     }
 

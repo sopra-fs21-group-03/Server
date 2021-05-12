@@ -61,14 +61,6 @@ public class LoginService {
         // saves the given entity but data is only persisted in the database once flush() is called
         newUser = userRepository.save(newUser);
         userRepository.flush();
-
-        /*
-           Create Game and add User to the GameList
-           or just add user to the GameList if game already exists
-         */
-        setUpGame(newUser);
-
-
         log.debug("Created Information for User: {}", newUser);
         return newUser;
     }
@@ -93,13 +85,6 @@ public class LoginService {
 
         fetched.setStatus(UserStatus.ONLINE);
         userRepository.save(fetched);
-
-        /*
-         if game already exists, simply add the user
-         if game does not exist, create new game and add the user
-        */
-        setUpGame(fetched);
-
         return fetched.getToken();
     }
 
@@ -126,90 +111,10 @@ public class LoginService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
 
-        Optional<GameEntity> optionalGame = gameRepository.findById(1L);
-
-        // Try to delete user if game is still running
-        optionalGame.ifPresent(gameEntity -> deleteUserFromGame(userID, gameEntity));
-
         fetchedEntity.setStatus(UserStatus.OFFLINE);
         userRepository.save(fetchedEntity);
     }
 
-    public void setUpGame(User userToBeAdded) {
-        Optional<GameEntity> optionalGame = gameRepository.findById((long)1);
-
-        /*
-         if game already exists, simply add the user
-         if game does not exist, create new game and add the user
-         */
-        optionalGame.ifPresent((game) -> {
-            if (!game.getAllUsers().contains(userToBeAdded)){
-                addUserToGame(userToBeAdded, game);
-            }
-            // Check if there are already five players in the game
-            if (game.getAllUsers().size() == 5 && game.isFirstGameSetup()) {
-                try {
-                    gameService.startTurnTimer(game.getId());
-                    game.setup();
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        if (optionalGame.isEmpty()){
-            createGame(userToBeAdded);
-        }
-    }
-
-    private void deleteUserFromGame(Long UserID, GameEntity gameEntity) {
-        gameEntity.removeUserFromAll(UserID);
-        gameEntity.removeUserFromActive(UserID);
-        gameEntity.removeUserFromSpectators(UserID);
-        gameEntity.removeUserFromRawPlayers(UserID);
-
-        if (!gameEntity.isFirstGameSetup()) {
-            gameEntity.setFirstGameSetup(true);
-            gameEntity.setProtocol(new ArrayList<>());
-        }
-    }
-
-    /**
-     * Helper Function
-     * Temporary function to create a GameEntity and save it in the GameRepository
-     * Since no Lobby is implemented in Milestone 3, a base game gets created as soon as a user registers/logs in
-     *
-     * @param firstUserInGame first user to join the game
-     */
-    private void createGame(User firstUserInGame) {
-        var game = new GameEntity(1L);
-
-        game.addUserToAll(firstUserInGame);
-        game.addUserToActive(firstUserInGame);
-
-        //Set default gameName
-        game.setGameName("default");
-
-        gameRepository.save(game);
-        gameRepository.flush();
-
-    }
-
-    /**
-     * Helper Function
-     * Used to add a registered/logged in user to a GameEntity
-     *
-     * @param userToBeAdded user that should be added to the game list
-     */
-    private void addUserToGame(User userToBeAdded, GameEntity gameEntity) {
-
-        gameEntity.addUserToAll(userToBeAdded);
-        gameEntity.addUserToActive(userToBeAdded);
-
-        gameRepository.save(gameEntity);
-        gameRepository.flush();
-    }
 
     /**
      * This is a helper method that will check the uniqueness criteria of the username and the name

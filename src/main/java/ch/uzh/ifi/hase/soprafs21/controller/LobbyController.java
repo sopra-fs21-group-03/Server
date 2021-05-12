@@ -41,6 +41,7 @@ public class LobbyController {
     @ResponseBody
     public void addUserToLobby(@PathVariable Long lobbyID, @RequestBody UserPutDTO userPutDTO) {
         lobbyService.checkIfUserExists_ByToken(userPutDTO.getToken());
+        lobbyService.checkIfUserIsAlreadyInAnOtherLobby(userPutDTO.getToken());
         User userfound = lobbyService.getUserByTokenInUserRepository(userPutDTO.getToken());
         GameEntity entity = lobbyService.findGameEntity(lobbyID);
         /*
@@ -62,6 +63,7 @@ public class LobbyController {
          */
 
         lobbyService.setUserToReady(userfound);
+        lobbyService.setUpGame(entity);
     }
 
     @GetMapping("/lobbies/{lobbyID}")
