@@ -111,6 +111,24 @@ public class GameService {
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE);
     }
 
+    public User getUserByIdInAllUsersAndSpectators(Long gameid, Long userid) {
+        var theGame = findGameEntity(gameid);
+
+        for (User user : theGame.getAllUsers()) {
+            if (userid.equals(user.getId())) {
+                return user;
+            }
+        }
+        for (User user2 : theGame.getSpectators()) {
+            if (userid.equals(user2.getId())) {
+                return user2;
+            }
+        }
+
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE);
+    }
+
+
     /**
      * @param gameid The id of the Game that should be analyzed
      * @param userid The id of the User that should be returned. Here, we are searching inside the activeUsers List.
@@ -436,7 +454,7 @@ public class GameService {
         }
 
         if (!valid) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not logged in");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not allowed to get data about this game, since he was not found in the Session!");
         }
 
         for (User player : game.getRawPlayersInTurnOrder()) {
@@ -587,6 +605,21 @@ public class GameService {
         else {
             return game.get();
         }
+    }
+
+    public void deleteUserFromGame(Long UserID, Long gameID) {
+        var gameEntity = findGameEntity(gameID);
+
+        gameEntity.removeUserFromAll(UserID);
+        gameEntity.removeUserFromActive(UserID);
+        gameEntity.removeUserFromSpectators(UserID);
+        gameEntity.removeUserFromRawPlayers(UserID);
+
+        if (!gameEntity.isFirstGameSetup()) {
+            gameEntity.setFirstGameSetup(true);
+            gameEntity.setProtocol(new ArrayList<>());
+        }
+        gameRepository.saveAndFlush(gameEntity);
     }
 
 
