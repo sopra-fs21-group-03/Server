@@ -232,5 +232,14 @@ public class GameController {
         gameService.show(game, user, userShowPutDTO.isWantsToShow());
     }
 
+    @PutMapping("/games/{gameID}/{userID}/leave")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseBody
+    public void userLeavesGameSession(@PathVariable Long gameID, @PathVariable Long userID, @RequestBody UserShowPutDTO userShowPutDTO){
+        var user = gameService.getUserByIdInAllUsersAndSpectators(gameID, userID);
+        gameService.deleteUserFromGame(userID, gameID);
+
+    }
+
 
 }

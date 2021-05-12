@@ -42,8 +42,8 @@ public class LobbyController {
     public void addUserToLobby(@PathVariable Long lobbyID, @RequestBody UserPutDTO userPutDTO) {
         lobbyService.checkIfUserExists_ByToken(userPutDTO.getToken());
         lobbyService.checkIfUserIsAlreadyInAnOtherLobby(userPutDTO.getToken());
-        User userfound = lobbyService.getUserByTokenInUserRepository(userPutDTO.getToken());
-        GameEntity entity = lobbyService.findGameEntity(lobbyID);
+        var userfound = lobbyService.getUserByTokenInUserRepository(userPutDTO.getToken());
+        var entity = lobbyService.findGameEntity(lobbyID);
         /*
         Only add the User to the Game if there is space and if the session has not started yet.
          */
@@ -54,8 +54,8 @@ public class LobbyController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public void setReadyStatus(@PathVariable Long lobbyID, @PathVariable Long userID, @RequestBody UserPutDTO userPutDTO) {
-        GameEntity entity = lobbyService.findGameEntity(lobbyID);
-        User userfound = lobbyService.getUserInSpecificGameSessionInAllUsers(userID, entity);
+        var entity = lobbyService.findGameEntity(lobbyID);
+        var userfound = lobbyService.getUserInSpecificGameSessionInAllUsers(userID, entity);
 
         /*
         You should only be able set your NOT-READY Status to READY. This means, that I need to set the Status back to NOT-READY, once
@@ -72,7 +72,7 @@ public class LobbyController {
     public SpecificLobbyGetDTO getSpecificLobbyInformation(@PathVariable Long lobbyID, @RequestHeader(value = "Authorization") String token) {
         lobbyService.checkIfUserExists_ByToken(token);
         lobbyService.checkIfUserIsInGameSession(token, lobbyID);
-        GameEntity game = lobbyService.getSpecificLobbyData(lobbyID);
+        var game = lobbyService.getSpecificLobbyData(lobbyID);
         return DTOMapper.INSTANCE.convertEntityToSpecificLobbyGetDTO(game);
     }
 }

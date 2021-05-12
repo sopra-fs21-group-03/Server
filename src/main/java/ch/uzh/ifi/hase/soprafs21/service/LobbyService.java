@@ -121,7 +121,7 @@ public class LobbyService {
      * @return GameEntity of the requested lobby
      */
     public GameEntity getSpecificLobbyData(Long lobbyID) {
-        GameEntity game = findGameEntity(lobbyID);
+        var game = findGameEntity(lobbyID);
         ArrayList<PlayerInLobbyGetDTO> lobbyplayers = new ArrayList<>();
         for (User user : game.getAllUsers()) {
             lobbyplayers.add(DTOMapper.INSTANCE.convertEntityToPlayerInLobbyGetDTO(user));
@@ -134,7 +134,7 @@ public class LobbyService {
     }
 
     public void checkIfUserIsInGameSession(String token, Long lobbyID) {
-        GameEntity game = findGameEntity(lobbyID);
+        var game = findGameEntity(lobbyID);
         for (User user : game.getAllUsers()) {
             if (user.getToken().equals(token)) {
                 return;
@@ -171,6 +171,7 @@ public class LobbyService {
             try {
                 gameService.startTurnTimer(game.getId());
                 game.setup();
+                gameRepository.saveAndFlush(game);
             }
             catch (Exception e) {
                 e.printStackTrace();
