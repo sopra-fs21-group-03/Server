@@ -26,7 +26,7 @@ public class SkipUserIfAFK implements Runnable {
 
     @Override
     public void run() {
-        var game = gameRepository.findById(1L);
+        var game = gameRepository.findById(gameID);
 
         if (game.isEmpty()) {
             return;
