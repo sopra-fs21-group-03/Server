@@ -628,7 +628,7 @@ public class GameService {
      */
 
     public void startShowdownTimerForLastUser(GameEntity game){
-        PotDistributor potDistributor = new PotDistributor(game, this.gameRepository, this.userRepository);
+        PotDistributor potDistributor = new PotDistributor(game, this.gameRepository, this.userRepository, this);
         CentralScheduler.getInstance().reset(potDistributor, SHOWDOWN_TIME);
     }
 
