@@ -148,18 +148,20 @@ public class LobbyService {
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User is not registered in the Lobby Session and therefore is not allowed to get more data about the Lobby!");
     }
 
-    public void checkIfUserIsAlreadyInAnOtherLobby(String token) {
+    public void checkIfUserIsAlreadyInAnOtherLobby(String token, Long lobbyID) {
         List<GameEntity> gameList = getAllGames();
         for (GameEntity entity : gameList) {
-            for (User user : entity.getAllUsers()) {
-                if (user.getToken().equals(token)) {
-                    throw new ResponseStatusException(HttpStatus.CONFLICT, "The User is already in an other Lobby and therefore can not join this Lobby!");
+            if (!entity.getId().equals(lobbyID)) {
+                for (User user : entity.getAllUsers()) {
+                    if (user.getToken().equals(token)) {
+                        throw new ResponseStatusException(HttpStatus.CONFLICT, "The User is already in an other Lobby and therefore can not join this Lobby!");
+                    }
                 }
-            }
 
-            for (User user2 : entity.getSpectators()) {
-                if (user2.getToken().equals(token)) {
-                    throw new ResponseStatusException(HttpStatus.CONFLICT, "The User is already in an other Lobby and therefore can not join this Lobby!");
+                for (User user2 : entity.getSpectators()) {
+                    if (user2.getToken().equals(token)) {
+                        throw new ResponseStatusException(HttpStatus.CONFLICT, "The User is already in an other Lobby and therefore can not join this Lobby!");
+                    }
                 }
             }
         }
