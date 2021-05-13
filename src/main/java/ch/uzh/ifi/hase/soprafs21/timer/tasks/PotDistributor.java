@@ -26,7 +26,12 @@ public class PotDistributor implements Runnable{
         gameEntity.distributePot();
         gameEntity.setNextRound();
 
+        // Save all changes made to the repos
         for (User user : gameEntity.getAllUsers()){
+            userRepository.saveAndFlush(user);
+        }
+
+        for (User user: gameEntity.getSpectators()){
             userRepository.saveAndFlush(user);
         }
 
