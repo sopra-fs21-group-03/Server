@@ -589,6 +589,8 @@ public class GameService {
             //if all user decided distribute the pot
 
             // Create a thread that waits before distributing the pot
+            // Set on Turn to null when all have decided
+            game.setOnTurn(null);
             startShowdownTimerForLastUser(game);
 
         } else {
@@ -628,7 +630,7 @@ public class GameService {
      */
 
     public void startShowdownTimerForLastUser(GameEntity game){
-        PotDistributor potDistributor = new PotDistributor(game, this.gameRepository, this.userRepository);
+        PotDistributor potDistributor = new PotDistributor(game, this.gameRepository, this.userRepository, this);
         CentralScheduler.getInstance().reset(potDistributor, SHOWDOWN_TIME);
     }
 
