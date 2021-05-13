@@ -154,13 +154,16 @@ public class LobbyService {
             if (!entity.getId().equals(lobbyID)) {
                 for (User user : entity.getAllUsers()) {
                     if (user.getToken().equals(token)) {
-                        throw new ResponseStatusException(HttpStatus.CONFLICT, "The User is already in an other Lobby and therefore can not join this Lobby!");
+                        throw new ResponseStatusException(HttpStatus.CONFLICT, "The User is playing in an other Lobby and therefore can not join this Lobby!");
                     }
                 }
 
+                /*
+                I think that if a User wants to join Lobby Alpha but is still a Spectator in Lobby Beta, Hibernate will throw an Error. This needs to be tested.
+                 */
                 for (User user2 : entity.getSpectators()) {
                     if (user2.getToken().equals(token)) {
-                        throw new ResponseStatusException(HttpStatus.CONFLICT, "The User is already in an other Lobby and therefore can not join this Lobby!");
+                        throw new ResponseStatusException(HttpStatus.CONFLICT, "The User is a Spectator in an other Lobby and therefore can not join this Lobby!");
                     }
                 }
             }
