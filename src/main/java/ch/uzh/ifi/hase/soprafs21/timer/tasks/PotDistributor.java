@@ -30,8 +30,6 @@ public class PotDistributor implements Runnable{
             userRepository.saveAndFlush(user);
         }
 
-        gameService.startTurnTimer(gameEntity.getId());
-
         gameRepository.saveAndFlush(gameEntity);
 
     }

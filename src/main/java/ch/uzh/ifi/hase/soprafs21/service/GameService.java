@@ -589,6 +589,8 @@ public class GameService {
             //if all user decided distribute the pot
 
             // Create a thread that waits before distributing the pot
+            // Set on Turn to null when all have decided
+            game.setOnTurn(null);
             startShowdownTimerForLastUser(game);
 
         } else {
