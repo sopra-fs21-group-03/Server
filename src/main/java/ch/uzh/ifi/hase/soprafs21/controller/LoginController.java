@@ -49,7 +49,7 @@ public class LoginController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public UserGetDTO getUserID(@RequestHeader(value = "Authorization") String token){
-        var userGetDTO = loginService.getUserId(token);
+        var userGetDTO = loginService.getUserByToken(token);
 
         return DTOMapper.INSTANCE.convertEntityToUserGetDTO(userGetDTO);
     }
@@ -88,13 +88,6 @@ public class LoginController {
 
         // If successful userStatus is set to online
         String token = loginService.checkLoginCredentials(userInput);
-
-        /*
-           TO DO
-           Create Game and add User to the GameList
-         */
-
-
         return Collections.singletonMap("token", token);
     }
 
@@ -108,7 +101,6 @@ public class LoginController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void logoutUser(@RequestBody UserPutDTO userPutDTO, @PathVariable(value="userID") Long userID){
         var toLogout = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
-
         loginService.getUserToLogout(toLogout, userID);
 
 
