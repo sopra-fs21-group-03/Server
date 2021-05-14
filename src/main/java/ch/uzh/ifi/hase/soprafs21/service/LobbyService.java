@@ -34,11 +34,6 @@ public class LobbyService {
         this.gameService = gameService;
     }
 
-    public List<User> getUsers() {
-        return this.userRepository.findAll();
-    }
-
-
     /**
      * @param gameid The id of the Game that should be analyzed
      * @return the GameEntity with the corresponding gameid, if it exists. Else, if there is no game with such an id, a ResponseStatusException will be thrown.
@@ -154,13 +149,16 @@ public class LobbyService {
             if (!entity.getId().equals(lobbyID)) {
                 for (User user : entity.getAllUsers()) {
                     if (user.getToken().equals(token)) {
-                        throw new ResponseStatusException(HttpStatus.CONFLICT, "The User is already in an other Lobby and therefore can not join this Lobby!");
+                        throw new ResponseStatusException(HttpStatus.CONFLICT, "The User is playing in an other Lobby and therefore can not join this Lobby!");
                     }
                 }
 
+                /*
+                I think that if a User wants to join Lobby Alpha but is still a Spectator in Lobby Beta, Hibernate will throw an Error. This needs to be tested.
+                 */
                 for (User user2 : entity.getSpectators()) {
                     if (user2.getToken().equals(token)) {
-                        throw new ResponseStatusException(HttpStatus.CONFLICT, "The User is already in an other Lobby and therefore can not join this Lobby!");
+                        throw new ResponseStatusException(HttpStatus.CONFLICT, "The User is a Spectator in an other Lobby and therefore can not join this Lobby!");
                     }
                 }
             }
@@ -171,8 +169,8 @@ public class LobbyService {
         // Check if there are already five players in the game
         if (game.getGameCanStart() && game.isFirstGameSetup()) {
             try {
-                gameService.startTurnTimer(game.getId());
                 game.setup();
+                gameService.startTurnTimer(game.getId());
                 gameRepository.saveAndFlush(game);
             }
             catch (Exception e) {
