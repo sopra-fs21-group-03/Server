@@ -34,11 +34,6 @@ public class LobbyService {
         this.gameService = gameService;
     }
 
-    public List<User> getUsers() {
-        return this.userRepository.findAll();
-    }
-
-
     /**
      * @param gameid The id of the Game that should be analyzed
      * @return the GameEntity with the corresponding gameid, if it exists. Else, if there is no game with such an id, a ResponseStatusException will be thrown.
@@ -174,8 +169,8 @@ public class LobbyService {
         // Check if there are already five players in the game
         if (game.getGameCanStart() && game.isFirstGameSetup()) {
             try {
-                gameService.startTurnTimer(game.getId());
                 game.setup();
+                gameService.startTurnTimer(game.getId());
                 gameRepository.saveAndFlush(game);
             }
             catch (Exception e) {

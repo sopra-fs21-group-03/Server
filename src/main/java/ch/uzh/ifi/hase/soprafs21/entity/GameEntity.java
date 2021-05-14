@@ -616,6 +616,9 @@ public class GameEntity implements Serializable, Name {
             showdown = false;
             bigblindspecialcase = true;
             protocol.add(new ProtocolElement(MessageType.LOG, this, "The GameSession has ended! User " + usernameOfUserWhoWon() + " has won!"));
+            for (User user: rawPlayersInTurnOrder){
+                user.setGamestatus(GameStatus.NOTREADY);
+            }
         }
         else {
             deck = new Deck();
@@ -653,6 +656,7 @@ public class GameEntity implements Serializable, Name {
         for (User arrayuser : activeUsers) {
             if (arrayuser.getId().equals(id)) {
                 activeUsers.remove(arrayuser);
+                arrayuser.setGamestatus(GameStatus.NOTREADY);
                 break;
             }
         }
@@ -662,6 +666,7 @@ public class GameEntity implements Serializable, Name {
         for (User spectator : spectators) {
             if (spectator.getId().equals(id)) {
                 spectators.remove(spectator);
+                spectator.setGamestatus(GameStatus.NOTREADY);
                 break;
             }
         }
@@ -671,6 +676,7 @@ public class GameEntity implements Serializable, Name {
         for (User rawPlayer : rawPlayersInTurnOrder) {
             if (rawPlayer.getId().equals(id)) {
                 spectators.remove(rawPlayer);
+                rawPlayer.setGamestatus(GameStatus.NOTREADY);
                 break;
             }
         }
@@ -695,6 +701,7 @@ public class GameEntity implements Serializable, Name {
         for (User arrayUser : allUsers) {
             if (arrayUser.getId().equals(id)) {
                 allUsers.remove(arrayUser);
+                arrayUser.setGamestatus(GameStatus.NOTREADY);
                 break;
             }
         }
