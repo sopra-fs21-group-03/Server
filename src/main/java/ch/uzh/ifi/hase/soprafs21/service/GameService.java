@@ -70,6 +70,10 @@ public class GameService {
         gameRepository.flush();
     }
 
+    public long getTurnTime(){
+        return TURN_TIME;
+    }
+
     /**
      * @param gameid The id of the Game that should be analyzed
      * @param user   The User who wants to perform an actions. It needs to be checked, if he is on turn
