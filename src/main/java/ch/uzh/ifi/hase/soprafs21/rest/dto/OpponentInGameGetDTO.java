@@ -10,6 +10,7 @@ public class OpponentInGameGetDTO implements Serializable {
     private String username;
     private int money;
     private Blind blind;
+    private boolean inGame;
 
     public String getUsername() {
         return username;
@@ -33,5 +34,13 @@ public class OpponentInGameGetDTO implements Serializable {
 
     public void setBlind(Blind blind) {
         this.blind = blind;
+    }
+
+    public boolean isInGame() {
+        return inGame;
+    }
+
+    public void setInGame(boolean inGame) {
+        this.inGame = inGame;
     }
 }

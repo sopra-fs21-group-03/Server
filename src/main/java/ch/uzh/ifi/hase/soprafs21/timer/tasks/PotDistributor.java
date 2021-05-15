@@ -5,6 +5,7 @@ import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs21.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs21.service.GameService;
+import ch.uzh.ifi.hase.soprafs21.timer.CentralScheduler;
 
 
 public class PotDistributor implements Runnable{
@@ -34,6 +35,10 @@ public class PotDistributor implements Runnable{
         for (User user: gameEntity.getSpectators()){
             userRepository.saveAndFlush(user);
         }
+
+
+        var skipUserIfAFK = new SkipUserIfAFK(this.gameRepository, this.gameService, gameEntity.getId());
+        CentralScheduler.getInstance().start(skipUserIfAFK, gameService.getTurnTime());
 
         gameRepository.saveAndFlush(gameEntity);
 
