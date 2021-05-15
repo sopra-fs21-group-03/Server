@@ -11,6 +11,8 @@ public class OpponentInGameGetDTO implements Serializable {
     private int money;
     private Blind blind;
     private boolean inGame;
+    private boolean folded;
+
 
     public String getUsername() {
         return username;
@@ -42,5 +44,13 @@ public class OpponentInGameGetDTO implements Serializable {
 
     public void setInGame(boolean inGame) {
         this.inGame = inGame;
+    }
+
+    public boolean isFolded() {
+        return folded;
+    }
+
+    public void setFolded(boolean folded) {
+        this.folded = folded;
     }
 }

@@ -106,7 +106,29 @@ public class LobbyService {
 
     public void setUserToReady(User userFound) {
         userFound.setGamestatus(GameStatus.READY);
-        userRepository.save(userFound);
+        userRepository.saveAndFlush(userFound);
+    }
+
+    public void setUserToUnready(User userFound){
+        userFound.setGamestatus(GameStatus.NOTREADY);
+        userRepository.saveAndFlush(userFound);
+    }
+
+    public void leaveLobby(User userFound, GameEntity gameEntity){
+        if (!gameEntity.getInGame()) {
+            if (!gameEntity.getAllUsers().contains(userFound)){
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "You can not leave this lobby since you are not part of this lobby to begin with");
+            }
+            userFound.setGamestatus(GameStatus.NOTREADY);
+            gameEntity.removeUserFromActive(userFound.getId());
+            gameEntity.removeUserFromAll(userFound.getId());
+            gameRepository.save(gameEntity);
+            gameRepository.flush();
+
+        }
+        else {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "You can not leave this Lobby since the Session has already started and the other Users are playing, pls leave with the game leave mapping");
+        }
     }
 
     /**
