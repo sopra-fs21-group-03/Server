@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs21.service;
 
 
+import ch.uzh.ifi.hase.soprafs21.constant.Blind;
 import ch.uzh.ifi.hase.soprafs21.constant.MessageType;
 import ch.uzh.ifi.hase.soprafs21.constant.Round;
 import ch.uzh.ifi.hase.soprafs21.constant.Show;
@@ -95,6 +96,9 @@ public class GameService {
         }
     }
 
+
+
+
     /**
      * @param gameid The id of the Game that should be analyzed
      * @param userid The id of the User that should be returned. Here, we are searching inside the allUsers List.
@@ -144,7 +148,6 @@ public class GameService {
         }
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE);
     }
-
 
 
     /**
@@ -458,7 +461,12 @@ public class GameService {
         }
 
         for (User player : game.getRawPlayersInTurnOrder()) {
-            opponents.add(DTOMapper.INSTANCE.convertEntityToOpponentInGameGetDTO(player));
+            var opponent = DTOMapper.INSTANCE.convertEntityToOpponentInGameGetDTO(player);
+
+            // Set inGame status of a user to true if he's still in the game, to false if he has left
+            opponent.setInGame(game.getAllUsers().contains(player) || game.getSpectators().contains(player));
+
+            opponents.add(opponent);
         }
 
         game.setPlayersInTurnOrder(opponents);
@@ -609,17 +617,56 @@ public class GameService {
         }
     }
 
-    public void deleteUserFromGame(Long UserID, Long gameID) {
+    public void deleteUserFromGame(Long UserID, Long gameID, User realUser) {
         var gameEntity = findGameEntity(gameID);
 
-        gameEntity.removeUserFromAll(UserID);
-        gameEntity.removeUserFromActive(UserID);
-        gameEntity.removeUserFromSpectators(UserID);
-        gameEntity.removeUserFromRawPlayers(UserID);
+        // End screen case
+        if (gameEntity.getRound() == Round.ENDED) {
+            gameEntity.removeUserFromAll(UserID);
+            gameEntity.removeUserFromActive(UserID);
+            gameEntity.removeUserFromSpectators(UserID);
+            gameEntity.removeUserFromRawPlayers(UserID);
 
-        if (!gameEntity.isFirstGameSetup()) {
-            gameEntity.setFirstGameSetup(true);
-            gameEntity.setProtocol(new ArrayList<>());
+            if (!gameEntity.isFirstGameSetup()) {
+                gameEntity.setFirstGameSetup(true);
+                gameEntity.setProtocol(new ArrayList<>());
+            }
+        } else { // Game must still be running
+            /*
+            Copy the user that left into the rawPlayersInTurn list,
+            the user will be skipped by the server but a copy will still be returned to the client to not break anything
+             */
+
+            int idx = gameEntity.getAllUsers().indexOf(realUser);
+
+            if (realUser.getBlind() == Blind.BIG){
+
+                realUser.setBlind(Blind.NEUTRAL);
+                List<User> allUsers = gameEntity.getAllUsers();
+                User toChange = allUsers.get(Math.abs((idx - 1 + allUsers.size()) % (allUsers.size())));
+                toChange.setBlind(Blind.BIG);
+
+            }
+
+            if (realUser.getBlind() == Blind.SMALL){
+                realUser.setBlind(Blind.NEUTRAL);
+                List<User> allUsers = gameEntity.getAllUsers();
+                User toChange = allUsers.get(Math.abs((idx + 1) % (allUsers.size())));
+                toChange.setBlind(Blind.SMALL);
+            }
+
+            if (gameEntity.getOnTurn().getUsername().equals(realUser.getUsername())){
+                var username = gameEntity.getUsernameOfPotentialNextUserInTurn(realUser);
+                gameEntity.roundHandler(username);
+            }
+
+            gameEntity.removeUserFromAll(UserID);
+            gameEntity.removeUserFromActive(UserID);
+            gameEntity.removeUserFromSpectators(UserID);
+
+            var protocol = new ProtocolElement(MessageType.LOG, realUser, String.format("User %s has left the table", realUser.getUsername()));
+            gameEntity.addProtocolElement(protocol);
+
         }
         gameRepository.saveAndFlush(gameEntity);
     }

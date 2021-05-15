@@ -1,9 +1,7 @@
 package ch.uzh.ifi.hase.soprafs21.controller;
 
-import ch.uzh.ifi.hase.soprafs21.constant.MessageType;
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
-import ch.uzh.ifi.hase.soprafs21.game.protocol.ProtocolElement;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.*;
 import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs21.service.GameService;
@@ -232,12 +230,30 @@ public class GameController {
         gameService.show(game, user, userShowPutDTO.isWantsToShow());
     }
 
+    /**
+     * Put Mapping used to leave a Game
+     * Code:
+     * - 204 if leave was successful
+     * - 401 if wrong token is sent by client
+     * - 404 if user is logged in but not present in the gameSession he wants to leave
+     *
+     * @param gameID     id of the game the user wants to leave
+     * @param userID     the id of the user who wants to leave
+     * @param userPutDTO DTO containing the users authentication token
+     */
     @PutMapping("/games/{gameID}/{userID}/leave")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
-    public void userLeavesGameSession(@PathVariable Long gameID, @PathVariable Long userID, @RequestBody UserShowPutDTO userShowPutDTO){
-        var user = gameService.getUserByIdInAllUsersAndSpectators(gameID, userID);
-        gameService.deleteUserFromGame(userID, gameID);
+    public void userLeavesGameSession(@PathVariable Long gameID, @PathVariable Long userID, @RequestBody UserPutDTO userPutDTO) {
+        var realUser = gameService.getUserByIdInAllUsersAndSpectators(gameID, userID);
+        var userInput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
+
+        // Check token
+        if (userInput.getToken().equals(realUser.getToken())){
+            gameService.deleteUserFromGame(userID, gameID, realUser);
+        } else {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Wrong token for user");
+        }
 
     }
 
