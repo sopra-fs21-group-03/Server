@@ -9,6 +9,7 @@ import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs21.service.LobbyService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +58,11 @@ public class LobbyController {
         var entity = lobbyService.findGameEntity(lobbyID);
         var userfound = lobbyService.getUserInSpecificGameSessionInAllUsers(userID, entity);
 
+
+        if (!userfound.getToken().equals(userPutDTO.getToken())){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not registered or logged in");
+        }
+
         /*
         You should only be able set your NOT-READY Status to READY. This means, that I need to set the Status back to NOT-READY, once
         the Session has ended.
@@ -65,6 +71,34 @@ public class LobbyController {
         lobbyService.setUserToReady(userfound);
         lobbyService.setUpGame(entity);
     }
+
+    @PutMapping("/lobbies/{lobbyID}/{userID}/unready")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseBody
+    public void setUnreadyStatus(@PathVariable Long lobbyID, @PathVariable Long userID, @RequestBody UserPutDTO userPutDTO){
+        var entity = lobbyService.findGameEntity(lobbyID);
+        var userFound = lobbyService.getUserInSpecificGameSessionInAllUsers(userID, entity);
+
+        if (!userFound.getToken().equals(userPutDTO.getToken())){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not registered or logged in");
+        }
+
+        lobbyService.setUserToUnready(userFound);
+    }
+
+    @PutMapping("/lobbies/{lobbyID}/{userID}/leave")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void leaveLobby(@PathVariable Long lobbyID, @PathVariable Long userID, @RequestBody UserPutDTO userPutDTO){
+        var entity = lobbyService.findGameEntity(lobbyID);
+        var userFound = lobbyService.getUserInSpecificGameSessionInAllUsers(userID, entity);
+
+        if (!userFound.getToken().equals(userPutDTO.getToken())){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not registered or logged in");
+        }
+
+        lobbyService.leaveLobby(userFound, entity);
+    }
+
 
     @GetMapping("/lobbies/{lobbyID}")
     @ResponseStatus(HttpStatus.OK)

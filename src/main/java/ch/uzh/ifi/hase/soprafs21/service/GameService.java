@@ -469,7 +469,7 @@ public class GameService {
 
             // Set inGame status of a user to true if he's still in the game, to false if he has left
             opponent.setInGame(game.getAllUsers().contains(player) || game.getSpectators().contains(player));
-
+            opponent.setFolded(game.getAllUsers().contains(player) && !game.getActiveUsers().contains(player));
             opponents.add(opponent);
         }
 
