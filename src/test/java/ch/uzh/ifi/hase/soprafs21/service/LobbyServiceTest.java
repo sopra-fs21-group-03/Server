@@ -127,6 +127,50 @@ class LobbyServiceTest {
         Mockito.when(userRepository.findByToken(testUser.getToken())).thenReturn(testUser);
 
     }
+
+    @Test
+    void userSetsUnready_success(){
+        // Hardcode ready status
+        testUser.setGamestatus(GameStatus.READY);
+
+        // Change status with method call
+        lobbyService.setUserToUnready(testUser);
+
+        assertEquals(GameStatus.NOTREADY, testUser.getGamestatus());
+    }
+
+    @Test
+    void userLeavesLobby_success(){
+        // add test user to game
+        lobbyService.addUserToGame(testUser, testGameFull);
+
+        // test users leaves game
+        lobbyService.leaveLobby(testUser, testGameFull);
+
+        assertFalse(testGameFull.getAllUsers().contains(testUser));
+
+    }
+
+    @Test
+    void userLeavesLobby_notFound(){
+        assertThrows(ResponseStatusException.class, () ->  lobbyService.leaveLobby(testUser, testGameFull));
+    }
+
+    @Test
+    void userLeavesLobby_conflict(){
+        // game has already started
+        // Mock that every user joins and is ready
+        for (User user: testAllUsersFull){
+            lobbyService.addUserToGame(user, testGameFull);
+            lobbyService.setUserToReady(user);
+        }
+        lobbyService.setUpGame(testGameFull);
+
+
+        // Now an exception should be thrown, because you can only leave via the leave endpoint in the gamecontroller
+        assertThrows(ResponseStatusException.class, () -> lobbyService.leaveLobby(testUser, testGameFull));
+    }
+
     @Test
     void getAllGames_success(){
         var list = lobbyService.getAllGames();
