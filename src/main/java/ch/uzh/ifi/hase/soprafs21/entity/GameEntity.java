@@ -749,10 +749,10 @@ public class GameEntity implements Serializable, Name {
         int index;
         //Clone allUsers back into activeUsers to keep turn order right
         activeUsers = new ArrayList<>(allUsers);
-        User user = getSmallBlindInAllUsers();
+        var user = getSmallBlindInAllUsers();
         index = allUsers.indexOf(user) + 1; //+1 becaus in the do while loop it is incremented in the beginning
-        User toGetSmallBlind;
-        User toGetBigBlind;
+        var toGetSmallBlind = user;
+        var toGetBigBlind = user;
         do {
             index--;
             toGetSmallBlind = allUsers.get(Math.abs((index - 1 + allUsers.size()) % (allUsers.size())));
