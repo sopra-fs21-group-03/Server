@@ -6,6 +6,7 @@ import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.PlayerInLobbyGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.UserPutDTO;
+import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs21.service.LobbyService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -102,6 +103,104 @@ class LobbyControllerTest {
         testUser.setMoney(10);
         testUser.setGamestatus(GameStatus.NOTREADY);
         testUser.setWantsToShow(Show.NOT_DECIDED);
+
+    }
+
+
+    @Test
+    void userLeavesLobby_success() throws Exception {
+
+        // given
+        var userPutDTO = new UserPutDTO();
+        userPutDTO.setToken(testUser.getToken());
+
+        given(lobbyService.getUserInSpecificGameSessionInAllUsers(Mockito.any(), Mockito.any())).willReturn(testUser);
+
+        // test user leaves lobby of game 2
+        MockHttpServletRequestBuilder putRequest = put("/lobbies/2/1/leave")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(userPutDTO));
+
+        mockMvc.perform(putRequest).andExpect(status().isNoContent());
+
+    }
+
+    @Test
+    void userLeavesLobby_notFound() throws Exception {
+        // user tries to leave wrong game
+        var userPutDTO = new UserPutDTO();
+        userPutDTO.setToken(testUser.getToken());
+
+        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND)).when(lobbyService).getUserInSpecificGameSessionInAllUsers(Mockito.any(), Mockito.any());
+
+        MockHttpServletRequestBuilder putRequest = put("/lobbies/1/1/leave")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(userPutDTO));
+
+        mockMvc.perform(putRequest).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void userLeavesLobby_unauthorized() throws Exception {
+        // user tries to leave wrong game
+        var userPutDTO = new UserPutDTO();
+        userPutDTO.setToken(testUser.getToken());
+
+        doThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED)).when(lobbyService).getUserInSpecificGameSessionInAllUsers(Mockito.any(), Mockito.any());
+
+        MockHttpServletRequestBuilder putRequest = put("/lobbies/1/1/leave")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(userPutDTO));
+
+        mockMvc.perform(putRequest).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void userSetsUnready_success() throws Exception {
+        // given
+        var userPutDTO = new UserPutDTO();
+        userPutDTO.setToken(testUser.getToken());
+
+        given(lobbyService.getUserInSpecificGameSessionInAllUsers(Mockito.any(), Mockito.any())).willReturn(testUser);
+
+        // test user leaves lobby of game 2
+        MockHttpServletRequestBuilder putRequest = put("/lobbies/2/1/unready")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(userPutDTO));
+
+        mockMvc.perform(putRequest).andExpect(status().isNoContent());
+
+    }
+
+    @Test
+    void userSetsUnready_notFound() throws Exception {
+        // user tries to leave wrong game
+        var userPutDTO = new UserPutDTO();
+        userPutDTO.setToken(testUser.getToken());
+
+        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND)).when(lobbyService).getUserInSpecificGameSessionInAllUsers(Mockito.any(), Mockito.any());
+
+        MockHttpServletRequestBuilder putRequest = put("/lobbies/2/1/unready")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(userPutDTO));
+
+        mockMvc.perform(putRequest).andExpect(status().isNotFound());
+
+    }
+
+    @Test
+    void userSetsUnready_unauthorized() throws Exception {
+        // user tries to leave wrong game
+        var userPutDTO = new UserPutDTO();
+        userPutDTO.setToken(testUser.getToken());
+
+        doThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED)).when(lobbyService).getUserInSpecificGameSessionInAllUsers(Mockito.any(), Mockito.any());
+
+        MockHttpServletRequestBuilder putRequest = put("/lobbies/2/1/unready")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(userPutDTO));
+
+        mockMvc.perform(putRequest).andExpect(status().isUnauthorized());
 
     }
 
