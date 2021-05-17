@@ -88,7 +88,7 @@ public class GameService {
      * @param gameid The id of the Game that should be analyzed
      * @return the GameEntity with the corresponding gameid, if it exists. Else, if there is no game with such an id, a ResponseStatusException will be thrown.
      */
-    private GameEntity findGameEntity(Long gameid) {
+    public GameEntity findGameEntity(Long gameid) {
         Optional<GameEntity> potentialGame = gameRepository.findById(gameid);
         GameEntity theGame = null;
         if (potentialGame.isPresent()) {
@@ -102,13 +102,11 @@ public class GameService {
 
 
     /**
-     * @param gameid The id of the Game that should be analyzed
-     * @param userid The id of the User that should be returned. Here, we are searching inside the allUsers List.
+     * @param theGame The id of the Game that should be analyzed
+     * @param userid  The id of the User that should be returned. Here, we are searching inside the allUsers List.
      * @return The User if there is a User with the id userid in allUsers. Else, if there is no User with such an id, a ResponseStatusException will be thrown
      */
-    public User getUserByIdInAllUsers(Long gameid, Long userid) {
-        var theGame = findGameEntity(gameid);
-
+    public User getUserByIdInAllUsers(GameEntity theGame, Long userid) {
         for (User user : theGame.getAllUsers()) {
             if (userid.equals(user.getId())) {
                 return user;
@@ -117,9 +115,7 @@ public class GameService {
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE);
     }
 
-    public User getUserByIdInAllUsersAndSpectators(Long gameid, Long userid) {
-        var theGame = findGameEntity(gameid);
-
+    public User getUserByIdInAllUsersAndSpectators(GameEntity theGame, Long userid) {
         for (User user : theGame.getAllUsers()) {
             if (userid.equals(user.getId())) {
                 return user;
@@ -136,13 +132,11 @@ public class GameService {
 
 
     /**
-     * @param gameid The id of the Game that should be analyzed
-     * @param userid The id of the User that should be returned. Here, we are searching inside the activeUsers List.
+     * @param theGame The Game that should be analyzed
+     * @param userid  The id of the User that should be returned. Here, we are searching inside the activeUsers List.
      * @return The User if there is a User with the id userid in activeUsers. Else, if there is no User with such an id, a ResponseStatusException will be thrown
      */
-    public User getUserByIdInActiveUsers(Long gameid, Long userid) {
-        var theGame = findGameEntity(gameid);
-
+    public User getUserByIdInActiveUsers(GameEntity theGame, Long userid) {
         for (User user : theGame.getActiveUsers()) {
             if (userid.equals(user.getId())) {
                 return user;
@@ -152,20 +146,26 @@ public class GameService {
     }
 
 
-    /**
-     * @param gameid The id of the Game that should be analyzed
-     * @param userid The id of the User that wants to perform the "Fold" action.
-     */
-    public void userFolds(Long gameid, Long userid) {
-        startTurnTimerForNextUser(gameid);
+    private void saveFlushUserRepoForUsersInAllUsersAndSpectators(GameEntity theGame) {
+        for (User user2 : theGame.getAllUsers()) {
+            userRepository.saveAndFlush(user2);
+        }
+        for (User user3 : theGame.getSpectators()) {
+            userRepository.saveAndFlush(user3);
+        }
+    }
 
-        //first, find the GameEntity (find it with the id called gameid)
-        var theGame = findGameEntity(gameid);
+    /**
+     * @param theGame The id of the Game that should be analyzed
+     * @param userid  The id of the User that wants to perform the "Fold" action.
+     */
+    public void userFolds(GameEntity theGame, Long userid) {
+        startTurnTimerForNextUser(theGame.getId());
         //then, find the User with the id userid. For performing an action, a User has to be in the activeUsers List.
-        var user = getUserByIdInActiveUsers(gameid, userid);
+        var user = getUserByIdInActiveUsers(theGame, userid);
 
         //is this User on turn?
-        if (checkIfUserPerformingActionIsUserOnTurn(gameid, user)) {
+        if (checkIfUserPerformingActionIsUserOnTurn(theGame.getId(), user)) {
 
             // give me the Username of the potential next User in turn. In userFolds(), this method called
             // getUsernameOfPotentialNextUserInTurn() is crucial, since when performing a fold, we are going to delete
@@ -173,14 +173,16 @@ public class GameService {
             // anymore in the activeUsers List and find who is the potential next User in turn. Therefore, before removing this current User
             // from the activeUsers List, we need to know how is potentially the next User in turn.
 
+            var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s folds", user.getUsername()));
+            theGame.addProtocolElement(element);
             String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(user);
             //User folds -> he gets removed from the ActiveUsers List, not from the AllUsers List
             theGame.getActiveUsers().remove(user);
             //then, set the next User on turn or the next round or declare a winner.
             theGame.roundHandler(usernameOfPotentialNextUserInTurn);
-            var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s folds", user.getUsername()));
-            theGame.addProtocolElement(element);
-            gameRepository.save(theGame);
+
+            saveFlushUserRepoForUsersInAllUsersAndSpectators(theGame);
+            gameRepository.saveAndFlush(theGame);
         }
         else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_IN_TURN_MESSAGE);
@@ -188,22 +190,21 @@ public class GameService {
     }
 
     /**
-     * @param gameid The id of the Game that should be analyzed
-     * @param userid The id of the User that wants to perform the "Fold" action.
-     * @param amount The User wants to raise by this amount.
+     * @param theGame The id of the Game that should be analyzed
+     * @param userid  The id of the User that wants to perform the "Fold" action.
+     * @param amount  The User wants to raise by this amount.
      */
-    public void userRaises(Long gameid, Long userid, int amount) {
-        startTurnTimerForNextUser(gameid);
+    public void userRaises(GameEntity theGame, Long userid, int amount) {
+        startTurnTimerForNextUser(theGame.getId());
         // You cannot raise by 0 or a negative number.
         if (amount <= 0) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "The raise amount always has to be above 0!");
         }
-        //first, find the GameEntity (find it with the id called gameid)
-        var theGame = findGameEntity(gameid);
+
         //then, find the User with the id userid. For performing an action, a User has to be in the activeUsers List.
-        var user = getUserByIdInActiveUsers(gameid, userid);
+        var user = getUserByIdInActiveUsers(theGame, userid);
         //is this User on turn?
-        if (checkIfUserPerformingActionIsUserOnTurn(gameid, user)) {
+        if (checkIfUserPerformingActionIsUserOnTurn(theGame.getId(), user)) {
             //User is not the User that raised last
             if (theGame.getUserThatRaisedLast() == null || !theGame.getUserThatRaisedLast().getId().equals(user.getId())) {
                 // The "normal" case: the User has more money than the raise amount.
@@ -224,8 +225,9 @@ public class GameService {
                     //then, set the next User on turn or the next round or declare a winner.
                     theGame.roundHandler(usernameOfPotentialNextUserInTurn);
                     theGame.setBigblindspecialcase(false);
-                    gameRepository.save(theGame);
-                    return;
+                    saveFlushUserRepoForUsersInAllUsersAndSpectators(theGame);
+                    gameRepository.saveAndFlush(theGame);
+
                 }
                 else if (user.getMoney() == amount) {
                     /**
@@ -249,9 +251,8 @@ public class GameService {
                     //then, set the next User on turn or the next round or declare a winner.
                     theGame.roundHandler(usernameOfPotentialNextUserInTurn);
                     theGame.setBigblindspecialcase(false);
-                    gameRepository.save(theGame);
-                    return;
-
+                    saveFlushUserRepoForUsersInAllUsersAndSpectators(theGame);
+                    gameRepository.saveAndFlush(theGame);
                 }
                 else {
                     throw new ResponseStatusException(HttpStatus.CONFLICT, "The User doesn't have enough money to raise with such an amount!");
@@ -270,30 +271,27 @@ public class GameService {
     }
 
     /**
-     * @param gameid -> Id of the GameSession
-     * @param userid -> Id of User that wants to call
-     *               <p>
-     *               In this function, "All-In" will also be handeled
+     * @param theGame -> Id of the GameSession
+     * @param userid  -> Id of User that wants to call
+     *                <p>
+     *                In this function, "All-In" will also be handeled
      */
-    public void userCalls(Long gameid, Long userid) {
-        startTurnTimerForNextUser(gameid);
-
-        //first, find the GameEntity (find it with the id called gameid)
-        var theGame = findGameEntity(gameid);
+    public void userCalls(GameEntity theGame, Long userid) {
+        startTurnTimerForNextUser(theGame.getId());
         //then: give me the player that raised last
         var lastRaiser = theGame.getUserThatRaisedLast();
         //If you are not in the PREFLOP round and noone raised -> calling is like checking
         if (lastRaiser == null && theGame.getRound() != Round.PREFLOP) {
             // userChecks will be called, since noone called before. ATTENTION: in the first round, where we have the
             // input of BIG and SMALL Blind, this function should not be called
-            userChecks(gameid, userid);
+            userChecks(theGame, userid);
             return;
         }
 
         //In the function call, we got a userid. Give me this User
-        var thisUser = getUserByIdInActiveUsers(gameid, userid);
+        var thisUser = getUserByIdInActiveUsers(theGame, userid);
         //is this User on turn?
-        if (checkIfUserPerformingActionIsUserOnTurn(gameid, thisUser)) {
+        if (checkIfUserPerformingActionIsUserOnTurn(theGame.getId(), thisUser)) {
             //if someone wants to call -> he wants to have the same amount of money in the pot as the user that raised last
             int totalPotContributionOfPlayerThatRaisedLast = theGame.getPot().getUserContributionOfAUser(lastRaiser);
             // amount this User already has in the pot
@@ -328,7 +326,8 @@ public class GameService {
             String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(thisUser);
             //then, set the next User on turn or the next round or declare a winner.
             theGame.roundHandler(usernameOfPotentialNextUserInTurn);
-            gameRepository.save(theGame);
+            saveFlushUserRepoForUsersInAllUsersAndSpectators(theGame);
+            gameRepository.saveAndFlush(theGame);
         }
         else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_IN_TURN_MESSAGE);
@@ -336,14 +335,13 @@ public class GameService {
     }
 
     /**
-     * @param gameid -> Id of the GameSession
-     * @param userid -> Id of User that wants to call
-     *               <p>
-     *               When a User is raising, before he can raise, he needs to call.
+     * @param theGame -> Id of the GameSession
+     * @param userid  -> Id of User that wants to call
+     *                <p>
+     *                When a User is raising, before he can raise, he needs to call.
      */
-    public void userCallsForRaising(Long gameid, Long userid) {
-        startTurnTimerForNextUser(gameid);
-        var theGame = findGameEntity(gameid);
+    public void userCallsForRaising(GameEntity theGame, Long userid) {
+        startTurnTimerForNextUser(theGame.getId());
 
         //give me the player that raise last
         var lastRaiser = theGame.getUserThatRaisedLast();
@@ -352,9 +350,9 @@ public class GameService {
         }
 
         //In the function call, we got a userid. Give me this User
-        var thisUser = getUserByIdInActiveUsers(gameid, userid);
+        var thisUser = getUserByIdInActiveUsers(theGame, userid);
         //is this User on turn?
-        if (checkIfUserPerformingActionIsUserOnTurn(gameid, thisUser)) {
+        if (checkIfUserPerformingActionIsUserOnTurn(theGame.getId(), thisUser)) {
             //if someone wants to call -> he wants to have the same amount of money in the pot as the user that raised last
             int totalPotContributionOfPlayerThatRaisedLast = theGame.getPot().getUserContributionOfAUser(lastRaiser);
             var amountThisUserAlreadyHasInThePot = theGame.getPot().getUserContributionOfAUser(thisUser);
@@ -369,7 +367,8 @@ public class GameService {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "The User cannot raise, since he has not enough money!");
             }
             theGame.setCheckcounter(0);
-            gameRepository.save(theGame);
+            saveFlushUserRepoForUsersInAllUsersAndSpectators(theGame);
+            gameRepository.saveAndFlush(theGame);
         }
         else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_IN_TURN_MESSAGE);
@@ -377,17 +376,16 @@ public class GameService {
     }
 
     /**
-     * @param gameid The id of the Game that should be analyzed
-     * @param userid The id of the User that wants to perform the "Check" action.
+     * @param theGame The id of the Game that should be analyzed
+     * @param userid  The id of the User that wants to perform the "Check" action.
      */
-    public void userChecks(Long gameid, Long userid) {
-        startTurnTimerForNextUser(gameid);
-        var theGame = findGameEntity(gameid);
+    public void userChecks(GameEntity theGame, Long userid) {
+        startTurnTimerForNextUser(theGame.getId());
 
         //In the function call, we got a userid. Give me this User
-        var thisUser = getUserByIdInActiveUsers(gameid, userid);
+        var thisUser = getUserByIdInActiveUsers(theGame, userid);
         //is this User on turn?
-        if (checkIfUserPerformingActionIsUserOnTurn(gameid, thisUser)) {
+        if (checkIfUserPerformingActionIsUserOnTurn(theGame.getId(), thisUser)) {
             //If a User wants to check -> no one else should have more Contribution in the Pot than he has. For this, the method loops in activeUsers
             for (User user : theGame.getActiveUsers()) {
                 if (theGame.getPot().getUserContributionOfAUser(user) > theGame.getPot().getUserContributionOfAUser(thisUser)) {
@@ -403,7 +401,8 @@ public class GameService {
             String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(thisUser);
             //then, set the next User on turn or the next round or declare a winner.
             theGame.roundHandler(usernameOfPotentialNextUserInTurn);
-            gameRepository.save(theGame);
+            saveFlushUserRepoForUsersInAllUsersAndSpectators(theGame);
+            gameRepository.saveAndFlush(theGame);
         }
         else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_IN_TURN_MESSAGE);
@@ -604,8 +603,7 @@ public class GameService {
         }
     }
 
-    public void deleteUserFromGame(Long userID, Long gameID, User realUser) {
-        var gameEntity = findGameEntity(gameID);
+    public void deleteUserFromGame(Long userID, GameEntity gameEntity, User realUser) {
 
         // End screen case
         if (gameEntity.getRound() == Round.ENDED) {
@@ -656,6 +654,8 @@ public class GameService {
             gameEntity.addProtocolElement(protocol);
 
         }
+
+        saveFlushUserRepoForUsersInAllUsersAndSpectators(gameEntity);
         gameRepository.saveAndFlush(gameEntity);
     }
 
@@ -665,19 +665,19 @@ public class GameService {
      */
 
     public void startShowdownTimerForLastUser(GameEntity game) {
-        var potDistributor = new PotDistributor(game, this.gameRepository, this.userRepository, this);
+        PotDistributor potDistributor = new PotDistributor(game, this.gameRepository, this.userRepository, this);
         CentralScheduler.getInstance().reset(potDistributor, SHOWDOWN_TIME);
     }
 
 
     public void startTurnTimerForNextUser(long gameID) {
-        var skipUserIfAFK = new SkipUserIfAFK(this.gameRepository, this, gameID);
+        SkipUserIfAFK skipUserIfAFK = new SkipUserIfAFK(this.gameRepository, this, gameID);
 
         CentralScheduler.getInstance().reset(skipUserIfAFK, TURN_TIME);
     }
 
     public void startTurnTimer(long gameID) {
-        var skipUserIfAFK = new SkipUserIfAFK(this.gameRepository, this, gameID);
+        SkipUserIfAFK skipUserIfAFK = new SkipUserIfAFK(this.gameRepository, this, gameID);
         CentralScheduler.getInstance().start(skipUserIfAFK, TURN_TIME);
     }
 }

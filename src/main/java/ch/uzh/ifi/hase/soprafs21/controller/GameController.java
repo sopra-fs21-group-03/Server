@@ -35,10 +35,11 @@ public class GameController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public void userfolds(@PathVariable("GameID") Long gameid, @PathVariable("UserID") Long userid, @RequestBody UserPutDTO userPutDTO) {
+        var entity = gameService.findGameEntity(gameid);
         var folderuserinput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
-        var folderuserfound = gameService.getUserByIdInActiveUsers(gameid, userid);
+        var folderuserfound = gameService.getUserByIdInActiveUsers(entity, userid);
         if (folderuserfound.getToken().equals(folderuserinput.getToken())) {
-            gameService.userFolds(gameid, userid);
+            gameService.userFolds(entity, userid);
         }
         else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The User is not authorized... (In Fold process)");
@@ -61,13 +62,15 @@ public class GameController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public void userraises(@PathVariable("GameID") Long gameid, @PathVariable("UserID") Long userid, @RequestBody UserPutDTO userPutDTO) {
+
         int raiseamount = userPutDTO.getRaiseAmount();
         var raiserUserInput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
-        var raiserUserFound = gameService.getUserByIdInActiveUsers(gameid, userid);
+        var entity = gameService.findGameEntity(gameid);
+        var raiserUserFound = gameService.getUserByIdInActiveUsers(entity, userid);
         if (raiserUserInput.getToken().equals(raiserUserFound.getToken())) {
             if (raiseamount > 0) {
-                gameService.userCallsForRaising(gameid, userid);
-                gameService.userRaises(gameid, userid, raiseamount);
+                gameService.userCallsForRaising(entity, userid);
+                gameService.userRaises(entity, userid, raiseamount);
             }
             else {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "The raise amount always has to be above 0!");
@@ -97,10 +100,11 @@ public class GameController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public void usercalls(@PathVariable("GameID") Long gameid, @PathVariable("UserID") Long userid, @RequestBody UserPutDTO userPutDTO) {
+        var entity = gameService.findGameEntity(gameid);
         var callerUserInput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
-        var callerUserFound = gameService.getUserByIdInActiveUsers(gameid, userid);
+        var callerUserFound = gameService.getUserByIdInActiveUsers(entity, userid);
         if (callerUserInput.getToken().equals(callerUserFound.getToken())) {
-            gameService.userCalls(gameid, userid);
+            gameService.userCalls(entity, userid);
         }
         else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The User is not authorized... (In Call process)");
@@ -123,10 +127,11 @@ public class GameController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public void userchecks(@PathVariable("GameID") Long gameid, @PathVariable("UserID") Long userid, @RequestBody UserPutDTO userPutDTO) {
+        var entity = gameService.findGameEntity(gameid);
         var checkerUserInput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
-        var checkerUserFound = gameService.getUserByIdInActiveUsers(gameid, userid);
+        var checkerUserFound = gameService.getUserByIdInActiveUsers(entity, userid);
         if (checkerUserInput.getToken().equals(checkerUserFound.getToken())) {
-            gameService.userChecks(gameid, userid);
+            gameService.userChecks(entity, userid);
         }
         else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The User is not authorized... (In Call process)");
@@ -215,8 +220,9 @@ public class GameController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public void showCards(@PathVariable Long gameId, @PathVariable Long userId, @RequestBody UserShowPutDTO userShowPutDTO) {
+        var entity = gameService.findGameEntity(gameId);
         //search for user, finds only if user is in the game as active user
-        var user = gameService.getUserByIdInActiveUsers(gameId, userId);
+        var user = gameService.getUserByIdInActiveUsers(entity, userId);
 
         //verify token
         if (!user.getToken().equals(userShowPutDTO.getToken())) {
@@ -242,12 +248,13 @@ public class GameController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public void userLeavesGameSession(@PathVariable Long gameId, @PathVariable Long userId, @RequestBody UserPutDTO userPutDTO) {
-        var realUser = gameService.getUserByIdInAllUsersAndSpectators(gameId, userId);
+        var entity = gameService.findGameEntity(gameId);
+        var realUser = gameService.getUserByIdInAllUsersAndSpectators(entity, userId);
         var userInput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
 
         // Check token
         if (userInput.getToken().equals(realUser.getToken())){
-            gameService.deleteUserFromGame(userId, gameId, realUser);
+            gameService.deleteUserFromGame(userId, entity, realUser);
         } else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Wrong token for user");
         }
