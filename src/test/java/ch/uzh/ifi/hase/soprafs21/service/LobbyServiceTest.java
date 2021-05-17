@@ -193,7 +193,7 @@ class LobbyServiceTest {
 
     @Test
     void checkIfUserExists_ByToken_userNotFound(){
-        assertThrows(ResponseStatusException.class, () -> lobbyService.checkIfUserExists_ByToken("novalidtoken"));
+        assertThrows(ResponseStatusException.class, () -> lobbyService.checkIfUserExistsByToken("novalidtoken"));
 
     }
 

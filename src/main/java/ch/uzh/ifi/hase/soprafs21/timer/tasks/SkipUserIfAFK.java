@@ -33,7 +33,6 @@ public class SkipUserIfAFK implements Runnable {
         }
 
         var trueGame = game.get();
-
         var onTurn = trueGame.getOnTurn();
 
         if (onTurn == null) {
@@ -45,13 +44,11 @@ public class SkipUserIfAFK implements Runnable {
                 if (trueGame.getRound() == Round.SHOWDOWN){
                     gameService.show(trueGame, user, false);
                 } else {
-                    gameService.userFolds(this.gameID, user.getId());
+                    gameService.userFolds(trueGame, user.getId());
                 }
                 break;
             }
         }
-        // Log date to see if timer is working
-        log.info("The time is now {}", dateFormat.format(new Date()));
     }
 
 }

@@ -51,7 +51,7 @@ public class LobbyService {
     }
 
 
-    public void checkIfUserExists_ByToken(String token) {
+    public void checkIfUserExistsByToken(String token) {
         Optional<User> potentialUser = Optional.ofNullable(userRepository.findByToken(token));
         if (potentialUser.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE);
@@ -109,14 +109,14 @@ public class LobbyService {
         userRepository.saveAndFlush(userFound);
     }
 
-    public void setUserToUnready(User userFound){
+    public void setUserToUnready(User userFound) {
         userFound.setGamestatus(GameStatus.NOTREADY);
         userRepository.saveAndFlush(userFound);
     }
 
-    public void leaveLobby(User userFound, GameEntity gameEntity){
+    public void leaveLobby(User userFound, GameEntity gameEntity) {
         if (!gameEntity.getInGame()) {
-            if (!gameEntity.getAllUsers().contains(userFound)){
+            if (!gameEntity.getAllUsers().contains(userFound)) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "You can not leave this lobby since you are not part of this lobby to begin with");
             }
             userFound.setGamestatus(GameStatus.NOTREADY);
@@ -169,23 +169,28 @@ public class LobbyService {
         List<GameEntity> gameList = getAllGames();
         for (GameEntity entity : gameList) {
             if (!entity.getId().equals(lobbyID)) {
-                for (User user : entity.getAllUsers()) {
-                    if (user.getToken().equals(token)) {
-                        throw new ResponseStatusException(HttpStatus.CONFLICT, "The User is playing in an other Lobby and therefore can not join this Lobby!");
-                    }
-                }
-
-                /*
-                I think that if a User wants to join Lobby Alpha but is still a Spectator in Lobby Beta, Hibernate will throw an Error. This needs to be tested.
-                 */
-                for (User user2 : entity.getSpectators()) {
-                    if (user2.getToken().equals(token)) {
-                        throw new ResponseStatusException(HttpStatus.CONFLICT, "The User is a Spectator in an other Lobby and therefore can not join this Lobby!");
-                    }
-                }
+                checkAllUsers(entity, token);
+                checkSpectators(entity, token);
             }
         }
     }
+
+    private void checkAllUsers(GameEntity entity, String token) {
+        for (User user : entity.getAllUsers()) {
+            if (user.getToken().equals(token)) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "The User is playing in an other Lobby and therefore can not join this Lobby!");
+            }
+        }
+    }
+
+    private void checkSpectators(GameEntity entity, String token) {
+        for (User user2 : entity.getSpectators()) {
+            if (user2.getToken().equals(token)) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "The User is a Spectator in an other Lobby and therefore can not join this Lobby!");
+            }
+        }
+    }
+
 
     public void setUpGame(GameEntity game) {
         // Check if there are already five players in the game

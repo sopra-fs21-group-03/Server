@@ -6,7 +6,6 @@ import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.PlayerInLobbyGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.UserPutDTO;
-import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs21.service.LobbyService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -225,7 +224,7 @@ class LobbyControllerTest {
 
     @Test
     void getLobbyOverview_userIsNotFound(){
-        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE)).when(lobbyService).checkIfUserExists_ByToken(Mockito.any());
+        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE)).when(lobbyService).checkIfUserExistsByToken(Mockito.any());
         MockHttpServletRequestBuilder getRequest = get("/lobbies")
                 .header("Authorization", "456");
         try {
@@ -257,7 +256,7 @@ class LobbyControllerTest {
 
     @Test
     void getMoreInformationAboutALobby_userNotFound(){
-        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE)).when(lobbyService).checkIfUserExists_ByToken(Mockito.any());
+        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE)).when(lobbyService).checkIfUserExistsByToken(Mockito.any());
         MockHttpServletRequestBuilder getRequest = get("/lobbies/2")
                 .header("Authorization", "456");
         try {
@@ -314,7 +313,7 @@ class LobbyControllerTest {
         UserPutDTO userPutDTO = new UserPutDTO();
         userPutDTO.setToken("123");
 
-        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE)).when(lobbyService).checkIfUserExists_ByToken(Mockito.any());
+        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE)).when(lobbyService).checkIfUserExistsByToken(Mockito.any());
 
         MockHttpServletRequestBuilder putRequest = put("/lobbies/2/join")
                 .contentType(MediaType.APPLICATION_JSON)

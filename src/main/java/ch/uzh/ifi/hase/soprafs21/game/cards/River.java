@@ -17,13 +17,13 @@ public class River implements Serializable {
     @LazyCollection(LazyCollectionOption.FALSE)
     private List<Card> cards = new ArrayList<>();
 
-    public ArrayList<Card> getCards() {
+    public List<Card> getCards() {
         return new ArrayList<>(cards);
     }
 
-    public void addCard(Card card) throws Exception {
+    public void addCard(Card card) throws IllegalStateException {
         if(this.cards.size() >= 5) {
-            throw new Exception("River is full, can't add more cards.");
+            throw new IllegalStateException("River is full, can't add more cards.");
         }
         this.cards.add(card);
     }

@@ -13,7 +13,6 @@ import java.util.*;
 import java.io.Serializable;
 
 
-
 @Embeddable
 public class Pot implements Serializable {
 
@@ -60,8 +59,9 @@ public class Pot implements Serializable {
 
     public Map<String, Integer> getContribution() {
         contribution = new HashMap<>();
-        for (User user : userContribution.keySet()){
-            contribution.put(user.getUsername(), userContribution.get(user));
+
+        for (Map.Entry<User, Integer> entry : userContribution.entrySet()) {
+            contribution.put(entry.getKey().getUsername(), entry.getValue());
         }
 
         return contribution;
@@ -72,14 +72,14 @@ public class Pot implements Serializable {
     }
 
     public void addUser(User user) {
-        if(userContribution.containsKey(user)) {
+        if (userContribution.containsKey(user)) {
             throw new IllegalArgumentException("user already registered in pot");
         }
         userContribution.put(user, 0);
     }
 
     public void removeUser(User user) {
-        if(!userContribution.containsKey(user)) {
+        if (!userContribution.containsKey(user)) {
             throw new IllegalArgumentException("user not registered in pot");
         }
         userContribution.remove(user);
@@ -90,8 +90,8 @@ public class Pot implements Serializable {
         Set<User> enemies = userContribution.keySet();
 
         //gets next best user and gets all the money it is allowed to get, until no money is left in pot
-        for(UserDraw user: ranking) {
-            while(!user.empty()) {
+        for (UserDraw user : ranking) {
+            while (!user.empty()) {
                 int invested = user.getMinimum();
                 var receives = 0;
                 //user collects money for all users - including himself - from the pot
@@ -99,18 +99,18 @@ public class Pot implements Serializable {
                     receives += collect(enemy, invested);
                 }
                 user.addMoneyAndDistribute(receives);
-                for(UserDraw userDraw: ranking) {
+                for (UserDraw userDraw : ranking) {
                     userDraw.subtract(invested);
                 }
             }
-            if(total == 0) {
+            if (total == 0) {
                 break;
             }
         }
-        if(total != 0) {
-            for( User user: userContribution.keySet()) {
-                user.addMoney(userContribution.get(user));
-                userContribution.put(user, 0);
+        if (total != 0) {
+            for (Map.Entry<User, Integer> entry : userContribution.entrySet()) {
+                entry.getKey().addMoney(entry.getValue());
+                userContribution.put(entry.getKey(), 0);
             }
         }
 
@@ -121,7 +121,7 @@ public class Pot implements Serializable {
         int invested = userContribution.get(user);
         //common case, where the user that collects money, will receive all of a users money
         //also where a user should be collecting from what he put in the pot himself
-        if(amount >= invested) {
+        if (amount >= invested) {
             userContribution.put(user, 0);
             total -= invested;
             return invested;

@@ -39,7 +39,8 @@ public class ChatController {
         if(!(checkerUserInput.getToken().equals(user.getToken()))) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authorized to send a chat message");
         } else{
-            chatService.addChatMessage(gameId, userId, chatMessage);
+            var game = chatService.findGameEntity(gameId);
+            chatService.addChatMessage(game, user, chatMessage);
         }
 
 
