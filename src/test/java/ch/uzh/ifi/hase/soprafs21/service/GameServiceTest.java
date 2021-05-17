@@ -31,8 +31,6 @@ class GameServiceTest {
     private User testUser;
     private User testUser2;
     private User testUser3;
-    private User testUser4;
-    private User testUser5;
 
     private GameEntity testGame;
 
@@ -115,7 +113,7 @@ class GameServiceTest {
         testUser3.setMoney(10);
         testUser3.setGamestatus(GameStatus.READY);
 
-        testUser4 = new User();
+        var testUser4 = new User();
         testUser4.setId(4L);
         testUser4.setPassword("testName");
         testUser4.setUsername("testUsername4");
@@ -123,7 +121,7 @@ class GameServiceTest {
         testUser4.setMoney(10);
         testUser4.setGamestatus(GameStatus.READY);
 
-        testUser5 = new User();
+        var testUser5 = new User();
         testUser5.setId(5L);
         testUser5.setPassword("testName");
         testUser5.setUsername("testUsername5");
@@ -700,27 +698,6 @@ class GameServiceTest {
         assertEquals(4600, temporaryOnTurn.getMoney());
         gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
         assertEquals(0, temporaryOnTurn.getMoney());
-
-    }
-
-    @Test
-    void userWantsToCallButHasMinusMoney_specialCase_shouldThrowException() {
-        int counter = 0;
-        while (counter < 5) {
-            gameService.userCalls(testGame.getId(), getIdOfUserOnTurn());
-            counter++;
-        }
-        gameService.userRaises(testGame.getId(), getIdOfUserOnTurn(), 400);
-        for (User user : testGame.getActiveUsers()) {
-            if (user.getId().equals(getIdOfUserOnTurn())) {
-                user.setMoney(-1);
-                break;
-            }
-        }
-
-        long idOfUserOnTurn = getIdOfUserOnTurn();
-
-        assertThrows(ResponseStatusException.class, () -> gameService.userCalls(testGame.getId(), idOfUserOnTurn));
 
     }
 

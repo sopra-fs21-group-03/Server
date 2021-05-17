@@ -1,7 +1,6 @@
 package ch.uzh.ifi.hase.soprafs21.controller;
 
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
-import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.LobbyGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.SpecificLobbyGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.UserPutDTO;
@@ -29,7 +28,7 @@ public class LobbyController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public List<LobbyGetDTO> getLobbies(@RequestHeader(value = "Authorization") String token) {
-        lobbyService.checkIfUserExists_ByToken(token);
+        lobbyService.checkIfUserExistsByToken(token);
         var games = lobbyService.getAllGames();
         List<LobbyGetDTO> lobbies = new ArrayList<>();
         for (GameEntity game : games) {
@@ -42,7 +41,7 @@ public class LobbyController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public void addUserToLobby(@PathVariable Long lobbyID, @RequestBody UserPutDTO userPutDTO) {
-        lobbyService.checkIfUserExists_ByToken(userPutDTO.getToken());
+        lobbyService.checkIfUserExistsByToken(userPutDTO.getToken());
         lobbyService.checkIfUserIsAlreadyInAnOtherLobby(userPutDTO.getToken(),lobbyID);
         var userfound = lobbyService.getUserByTokenInUserRepository(userPutDTO.getToken());
         var entity = lobbyService.findGameEntity(lobbyID);
@@ -105,7 +104,7 @@ public class LobbyController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public SpecificLobbyGetDTO getSpecificLobbyInformation(@PathVariable Long lobbyID, @RequestHeader(value = "Authorization") String token) {
-        lobbyService.checkIfUserExists_ByToken(token);
+        lobbyService.checkIfUserExistsByToken(token);
         lobbyService.checkIfUserIsInGameSession(token, lobbyID);
         var game = lobbyService.getSpecificLobbyData(lobbyID);
         return DTOMapper.INSTANCE.convertEntityToSpecificLobbyGetDTO(game);

@@ -59,10 +59,6 @@ public class Pot implements Serializable {
 
     public Map<String, Integer> getContribution() {
         contribution = new HashMap<>();
-        //for (User user : userContribution.keySet()){
-        //    contribution.put(user.getUsername(), userContribution.get(user));
-        //}
-        // I commented this out, in case the solution recommended by SonarCloud leads to bugs
 
         for (Map.Entry<User, Integer> entry : userContribution.entrySet()) {
             contribution.put(entry.getKey().getUsername(), entry.getValue());
@@ -112,11 +108,6 @@ public class Pot implements Serializable {
             }
         }
         if (total != 0) {
-            //for (User user : userContribution.keySet()) {
-            //    user.addMoney(userContribution.get(user));
-            //    userContribution.put(user, 0);
-            //}
-
             for (Map.Entry<User, Integer> entry : userContribution.entrySet()) {
                 entry.getKey().addMoney(entry.getValue());
                 userContribution.put(entry.getKey(), 0);

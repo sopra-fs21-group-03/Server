@@ -31,7 +31,7 @@ public class ChatService {
     public ChatService(@Qualifier("gameRepository") GameRepository gameRepository) {
         this.gameRepository = gameRepository;
     }
-    private GameEntity findGameEntity(Long gameid) {
+    public GameEntity findGameEntity(Long gameid) {
         Optional<GameEntity> potentialGame = gameRepository.findById(gameid);
         GameEntity theGame = null;
         if (potentialGame.isPresent()) {
@@ -54,13 +54,11 @@ public class ChatService {
     }
 
     public List<ProtocolElement> getProtocol(Long gameId) {
-        GameEntity game = findGameEntity(gameId);
+        var game = findGameEntity(gameId);
         return game.getProtocol();
     }
 
-    public void addChatMessage(Long gameId, Long userId, String chatMessage){
-        GameEntity game = findGameEntity(gameId);
-        User chatterUser = getUserInGameById(gameId, userId);
+    public void addChatMessage(GameEntity game, User chatterUser, String chatMessage){
         var element = new ProtocolElement(MessageType.CHAT, chatterUser, String.format("User %s says: %s", chatterUser.getUsername(), chatMessage));
         game.addProtocolElement(element);
         gameRepository.save(game);

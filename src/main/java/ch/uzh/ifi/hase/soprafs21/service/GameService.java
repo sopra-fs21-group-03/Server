@@ -63,14 +63,14 @@ public class GameService {
     }
 
     private void createGames() {
-        for(Long i = 1L; i <= AMOUNT_OF_GAMES; i++) {
+        for (Long i = 1L; i <= AMOUNT_OF_GAMES; i++) {
             var game = new GameEntity(i);
             gameRepository.save(game);
         }
         gameRepository.flush();
     }
 
-    public long getTurnTime(){
+    public long getTurnTime() {
         return TURN_TIME;
     }
 
@@ -99,8 +99,6 @@ public class GameService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The GameSession could not be found...");
         }
     }
-
-
 
 
     /**
@@ -164,37 +162,29 @@ public class GameService {
         //first, find the GameEntity (find it with the id called gameid)
         var theGame = findGameEntity(gameid);
         //then, find the User with the id userid. For performing an action, a User has to be in the activeUsers List.
-        for (User user : theGame.getActiveUsers()) {
-            //You found the User (.equals() method)
-            if (userid.equals(user.getId())) {
-                //is this User on turn?
-                if (checkIfUserPerformingActionIsUserOnTurn(gameid, user)) {
+        var user = getUserByIdInActiveUsers(gameid, userid);
 
-                    // give me the Username of the potential next User in turn. In userFolds(), this method called
-                    // getUsernameOfPotentialNextUserInTurn() is crucial, since when performing a fold, we are going to delete
-                    // the User that called this userFolds() method from the activeUsers-List. But when we do this, we cannot find this User
-                    // anymore in the activeUsers List and find who is the potential next User in turn. Therefore, before removing this current User
-                    // from the activeUsers List, we need to know how is potentially the next User in turn.
+        //is this User on turn?
+        if (checkIfUserPerformingActionIsUserOnTurn(gameid, user)) {
 
-                    String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(user);
-                    //User folds -> he gets removed from the ActiveUsers List, not from the AllUsers List
-                    theGame.getActiveUsers().remove(user);
-                    //then, set the next User on turn or the next round or declare a winner.
-                    theGame.roundHandler(usernameOfPotentialNextUserInTurn);
-                    var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s folds", user.getUsername()));
-                    theGame.addProtocolElement(element);
-                    gameRepository.save(theGame);
+            // give me the Username of the potential next User in turn. In userFolds(), this method called
+            // getUsernameOfPotentialNextUserInTurn() is crucial, since when performing a fold, we are going to delete
+            // the User that called this userFolds() method from the activeUsers-List. But when we do this, we cannot find this User
+            // anymore in the activeUsers List and find who is the potential next User in turn. Therefore, before removing this current User
+            // from the activeUsers List, we need to know how is potentially the next User in turn.
 
-                    return;
-
-                }
-                else {
-                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_IN_TURN_MESSAGE);
-                }
-            }
+            String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(user);
+            //User folds -> he gets removed from the ActiveUsers List, not from the AllUsers List
+            theGame.getActiveUsers().remove(user);
+            //then, set the next User on turn or the next round or declare a winner.
+            theGame.roundHandler(usernameOfPotentialNextUserInTurn);
+            var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s folds", user.getUsername()));
+            theGame.addProtocolElement(element);
+            gameRepository.save(theGame);
         }
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_FOUND_MESSAGE);
-
+        else {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_IN_TURN_MESSAGE);
+        }
     }
 
     /**
@@ -210,77 +200,72 @@ public class GameService {
         }
         //first, find the GameEntity (find it with the id called gameid)
         var theGame = findGameEntity(gameid);
-
         //then, find the User with the id userid. For performing an action, a User has to be in the activeUsers List.
-        for (User user : theGame.getActiveUsers()) {
-            //You found the User (.equals() method)
-            if (userid.equals(user.getId())) {
-                //is this User on turn?
-                if (checkIfUserPerformingActionIsUserOnTurn(gameid, user)) {
-                    //User is not the User that raised last
-                    if (theGame.getUserThatRaisedLast() == null || !theGame.getUserThatRaisedLast().getId().equals(user.getId())) {
-                        // The "normal" case: the User has more money than the raise amount.
-                        if (user.getMoney() > amount) {
-                            //The amount should be removed from the User's money.
-                            user.removeMoney(amount);
-                            //put the money inside the pot
-                            theGame.getPot().addMoney(user, amount);
-                            //create log message
-                            ProtocolElement element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s raised by %d. %s has %d in the pot", user.getUsername(), amount, user.getUsername(), theGame.getPot().getUserContributionOfAUser(user)));
-                            theGame.addProtocolElement(element);
-                            //the User calling this method is the new User that raised last
-                            theGame.setUserThatRaisedLast(user);
-                            //This was not a check-action -> therefore, the counter, will be put to 0
-                            theGame.setCheckcounter(0);
-                            //Give me the username of the User that is potentially the next user on turn
-                            String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(user);
-                            //then, set the next User on turn or the next round or declare a winner.
-                            theGame.roundHandler(usernameOfPotentialNextUserInTurn);
-                            theGame.setBigblindspecialcase(false);
-                            gameRepository.save(theGame);
-                            return;
-                        }
-                        else if (user.getMoney() == amount) {
-                            /**
-                             This is the All-In Case
-                             */
+        var user = getUserByIdInActiveUsers(gameid, userid);
+        //is this User on turn?
+        if (checkIfUserPerformingActionIsUserOnTurn(gameid, user)) {
+            //User is not the User that raised last
+            if (theGame.getUserThatRaisedLast() == null || !theGame.getUserThatRaisedLast().getId().equals(user.getId())) {
+                // The "normal" case: the User has more money than the raise amount.
+                if (user.getMoney() > amount) {
+                    //The amount should be removed from the User's money.
+                    user.removeMoney(amount);
+                    //put the money inside the pot
+                    theGame.getPot().addMoney(user, amount);
+                    //create log message
+                    var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s raised by %d. %s has %d in the pot", user.getUsername(), amount, user.getUsername(), theGame.getPot().getUserContributionOfAUser(user)));
+                    theGame.addProtocolElement(element);
+                    //the User calling this method is the new User that raised last
+                    theGame.setUserThatRaisedLast(user);
+                    //This was not a check-action -> therefore, the counter, will be put to 0
+                    theGame.setCheckcounter(0);
+                    //Give me the username of the User that is potentially the next user on turn
+                    String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(user);
+                    //then, set the next User on turn or the next round or declare a winner.
+                    theGame.roundHandler(usernameOfPotentialNextUserInTurn);
+                    theGame.setBigblindspecialcase(false);
+                    gameRepository.save(theGame);
+                    return;
+                }
+                else if (user.getMoney() == amount) {
+                    /**
+                     This is the All-In Case
+                     */
 
-                            // All-In -> After raising, the User doesn't have money anymore.
-                            user.setMoney(0);
-                            //put the money inside the pot
-                            theGame.getPot().addMoney(user, amount);
-                            //create log message
+                    // All-In -> After raising, the User doesn't have money anymore.
+                    user.setMoney(0);
+                    //put the money inside the pot
+                    theGame.getPot().addMoney(user, amount);
+                    //create log message
 
-                            var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s raised by %d. %s has %d in the pot", user.getUsername(), amount, user.getUsername(), theGame.getPot().getUserContributionOfAUser(user)));
-                            theGame.addProtocolElement(element);
-                            //the User calling this method is the new User that raised last
-                            theGame.setUserThatRaisedLast(user);
-                            //This was not a check-action -> therefore, the counter, will be put to 0
-                            theGame.setCheckcounter(0);
-                            //Give me the username of the User that is potentially the next user on turn
-                            String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(user);
-                            //then, set the next User on turn or the next round or declare a winner.
-                            theGame.roundHandler(usernameOfPotentialNextUserInTurn);
-                            theGame.setBigblindspecialcase(false);
-                            gameRepository.save(theGame);
-                            return;
+                    var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s raised by %d. %s has %d in the pot", user.getUsername(), amount, user.getUsername(), theGame.getPot().getUserContributionOfAUser(user)));
+                    theGame.addProtocolElement(element);
+                    //the User calling this method is the new User that raised last
+                    theGame.setUserThatRaisedLast(user);
+                    //This was not a check-action -> therefore, the counter, will be put to 0
+                    theGame.setCheckcounter(0);
+                    //Give me the username of the User that is potentially the next user on turn
+                    String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(user);
+                    //then, set the next User on turn or the next round or declare a winner.
+                    theGame.roundHandler(usernameOfPotentialNextUserInTurn);
+                    theGame.setBigblindspecialcase(false);
+                    gameRepository.save(theGame);
+                    return;
 
-                        }
-                        else {
-                            throw new ResponseStatusException(HttpStatus.CONFLICT, "The User doesn't have enough money to raise with such an amount!");
-                        }
-
-                    }
-                    else {
-                        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This User was the User that raised last! Therefore, he cannot raise a second time in a row!");
-                    }
                 }
                 else {
-                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_IN_TURN_MESSAGE);
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "The User doesn't have enough money to raise with such an amount!");
                 }
+
+            }
+            else {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "This User was the User that raised last! Therefore, he cannot raise a second time in a row!");
             }
         }
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_FOUND_MESSAGE);
+        else {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_IN_TURN_MESSAGE);
+        }
+
 
     }
 
@@ -309,11 +294,6 @@ public class GameService {
         var thisUser = getUserByIdInActiveUsers(gameid, userid);
         //is this User on turn?
         if (checkIfUserPerformingActionIsUserOnTurn(gameid, thisUser)) {
-            //If a User has no money, he should not be able to make a turn again
-            if (thisUser.getMoney() <= 0) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "The User cannot call, since he has no money!");
-            }
-
             //if someone wants to call -> he wants to have the same amount of money in the pot as the user that raised last
             int totalPotContributionOfPlayerThatRaisedLast = theGame.getPot().getUserContributionOfAUser(lastRaiser);
             // amount this User already has in the pot
@@ -375,16 +355,11 @@ public class GameService {
         var thisUser = getUserByIdInActiveUsers(gameid, userid);
         //is this User on turn?
         if (checkIfUserPerformingActionIsUserOnTurn(gameid, thisUser)) {
-
-            if (thisUser.getMoney() <= 0) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "The User cannot call, since he has no money!");
-            }
-
             //if someone wants to call -> he wants to have the same amount of money in the pot as the user that raised last
             int totalPotContributionOfPlayerThatRaisedLast = theGame.getPot().getUserContributionOfAUser(lastRaiser);
             var amountThisUserAlreadyHasInThePot = theGame.getPot().getUserContributionOfAUser(thisUser);
 
-            if (thisUser.getMoney() + amountThisUserAlreadyHasInThePot >= totalPotContributionOfPlayerThatRaisedLast) {
+            if (thisUser.getMoney() > 0 && (thisUser.getMoney() + amountThisUserAlreadyHasInThePot >= totalPotContributionOfPlayerThatRaisedLast)) {
                 int difference = totalPotContributionOfPlayerThatRaisedLast - amountThisUserAlreadyHasInThePot;
                 thisUser.removeMoney(difference);
                 theGame.getPot().addMoney(thisUser, difference);
@@ -397,7 +372,7 @@ public class GameService {
             gameRepository.save(theGame);
         }
         else {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,NOT_IN_TURN_MESSAGE);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_IN_TURN_MESSAGE);
         }
     }
 
@@ -570,24 +545,10 @@ public class GameService {
         if (checkIfUserPerformingActionIsUserOnTurn(game.getId(), user)) {
             Show show;
             if (wantsToShow) {
-                show = Show.SHOW;
-                try {
-                    game.nextTurnInShowdown(user);
-                }
-                catch (Exception e) {
-                    throw new ResponseStatusException(HttpStatus.CONFLICT, NOT_IN_TURN_MESSAGE);
-                }
+                show = userDoesWantsToShow(game, user);
             }
             else {
-                show = Show.DONT_SHOW;
-                try {
-                    game.nextTurnInShowdown(user);
-                }
-                catch (Exception e) {
-                    throw new ResponseStatusException(HttpStatus.CONFLICT, NOT_FOUND_MESSAGE);
-
-                }
-                game.removeUserFromActive(user.getId());
+                show = userDoesNotWantToShow(game, user);
             }
             user.setWantsToShow(show);
 
@@ -599,16 +560,38 @@ public class GameService {
             }
 
             //if all user decided distribute the pot
-
-            // Create a thread that waits before distributing the pot
             // Set on Turn to null when all have decided
             game.setOnTurn(null);
             startShowdownTimerForLastUser(game);
-
-        } else {
-
+        }
+        else {
             throw new ResponseStatusException(HttpStatus.CONFLICT, NOT_IN_TURN_MESSAGE);
         }
+    }
+
+    private Show userDoesWantsToShow(GameEntity game, User user) {
+        Show show = Show.SHOW;
+        try {
+            game.nextTurnInShowdown(user);
+        }
+        catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, NOT_IN_TURN_MESSAGE);
+        }
+        return show;
+    }
+
+    private Show userDoesNotWantToShow(GameEntity game, User user) {
+        Show show;
+        show = Show.DONT_SHOW;
+        try {
+            game.nextTurnInShowdown(user);
+        }
+        catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, NOT_FOUND_MESSAGE);
+
+        }
+        game.removeUserFromActive(user.getId());
+        return show;
     }
 
     public GameEntity getGameById(Long gameId) {
@@ -621,21 +604,22 @@ public class GameService {
         }
     }
 
-    public void deleteUserFromGame(Long UserID, Long gameID, User realUser) {
+    public void deleteUserFromGame(Long userID, Long gameID, User realUser) {
         var gameEntity = findGameEntity(gameID);
 
         // End screen case
         if (gameEntity.getRound() == Round.ENDED) {
-            gameEntity.removeUserFromAll(UserID);
-            gameEntity.removeUserFromActive(UserID);
-            gameEntity.removeUserFromSpectators(UserID);
-            gameEntity.removeUserFromRawPlayers(UserID);
+            gameEntity.removeUserFromAll(userID);
+            gameEntity.removeUserFromActive(userID);
+            gameEntity.removeUserFromSpectators(userID);
+            gameEntity.removeUserFromRawPlayers(userID);
 
             if (!gameEntity.isFirstGameSetup()) {
                 gameEntity.setFirstGameSetup(true);
                 gameEntity.setProtocol(new ArrayList<>());
             }
-        } else { // Game must still be running
+        }
+        else { // Game must still be running
             /*
             Copy the user that left into the rawPlayersInTurn list,
             the user will be skipped by the server but a copy will still be returned to the client to not break anything
@@ -643,30 +627,30 @@ public class GameService {
 
             int idx = gameEntity.getAllUsers().indexOf(realUser);
 
-            if (realUser.getBlind() == Blind.BIG){
+            if (realUser.getBlind() == Blind.BIG) {
 
                 realUser.setBlind(Blind.NEUTRAL);
                 List<User> allUsers = gameEntity.getAllUsers();
-                User toChange = allUsers.get(Math.abs((idx - 1 + allUsers.size()) % (allUsers.size())));
+                var toChange = allUsers.get(Math.abs((idx - 1 + allUsers.size()) % (allUsers.size())));
                 toChange.setBlind(Blind.BIG);
 
             }
 
-            if (realUser.getBlind() == Blind.SMALL){
+            if (realUser.getBlind() == Blind.SMALL) {
                 realUser.setBlind(Blind.NEUTRAL);
                 List<User> allUsers = gameEntity.getAllUsers();
-                User toChange = allUsers.get(Math.abs((idx + 1) % (allUsers.size())));
+                var toChange = allUsers.get(Math.abs((idx + 1) % (allUsers.size())));
                 toChange.setBlind(Blind.SMALL);
             }
 
-            if (gameEntity.getOnTurn().getUsername().equals(realUser.getUsername())){
+            if (gameEntity.getOnTurn().getUsername().equals(realUser.getUsername())) {
                 var username = gameEntity.getUsernameOfPotentialNextUserInTurn(realUser);
                 gameEntity.roundHandler(username);
             }
 
-            gameEntity.removeUserFromAll(UserID);
-            gameEntity.removeUserFromActive(UserID);
-            gameEntity.removeUserFromSpectators(UserID);
+            gameEntity.removeUserFromAll(userID);
+            gameEntity.removeUserFromActive(userID);
+            gameEntity.removeUserFromSpectators(userID);
 
             var protocol = new ProtocolElement(MessageType.LOG, realUser, String.format("User %s has left the table", realUser.getUsername()));
             gameEntity.addProtocolElement(protocol);
@@ -680,20 +664,20 @@ public class GameService {
      * Helper functions for threading
      */
 
-    public void startShowdownTimerForLastUser(GameEntity game){
-        PotDistributor potDistributor = new PotDistributor(game, this.gameRepository, this.userRepository, this);
+    public void startShowdownTimerForLastUser(GameEntity game) {
+        var potDistributor = new PotDistributor(game, this.gameRepository, this.userRepository, this);
         CentralScheduler.getInstance().reset(potDistributor, SHOWDOWN_TIME);
     }
 
 
-    public void startTurnTimerForNextUser(long gameID){
-        SkipUserIfAFK skipUserIfAFK = new SkipUserIfAFK(this.gameRepository, this, gameID);
+    public void startTurnTimerForNextUser(long gameID) {
+        var skipUserIfAFK = new SkipUserIfAFK(this.gameRepository, this, gameID);
 
         CentralScheduler.getInstance().reset(skipUserIfAFK, TURN_TIME);
     }
 
-    public void startTurnTimer(long gameID){
-        SkipUserIfAFK skipUserIfAFK = new SkipUserIfAFK(this.gameRepository, this, gameID);
+    public void startTurnTimer(long gameID) {
+        var skipUserIfAFK = new SkipUserIfAFK(this.gameRepository, this, gameID);
         CentralScheduler.getInstance().start(skipUserIfAFK, TURN_TIME);
     }
 }

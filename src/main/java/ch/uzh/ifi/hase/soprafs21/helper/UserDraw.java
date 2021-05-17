@@ -16,11 +16,8 @@ public class UserDraw implements Serializable {
     public int getMinimum() {
         Collection<Integer> values = usersInDraw.values();
         int min = -1;
-        for(int value: values) {
-            if(min == -1) {
-                min = value;
-            }
-            else if(value < min) {
+        for (int value : values) {
+            if (min == -1 || value < min) {
                 min = value;
             }
         }
@@ -39,46 +36,47 @@ public class UserDraw implements Serializable {
         Set<User> users = usersInDraw.keySet();
         int size = users.size();
         int share = amount / size;
-        int minimum = getMinimum();
-        for(User user: users) {
+
+        for (User user : users) {
             user.addMoney(share);
-            //int oldValue = usersInDraw.get(user);
-            //usersInDraw.put(user, oldValue - minimum);
+
         }
         List<User> toBeRemoved = new ArrayList<>();
-        for(User user: users) {
-            if(usersInDraw.get(user) == 0) {
+        for (User user : users) {
+            if (usersInDraw.get(user) == 0) {
                 toBeRemoved.add(user);
             }
         }
-        for(User user: toBeRemoved) {
+        for (User user : toBeRemoved) {
             usersInDraw.remove(user);
         }
     }
 
     public void subtract(int amount) {
-        for(User user: usersInDraw.keySet()) {
-            int oldValue = usersInDraw.get(user);
-            usersInDraw.put(user, oldValue - amount);
+        for (Map.Entry<User, Integer> theEntry : usersInDraw.entrySet()) {
+            int oldValue = theEntry.getValue();
+            usersInDraw.put(theEntry.getKey(), oldValue - amount);
         }
+
         List<User> usersToBeRemoved = new ArrayList<>();
-        for(User user: usersInDraw.keySet()) {
-            if(usersInDraw.get(user) <= 0) {
-                usersToBeRemoved.add(user);
+
+        for (Map.Entry<User, Integer> entry : usersInDraw.entrySet()) {
+            if (entry.getValue() <= 0) {
+                usersToBeRemoved.add(entry.getKey());
             }
         }
-        for(User user: usersToBeRemoved) {
+        for (User user : usersToBeRemoved) {
             usersInDraw.remove(user);
         }
     }
 
     @Override
     public boolean equals(Object obj) {
-        if(obj == this) {
+        if (obj == this) {
             return true;
         }
 
-        if(!(obj instanceof UserDraw)) {
+        if (!(obj instanceof UserDraw)) {
             return false;
         }
 
@@ -86,14 +84,14 @@ public class UserDraw implements Serializable {
         List<User> users = new ArrayList<>(this.getUsers());
         List<User> otherUsers = new ArrayList<>(o.getUsers());
 
-        for(User user: users) {
-            if(!otherUsers.contains(user)) {
+        for (User user : users) {
+            if (!otherUsers.contains(user)) {
                 return false;
             }
         }
 
-        for(User otherUser: otherUsers) {
-            if(!users.contains(otherUser)) {
+        for (User otherUser : otherUsers) {
+            if (!users.contains(otherUser)) {
                 return false;
             }
         }

@@ -127,11 +127,11 @@ class ChatServiceTest {
 
     @Test
     void addChatMessage_success() {
-        chatService.addChatMessage(testGame.getId(), testUser.getId(), "Hello there :D");
-        chatService.addChatMessage(testGame.getId(), testUser2.getId(), "Sali zeme!");
-        chatService.addChatMessage(testGame.getId(), testUser3.getId(), "Sali!");
-        chatService.addChatMessage(testGame.getId(), testUser4.getId(), "Hoi!");
-        chatService.addChatMessage(testGame.getId(), testUser5.getId(), "Ciao!");
+        chatService.addChatMessage(testGame, testUser, "Hello there :D");
+        chatService.addChatMessage(testGame, testUser2, "Sali zeme!");
+        chatService.addChatMessage(testGame, testUser3, "Sali!");
+        chatService.addChatMessage(testGame, testUser4, "Hoi!");
+        chatService.addChatMessage(testGame, testUser5, "Ciao!");
         assertEquals(6, chatService.getProtocol(testGame.getId()).size());
         assertEquals("New Gameround starts", testGame.getProtocol().get(0).getMessage());
         assertEquals("User testUsername1 says: Hello there :D", testGame.getProtocol().get(1).getMessage());
@@ -143,14 +143,23 @@ class ChatServiceTest {
     }
 
     @Test
-    void addChatMessage_gameEntityNotFound() {
-        assertThrows(ResponseStatusException.class, () -> chatService.addChatMessage(3L, testUser.getId(), "Hello there :D"));
+    void gameEntityNotFound() {
+        assertThrows(ResponseStatusException.class, () -> chatService.findGameEntity(3L));
     }
 
     @Test
-    void addChatMessage_userWasNotFound() {
-        assertThrows(ResponseStatusException.class, () -> chatService.addChatMessage(testGame.getId(), testUser.getId() + 100, "Hello there :D"));
+    void gameWasFound(){
+        assertDoesNotThrow(() -> chatService.findGameEntity(1L));
+    }
 
+    @Test
+    void userWasNotFound() {
+        assertThrows(ResponseStatusException.class, () -> chatService.getUserInGameById(testGame.getId(), testUser.getId() + 100));
+    }
+
+    @Test
+    void userWasFound(){
+        assertDoesNotThrow(() -> chatService.getUserInGameById(1L, testUser.getId()));
     }
 
 

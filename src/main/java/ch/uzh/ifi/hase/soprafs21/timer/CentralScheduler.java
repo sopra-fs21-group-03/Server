@@ -23,7 +23,7 @@ import java.util.concurrent.ScheduledFuture;
 @Component
 public class CentralScheduler{
 
-    private static AnnotationConfigApplicationContext CONTEXT = null;
+    private static AnnotationConfigApplicationContext context = null;
     private ScheduledFuture<?> scheduledFuture;
 
     @Autowired
@@ -37,11 +37,11 @@ public class CentralScheduler{
     public static CentralScheduler getInstance() {
         // Create new scheduler if it does not exist yet
         if (!isValidBean()) {
-            CONTEXT = new AnnotationConfigApplicationContext(CentralScheduler.class);
+            context = new AnnotationConfigApplicationContext(CentralScheduler.class);
         }
 
         // Get Scheduler if it already exists
-        return CONTEXT.getBean(CentralScheduler.class);
+        return context.getBean(CentralScheduler.class);
     }
 
     @Bean
@@ -78,12 +78,12 @@ public class CentralScheduler{
      * false if CentralScheduler still has to be created
      */
     private static boolean isValidBean() {
-        if (CONTEXT == null || !CONTEXT.isActive()) {
+        if (context == null || !context.isActive()) {
             return false;
         }
 
         try {
-            CONTEXT.getBean(CentralScheduler.class);
+            context.getBean(CentralScheduler.class);
         }
         catch (NoSuchBeanDefinitionException ex) {
             return false;

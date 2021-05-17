@@ -50,8 +50,6 @@ public class SkipUserIfAFK implements Runnable {
                 break;
             }
         }
-        // Log date to see if timer is working
-        log.info("The time is now {}", dateFormat.format(new Date()));
     }
 
 }
