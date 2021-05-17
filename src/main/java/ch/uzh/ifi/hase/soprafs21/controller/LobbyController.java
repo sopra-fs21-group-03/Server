@@ -18,6 +18,7 @@ import java.util.List;
 public class LobbyController {
 
     private final LobbyService lobbyService;
+    private static final String NOT_FOUND_MESSAGE = "User is not registered or logged in";
 
 
     public LobbyController(LobbyService lobbyService) {
@@ -60,7 +61,7 @@ public class LobbyController {
 
 
         if (!userfound.getToken().equals(userPutDTO.getToken())){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not registered or logged in");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_FOUND_MESSAGE);
         }
 
         /*
@@ -80,7 +81,7 @@ public class LobbyController {
         var userFound = lobbyService.getUserInSpecificGameSessionInAllUsers(userID, entity);
 
         if (!userFound.getToken().equals(userPutDTO.getToken())){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not registered or logged in");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_FOUND_MESSAGE);
         }
 
         lobbyService.setUserToUnready(userFound);
@@ -93,7 +94,7 @@ public class LobbyController {
         var userFound = lobbyService.getUserInSpecificGameSessionInAllUsers(userID, entity);
 
         if (!userFound.getToken().equals(userPutDTO.getToken())){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not registered or logged in");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_FOUND_MESSAGE);
         }
 
         lobbyService.leaveLobby(userFound, entity);

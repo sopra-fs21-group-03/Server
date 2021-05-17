@@ -15,7 +15,7 @@ public class CardRanking {
     public List<UserDraw> getRanking(GameEntity game) {
         List<UserDraw> ranking = new ArrayList<>();
         List<UserDraw> unsorted = new ArrayList<>();
-        HashMap<User, UserCombination> usersAndCombination = new HashMap();
+        HashMap<User, UserCombination> usersAndCombination = new HashMap<>();
 
         List<User> activeUsers = game.getActiveUsers();
         for(User user: activeUsers) {
@@ -23,34 +23,10 @@ public class CardRanking {
         }
 
         //all users that have a hand as good as others are collected in a UserDraw and added to the unsorted ranking list
-        for(User user: activeUsers) {
-            var usersAsGood = new UserDraw();
-            usersAsGood.addUser(user, game.getPot().getUserContributionOfAUser(user));
-            List<User> otherUsers = new ArrayList<>(activeUsers);
-            otherUsers.remove(user);
-            for(User other: otherUsers) {
-                if(usersAndCombination.get(user).asGood(usersAndCombination.get(other))) {
-                    usersAsGood.addUser(other, game.getPot().getUserContributionOfAUser(other));
-                }
-            }
-            unsorted.add(usersAsGood);
-        }
+        collectInUserDrawAndAddToList(unsorted, activeUsers, game, usersAndCombination);
 
         //eliminate duplicates
-        ArrayList<UserDraw> noDuplicates = new ArrayList<>();
-        for(UserDraw userDraw: unsorted) {
-            var add = true;
-            for(UserDraw ud: noDuplicates) {
-                if(userDraw.equals(ud)) {
-                    add = false;
-                }
-            }
-            if(add) {
-                noDuplicates.add(userDraw);
-            }
-        }
-        unsorted = noDuplicates;
-
+        unsorted = eliminateDuplicates(unsorted);
 
         ranking.add(unsorted.get(0));
         for(var i = 1; i < unsorted.size(); i++) {
@@ -78,6 +54,37 @@ public class CardRanking {
         return ranking;
     }
 
+    private List<UserDraw> eliminateDuplicates(List<UserDraw> unsorted){
+        ArrayList<UserDraw> noDuplicates = new ArrayList<>();
+        for(UserDraw userDraw: unsorted) {
+            var add = true;
+            for(UserDraw ud: noDuplicates) {
+                if(userDraw.equals(ud)) {
+                    add = false;
+                }
+            }
+            if(add) {
+                noDuplicates.add(userDraw);
+            }
+        }
+        return noDuplicates;
+    }
+
+    private void collectInUserDrawAndAddToList(List<UserDraw> unsorted, List<User> activeUsers, GameEntity game, HashMap<User, UserCombination> usersAndCombination){
+        for(User user: activeUsers) {
+            var usersAsGood = new UserDraw();
+            usersAsGood.addUser(user, game.getPot().getUserContributionOfAUser(user));
+            List<User> otherUsers = new ArrayList<>(activeUsers);
+            otherUsers.remove(user);
+            for(User other: otherUsers) {
+                if(usersAndCombination.get(user).asGood(usersAndCombination.get(other))) {
+                    usersAsGood.addUser(other, game.getPot().getUserContributionOfAUser(other));
+                }
+            }
+            unsorted.add(usersAsGood);
+        }
+    }
+
     private enum Combination {
         ROYAL_FLUSH,
         STRAIGHT_FLUSH,
@@ -92,12 +99,13 @@ public class CardRanking {
     }
 
     private class UserCombination {
-        private User user;
+
         private Combination combination;
         private ArrayList<Card> cards;
         private ArrayList<Card> finalCards = new ArrayList<>(); //5 best cards
+        private User user;
 
-        UserCombination(User user, ArrayList<Card> river) {
+        UserCombination(User user, List<Card> river) {
             this.user = user;
             cards = new ArrayList<>(river);
             cards.addAll(user.getCards());
@@ -147,7 +155,6 @@ public class CardRanking {
             }
             combination = Combination.HIGH_CARD;
             setFinalCardsForHighCard();
-            return;
 
         }
 

@@ -139,18 +139,18 @@ public class GameController {
      * - 404 if gameData was not found
      * - 401 if User is not authenticated (SHOULD BE WRITTEN INTO THE REST SPECIFICATION!)
      *
-     * @param GameID get the gameID of the requested game
+     * @param gameId get the gameID of the requested game
      * @param token  get the token
      * @return gameData and List of opponents
      */
-    @GetMapping("/games/{GameID}")
+    @GetMapping("/games/{gameId}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public GameGetDTO getGameData(@PathVariable Long GameID, @RequestHeader(value = "Authorization") String token) {
+    public GameGetDTO getGameData(@PathVariable Long gameId, @RequestHeader(value = "Authorization") String token) {
         var userWhoWantsToFetch = new User();
         userWhoWantsToFetch.setToken(token);
 
-        GameEntity game = gameService.getGameData(GameID, userWhoWantsToFetch);
+        GameEntity game = gameService.getGameData(gameId, userWhoWantsToFetch);
 
         return DTOMapper.INSTANCE.convertEntityToGameGetDTO(game);
 
@@ -162,19 +162,19 @@ public class GameController {
      * - 404 if own gameData was not found
      * - 401 if the gameData does not belong to the user requesting it
      *
-     * @param GameID Id of the game
-     * @param UserID Id of the user
+     * @param gameId Id of the game
+     * @param userId Id of the user
      * @param token  used to get the token of the user
      * @return own gameData
      */
-    @GetMapping("/games/{GameID}/{UserID}")
+    @GetMapping("/games/{gameId}/{userId}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public PlayerInGameGetDTO getOwnGameData(@PathVariable Long GameID, @PathVariable Long UserID, @RequestHeader(value = "Authorization") String token) {
+    public PlayerInGameGetDTO getOwnGameData(@PathVariable Long gameId, @PathVariable Long userId, @RequestHeader(value = "Authorization") String token) {
         var userWhoWantsToFetch = new User();
         userWhoWantsToFetch.setToken(token);
 
-        User player = gameService.getOwnGameData(GameID, UserID, userWhoWantsToFetch);
+        User player = gameService.getOwnGameData(gameId, userId, userWhoWantsToFetch);
 
         return DTOMapper.INSTANCE.convertEntityToPlayerInGameGetDTO(player);
     }
@@ -186,21 +186,18 @@ public class GameController {
      * -409 if game is not yet in showdown round
      * -404 if game could not be found
      *
-     * @param GameID ID of the requested game
+     * @param gameId ID of the requested game
      * @param token  Token of user requesting the information
      * @return List of all users that want to show their cards
      */
-    @GetMapping("/games/{GameID}/showdown")
+    @GetMapping("/games/{gameId}/showdown")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public List<PlayerInGameGetDTO> getGameDataDuringShowdown(@PathVariable Long GameID, @RequestHeader(value = "Authorization") String token) {
+    public List<PlayerInGameGetDTO> getGameDataDuringShowdown(@PathVariable Long gameId, @RequestHeader(value = "Authorization") String token) {
         var userWhoWantsToFetch = new User();
         userWhoWantsToFetch.setToken(token);
 
-        List<PlayerInGameGetDTO> playersDuringShowdown = gameService.getDataDuringShowdown(GameID, userWhoWantsToFetch);
-
-
-        return playersDuringShowdown;
+        return gameService.getDataDuringShowdown(gameId, userWhoWantsToFetch);
     }
 
     /**
@@ -210,23 +207,23 @@ public class GameController {
      * - 401 if the user or game could not be found
      * - 404 if the user requesting is not authorized to change the state of the requested user
      *
-     * @param gameID         used to search the game
-     * @param userID         used to search the user
+     * @param gameId         used to search the game
+     * @param userId         used to search the user
      * @param userShowPutDTO used to get the token(Authentication) and a boolean deciding whether to show or not
      */
-    @PutMapping("/games/{gameID}/{userID}/show")
+    @PutMapping("/games/{gameId}/{userId}/show")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
-    public void showCards(@PathVariable Long gameID, @PathVariable Long userID, @RequestBody UserShowPutDTO userShowPutDTO) {
+    public void showCards(@PathVariable Long gameId, @PathVariable Long userId, @RequestBody UserShowPutDTO userShowPutDTO) {
         //search for user, finds only if user is in the game as active user
-        var user = gameService.getUserByIdInActiveUsers(gameID, userID);
+        var user = gameService.getUserByIdInActiveUsers(gameId, userId);
 
         //verify token
         if (!user.getToken().equals(userShowPutDTO.getToken())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not authorized to decide");
         }
 
-        GameEntity game = gameService.getGameById(gameID);
+        GameEntity game = gameService.getGameById(gameId);
         gameService.show(game, user, userShowPutDTO.isWantsToShow());
     }
 
@@ -237,20 +234,20 @@ public class GameController {
      * - 401 if wrong token is sent by client
      * - 404 if user is logged in but not present in the gameSession he wants to leave
      *
-     * @param gameID     id of the game the user wants to leave
-     * @param userID     the id of the user who wants to leave
+     * @param gameId     id of the game the user wants to leave
+     * @param userId     the id of the user who wants to leave
      * @param userPutDTO DTO containing the users authentication token
      */
-    @PutMapping("/games/{gameID}/{userID}/leave")
+    @PutMapping("/games/{gameId}/{userId}/leave")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
-    public void userLeavesGameSession(@PathVariable Long gameID, @PathVariable Long userID, @RequestBody UserPutDTO userPutDTO) {
-        var realUser = gameService.getUserByIdInAllUsersAndSpectators(gameID, userID);
+    public void userLeavesGameSession(@PathVariable Long gameId, @PathVariable Long userId, @RequestBody UserPutDTO userPutDTO) {
+        var realUser = gameService.getUserByIdInAllUsersAndSpectators(gameId, userId);
         var userInput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
 
         // Check token
         if (userInput.getToken().equals(realUser.getToken())){
-            gameService.deleteUserFromGame(userID, gameID, realUser);
+            gameService.deleteUserFromGame(userId, gameId, realUser);
         } else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Wrong token for user");
         }
