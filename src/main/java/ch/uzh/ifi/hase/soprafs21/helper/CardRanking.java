@@ -33,13 +33,11 @@ public class CardRanking {
             User user = null;
             for (User u : unsorted.get(i).getUsers()) {
                 user = u;
-                break;
             }
             for (UserDraw userDrawToCompare : ranking) {
                 User userToCompare = null;
                 for (User u : userDrawToCompare.getUsers()) {
                     userToCompare = u;
-                    break;
                 }
                 if (usersAndCombination.get(user).isBetterThan(usersAndCombination.get(userToCompare))) {
                     int index = ranking.indexOf(userDrawToCompare);
@@ -812,6 +810,7 @@ public class CardRanking {
                     }
                 }
             }
+            assert rank2 != null;
             if (rank2.ordinal() > rank1.ordinal()) {
                 var placeholder = rank1;
                 rank1 = rank2;
@@ -850,6 +849,7 @@ public class CardRanking {
                     other = rank;
                 }
             }
+            assert pair2 != null;
             if (pair2.ordinal() > pair1.ordinal()) {
                 Rank placeholder = pair1;
                 pair1 = pair2;
