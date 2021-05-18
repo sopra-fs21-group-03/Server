@@ -757,12 +757,10 @@ public class GameEntity implements Serializable, Name {
     }
 
     private User getNewRole(int index){
-        var toGetRole = allUsers.get(Math.abs((index - 1 + allUsers.size()) % (allUsers.size())));
         do {
             index--;
-            toGetRole = allUsers.get(Math.abs((index - 1 + allUsers.size()) % (allUsers.size())));
-        } while (toGetRole.getMoney() <= 0); //While small blind has no money, he is out and the blind role is given to next user
-        return toGetRole;
+        } while (allUsers.get(Math.abs((index - 1 + allUsers.size()) % (allUsers.size()))).getMoney() <= 0);
+        return allUsers.get(Math.abs((index - 1 + allUsers.size()) % (allUsers.size())));
     }
 
     private void distributeBlindsFirstTime() {

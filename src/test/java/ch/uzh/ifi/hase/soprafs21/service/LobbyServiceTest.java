@@ -285,7 +285,7 @@ class LobbyServiceTest {
     void getUserInSpecificGameSessionInAllUsers_fail_userNotFound(){
         lobbyService.addUserToGame(testUser, testGameFull);
         var entity = lobbyService.findGameEntity(testGameFull.getId());
-        assertThrows(ResponseStatusException.class, () ->lobbyService.getUserInSpecificGameSessionInAllUsers(testUser2.getId(), entity));
+        assertThrows(ResponseStatusException.class, () ->lobbyService.getUserInSpecificGameSessionInAllUsers(2L, entity));
     }
 
     @Test
