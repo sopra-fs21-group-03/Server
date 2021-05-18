@@ -104,10 +104,8 @@ public class CardRanking {
         private Combination combination;
         private ArrayList<Card> cards;
         private ArrayList<Card> finalCards = new ArrayList<>(); //5 best cards
-        private User user;
 
         UserCombination(User user, List<Card> river) {
-            this.user = user;
             cards = new ArrayList<>(river);
             cards.addAll(user.getCards());
             calcCombination();

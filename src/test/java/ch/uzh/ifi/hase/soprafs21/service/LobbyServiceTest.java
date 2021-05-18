@@ -166,9 +166,7 @@ class LobbyServiceTest {
             lobbyService.addUserToGame(user, testGameFull);
             lobbyService.setUserToReady(user);
         }
-        lobbyService.setUpGame(testGameFull);
-
-
+        testGameFull.setup();
         // Now an exception should be thrown, because you can only leave via the leave endpoint in the gamecontroller
         assertThrows(ResponseStatusException.class, () -> lobbyService.leaveLobby(testUser, testGameFull));
     }
