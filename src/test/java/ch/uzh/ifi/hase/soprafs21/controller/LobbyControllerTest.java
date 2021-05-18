@@ -360,7 +360,7 @@ class LobbyControllerTest {
         userPutDTO.setToken("456");
 
         doThrow(new ResponseStatusException(HttpStatus.CONFLICT, "The User is playing in an other Lobby and therefore can not join this Lobby!"))
-                .when(lobbyService).checkIfUserIsAlreadyInAnOtherLobby(Mockito.any(),Mockito.anyLong());
+                .when(lobbyService).checkIfUserIsAlreadyInAnOtherLobby(Mockito.any(),Mockito.anyLong(),Mockito.any());
 
 
         MockHttpServletRequestBuilder putRequest = put("/lobbies/2/join")

@@ -104,10 +104,8 @@ public class CardRanking {
         private Combination combination;
         private ArrayList<Card> cards;
         private ArrayList<Card> finalCards = new ArrayList<>(); //5 best cards
-        private User user;
 
         UserCombination(User user, List<Card> river) {
-            this.user = user;
             cards = new ArrayList<>(river);
             cards.addAll(user.getCards());
             calcCombination();
@@ -191,19 +189,8 @@ public class CardRanking {
                 for (Card card : this.cards) {
                     cardRanks.add(card.getRank().ordinal());
                 }
-                for (Card card : this.cards) {
-                    var isStraightFlush = true;
-                    int rank = card.getRank().ordinal();
-                    for (var i = 1; i <= 4; i++) {
-                        int expectedRank = rank - i;
-                        if (!cardRanks.contains(expectedRank) || card.getSuit() != suit) {
-                            isStraightFlush = false;
-                        }
-                    }
-                    if (isStraightFlush) {
-                        highEnds.add(card);
-                    }
-                }
+                isStraightFlushHandler(cardRanks, suit, highEnds);
+
                 if (highEnds.isEmpty()) {
                     return false;
                 }
@@ -214,6 +201,24 @@ public class CardRanking {
             }
             return false;
         }
+
+        private void isStraightFlushHandler(ArrayList<Integer> cardRanks, Suit suit, ArrayList<Card> highEnds){
+            for (Card card : this.cards) {
+                var isStraightFlush = true;
+                int rank = card.getRank().ordinal();
+                for (var i = 1; i <= 4; i++) {
+                    int expectedRank = rank - i;
+                    if (!cardRanks.contains(expectedRank) || card.getSuit() != suit) {
+                        isStraightFlush = false;
+                        break;
+                    }
+                }
+                if (isStraightFlush) {
+                    highEnds.add(card);
+                }
+            }
+        }
+
 
         private void setFinalCardsForStraightFlush(Suit suit, int rankOfHighest) {
             for (var i = 0; i < 5; i++) {
@@ -244,16 +249,16 @@ public class CardRanking {
         }
 
         private void setFinalCardsForFourOfAKind(Rank rank) {
-            ArrayList<Card> cards = new ArrayList<>();
+            ArrayList<Card> cardList = new ArrayList<>();
             for (Card card : this.cards) {
                 if (card.getRank() == rank) {
-                    cards.add(card);
+                    cardList.add(card);
                 }
             }
             ArrayList<Card> cardsWithoutFour = new ArrayList<>(this.cards);
-            cardsWithoutFour.removeAll(cards);
-            cards.add(getHighestCard(cards));
-            finalCards = cards;
+            cardsWithoutFour.removeAll(cardList);
+            cardList.add(getHighestCard(cardList));
+            finalCards = cardList;
         }
 
         private boolean isFullHouse() {
@@ -264,11 +269,7 @@ public class CardRanking {
             var count = 0;
             for (Rank rank : Rank.values()) {
                 count = 0;
-                for (Card card : cards) {
-                    if (card.getRank() == rank) {
-                        count++;
-                    }
-                }
+                count = fullHouseCounter(count, rank);
                 if (count >= 3) {
                     //check if three of a kind were detected before, since they could become the highest pair
                     if (hasThreeOfAKind && (rankOfPair == null || rankOfPair.ordinal() < rankOfThrees.ordinal())) {
@@ -290,6 +291,16 @@ public class CardRanking {
             setFinalCardsForFullHouse(rankOfThrees, rankOfPair);
             return true;
         }
+
+        private int fullHouseCounter(int count, Rank rank){
+            for (Card card : cards) {
+                if (card.getRank() == rank) {
+                    count++;
+                }
+            }
+            return count;
+        }
+
 
         private void setFinalCardsForFullHouse(Rank rankOfThrees, Rank rankOfPair) {
             ArrayList<Card> cardList = new ArrayList<>();
