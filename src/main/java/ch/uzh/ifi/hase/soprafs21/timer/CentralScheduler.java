@@ -65,7 +65,6 @@ public class CentralScheduler{
     public void reset(Runnable task, Long delay) {
         try {
             scheduledFuture.cancel(false);
-
             scheduledFuture = scheduler.schedule(task, Instant.now().plus(Duration.ofMillis(delay)));
         } catch (NullPointerException ignored){
         }

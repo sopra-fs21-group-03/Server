@@ -150,8 +150,7 @@ public class LobbyService {
         return game;
     }
 
-    public void checkIfUserIsInGameSession(String token, Long lobbyID) {
-        var game = findGameEntity(lobbyID);
+    public void checkIfUserIsInGameSession(String token, GameEntity game) {
         for (User user : game.getAllUsers()) {
             if (user.getToken().equals(token)) {
                 return;
@@ -165,8 +164,7 @@ public class LobbyService {
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User is not registered in the Lobby Session and therefore is not allowed to get more data about the Lobby!");
     }
 
-    public void checkIfUserIsAlreadyInAnOtherLobby(String token, Long lobbyID) {
-        List<GameEntity> gameList = getAllGames();
+    public void checkIfUserIsAlreadyInAnOtherLobby(String token, Long lobbyID, List<GameEntity> gameList) {
         for (GameEntity entity : gameList) {
             if (!entity.getId().equals(lobbyID)) {
                 checkAllUsers(entity, token);

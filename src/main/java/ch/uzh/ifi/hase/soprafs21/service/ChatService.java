@@ -42,9 +42,7 @@ public class ChatService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "The GameSession could not be found...");
         }
     }
-    public User getUserInGameById(Long gameId, Long userId) {
-        var theGame = findGameEntity(gameId);
-
+    public User getUserInGameById(GameEntity theGame, Long userId) {
         for (User user : theGame.getRawPlayersInTurnOrder()) {
             if (userId.equals(user.getId())) {
                 return user;

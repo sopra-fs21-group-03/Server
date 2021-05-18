@@ -42,7 +42,8 @@ public class LobbyController {
     @ResponseBody
     public void addUserToLobby(@PathVariable Long lobbyID, @RequestBody UserPutDTO userPutDTO) {
         lobbyService.checkIfUserExistsByToken(userPutDTO.getToken());
-        lobbyService.checkIfUserIsAlreadyInAnOtherLobby(userPutDTO.getToken(),lobbyID);
+        var list = lobbyService.getAllGames();
+        lobbyService.checkIfUserIsAlreadyInAnOtherLobby(userPutDTO.getToken(),lobbyID, list);
         var userfound = lobbyService.getUserByTokenInUserRepository(userPutDTO.getToken());
         var entity = lobbyService.findGameEntity(lobbyID);
         /*
@@ -105,7 +106,8 @@ public class LobbyController {
     @ResponseBody
     public SpecificLobbyGetDTO getSpecificLobbyInformation(@PathVariable Long lobbyID, @RequestHeader(value = "Authorization") String token) {
         lobbyService.checkIfUserExistsByToken(token);
-        lobbyService.checkIfUserIsInGameSession(token, lobbyID);
+        var entity = lobbyService.findGameEntity(lobbyID);
+        lobbyService.checkIfUserIsInGameSession(token, entity);
         var game = lobbyService.getSpecificLobbyData(lobbyID);
         return DTOMapper.INSTANCE.convertEntityToSpecificLobbyGetDTO(game);
     }

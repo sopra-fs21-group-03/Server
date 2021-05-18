@@ -212,47 +212,16 @@ public class GameService {
                     //The amount should be removed from the User's money.
                     user.removeMoney(amount);
                     //put the money inside the pot
-                    theGame.getPot().addMoney(user, amount);
-                    //create log message
-                    var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s raised by %d. %s has %d in the pot", user.getUsername(), amount, user.getUsername(), theGame.getPot().getUserContributionOfAUser(user)));
-                    theGame.addProtocolElement(element);
-                    //the User calling this method is the new User that raised last
-                    theGame.setUserThatRaisedLast(user);
-                    //This was not a check-action -> therefore, the counter, will be put to 0
-                    theGame.setCheckcounter(0);
-                    //Give me the username of the User that is potentially the next user on turn
-                    String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(user);
-                    //then, set the next User on turn or the next round or declare a winner.
-                    theGame.roundHandler(usernameOfPotentialNextUserInTurn);
-                    theGame.setBigblindspecialcase(false);
-                    saveFlushUserRepoForUsersInAllUsersAndSpectators(theGame);
-                    gameRepository.saveAndFlush(theGame);
-
+                    raiseHandler(theGame, user, amount);
                 }
                 else if (user.getMoney() == amount) {
                     /**
                      This is the All-In Case
                      */
-
                     // All-In -> After raising, the User doesn't have money anymore.
                     user.setMoney(0);
                     //put the money inside the pot
-                    theGame.getPot().addMoney(user, amount);
-                    //create log message
-
-                    var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s raised by %d. %s has %d in the pot", user.getUsername(), amount, user.getUsername(), theGame.getPot().getUserContributionOfAUser(user)));
-                    theGame.addProtocolElement(element);
-                    //the User calling this method is the new User that raised last
-                    theGame.setUserThatRaisedLast(user);
-                    //This was not a check-action -> therefore, the counter, will be put to 0
-                    theGame.setCheckcounter(0);
-                    //Give me the username of the User that is potentially the next user on turn
-                    String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(user);
-                    //then, set the next User on turn or the next round or declare a winner.
-                    theGame.roundHandler(usernameOfPotentialNextUserInTurn);
-                    theGame.setBigblindspecialcase(false);
-                    saveFlushUserRepoForUsersInAllUsersAndSpectators(theGame);
-                    gameRepository.saveAndFlush(theGame);
+                    raiseHandler(theGame, user, amount);
                 }
                 else {
                     throw new ResponseStatusException(HttpStatus.CONFLICT, "The User doesn't have enough money to raise with such an amount!");
@@ -266,8 +235,24 @@ public class GameService {
         else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_IN_TURN_MESSAGE);
         }
+    }
 
-
+    private void raiseHandler(GameEntity theGame, User user, int amount) {
+        theGame.getPot().addMoney(user, amount);
+        //create log message
+        var element = new ProtocolElement(MessageType.LOG, theGame, String.format("User %s raised by %d. %s has %d in the pot", user.getUsername(), amount, user.getUsername(), theGame.getPot().getUserContributionOfAUser(user)));
+        theGame.addProtocolElement(element);
+        //the User calling this method is the new User that raised last
+        theGame.setUserThatRaisedLast(user);
+        //This was not a check-action -> therefore, the counter, will be put to 0
+        theGame.setCheckcounter(0);
+        //Give me the username of the User that is potentially the next user on turn
+        String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(user);
+        //then, set the next User on turn or the next round or declare a winner.
+        theGame.roundHandler(usernameOfPotentialNextUserInTurn);
+        theGame.setBigblindspecialcase(false);
+        saveFlushUserRepoForUsersInAllUsersAndSpectators(theGame);
+        gameRepository.saveAndFlush(theGame);
     }
 
     /**
@@ -374,6 +359,7 @@ public class GameService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_IN_TURN_MESSAGE);
         }
     }
+
 
     /**
      * @param theGame The id of the Game that should be analyzed
@@ -569,7 +555,7 @@ public class GameService {
     }
 
     private Show userDoesWantsToShow(GameEntity game, User user) {
-        Show show = Show.SHOW;
+        var show = Show.SHOW;
         try {
             game.nextTurnInShowdown(user);
         }
@@ -665,19 +651,19 @@ public class GameService {
      */
 
     public void startShowdownTimerForLastUser(GameEntity game) {
-        PotDistributor potDistributor = new PotDistributor(game, this.gameRepository, this.userRepository, this);
+        var potDistributor = new PotDistributor(game, this.gameRepository, this.userRepository, this);
         CentralScheduler.getInstance().reset(potDistributor, SHOWDOWN_TIME);
     }
 
 
     public void startTurnTimerForNextUser(long gameID) {
-        SkipUserIfAFK skipUserIfAFK = new SkipUserIfAFK(this.gameRepository, this, gameID);
+        var skipUserIfAFK = new SkipUserIfAFK(this.gameRepository, this, gameID);
 
         CentralScheduler.getInstance().reset(skipUserIfAFK, TURN_TIME);
     }
 
     public void startTurnTimer(long gameID) {
-        SkipUserIfAFK skipUserIfAFK = new SkipUserIfAFK(this.gameRepository, this, gameID);
+        var skipUserIfAFK = new SkipUserIfAFK(this.gameRepository, this, gameID);
         CentralScheduler.getInstance().start(skipUserIfAFK, TURN_TIME);
     }
 }

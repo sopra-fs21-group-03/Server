@@ -22,7 +22,8 @@ public class ChatController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public List<ProtocolElement> getChat(@PathVariable Long gameId, @PathVariable Long userId, @RequestHeader(value="Authorization") String token) {
-        var user = chatService.getUserInGameById(gameId, userId);
+        var entity = chatService.findGameEntity(gameId);
+        var user = chatService.getUserInGameById(entity, userId);
         if(!(token.equals(user.getToken()))) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authorized to see this chat");
         }
@@ -33,13 +34,13 @@ public class ChatController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public void userChats(@PathVariable Long gameId, @PathVariable Long userId, @RequestBody UserPutDTO userPutDTO){
+        var game = chatService.findGameEntity(gameId);
         String chatMessage = userPutDTO.getMessage();
         var checkerUserInput = DTOMapper.INSTANCE.convertUserPutDTOtoEntity(userPutDTO);
-        var user = chatService.getUserInGameById(gameId, userId);
+        var user = chatService.getUserInGameById(game, userId);
         if(!(checkerUserInput.getToken().equals(user.getToken()))) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authorized to send a chat message");
         } else{
-            var game = chatService.findGameEntity(gameId);
             chatService.addChatMessage(game, user, chatMessage);
         }
 

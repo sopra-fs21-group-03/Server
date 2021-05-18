@@ -154,12 +154,12 @@ class ChatServiceTest {
 
     @Test
     void userWasNotFound() {
-        assertThrows(ResponseStatusException.class, () -> chatService.getUserInGameById(testGame.getId(), testUser.getId() + 100));
+        assertThrows(ResponseStatusException.class, () -> chatService.getUserInGameById(testGame, 1L + 100));
     }
 
     @Test
     void userWasFound(){
-        assertDoesNotThrow(() -> chatService.getUserInGameById(1L, testUser.getId()));
+        assertDoesNotThrow(() -> chatService.getUserInGameById(testGame, 1L));
     }
 
 

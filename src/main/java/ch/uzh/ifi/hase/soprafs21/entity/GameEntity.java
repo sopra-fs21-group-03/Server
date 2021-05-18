@@ -363,13 +363,7 @@ public class GameEntity implements Serializable, Name {
             winner.add(winnerUserDraw);
             pot.distribute(winner);
             //then: a new gameround starts
-            try {
-                setup();
-            }
-            catch (Exception ignored) {
-
-            }
-
+            setup();
         }
         else {
             throw new IllegalStateException("There should always be atleast one active user!");
@@ -448,13 +442,8 @@ public class GameEntity implements Serializable, Name {
 
     private void allInHandlerAtNewRound() {
         while (river.getCards().size() < 5) {
-            try {
-                river.addCard(deck.draw());
-                this.protocol.add(new ProtocolElement(MessageType.LOG, this, ONE_MORE_CARD_MESSAGE));
-            }
-            catch (Exception ignored) {
-
-            }
+            river.addCard(deck.draw());
+            this.protocol.add(new ProtocolElement(MessageType.LOG, this, ONE_MORE_CARD_MESSAGE));
         }
         //we directly get to the showdown
         round = Round.RIVERCARD;
@@ -592,7 +581,7 @@ public class GameEntity implements Serializable, Name {
      * Setup function
      * Gets called when all players are in the game
      */
-    public void setup() throws Exception {
+    public void setup() {
         if (firstGameSetup) {
             setStartingPotForUsers();
             pot = new Pot();
@@ -813,7 +802,7 @@ public class GameEntity implements Serializable, Name {
 
     }
 
-    private void distributeCards() throws Exception {
+    private void distributeCards() {
 
         for (User user : allUsers) {
             if (user.getCards().size() == 2) {
