@@ -97,4 +97,8 @@ public class UserDraw implements Serializable {
         }
         return true;
     }
+    @Override
+    public int hashCode(){
+        return super.hashCode();
+    }
 }

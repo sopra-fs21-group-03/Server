@@ -732,35 +732,16 @@ public class GameEntity implements Serializable, Name {
         int index;
         //Clone allUsers back into activeUsers to keep turn order right
         activeUsers = new ArrayList<>(allUsers);
-        var user = getSmallBlindInAllUsers();
-        index = allUsers.indexOf(user) + 1; //+1 becaus in the do while loop it is incremented in the beginning
-        User toGetSmallBlind;
-        User toGetBigBlind;
-        do {
-            index--;
-            toGetSmallBlind = allUsers.get(Math.abs((index - 1 + allUsers.size()) % (allUsers.size())));
-            if (toGetSmallBlind == user) {
-                break;
-            }
-        } while (toGetSmallBlind.getMoney() <= 0); //While small blind has no money, he is out and the blind role is given to next user
-
-        do {
-            toGetBigBlind = allUsers.get(Math.abs((index - 2 + allUsers.size()) % (allUsers.size())));
-            if (toGetBigBlind == user) {
-                break;
-            }
-            index--;
-        } while (toGetBigBlind.getMoney() <= 0);
+        var smallie = getSmallBlindInAllUsers();
+        index = allUsers.indexOf(smallie) + 1; //+1 because in the do while loop it is incremented in the beginning
+        var toGetSmallBlind = getNewRole(index);
+        index = allUsers.indexOf(toGetSmallBlind) + 1;
+        var toGetBigBlind = getNewRole(index);
         /*
          * Assumption that we made but which is not always true: that this onTurn User is active (therefore, this User still has money)
          */
-        index = allUsers.indexOf(toGetBigBlind);
-        User onTurnUser;
-        do {
-            onTurnUser = allUsers.get(Math.abs((index - 1 + allUsers.size()) % (allUsers.size())));
-            index--;
-        } while (onTurnUser.getMoney() <= 0);
-
+        index = allUsers.indexOf(toGetBigBlind) +1 ;
+        var onTurnUser = getNewRole(index);
 
         onTurn = new OnTurnGetDTO();
         onTurn.setUsername(onTurnUser.getUsername());
@@ -771,9 +752,17 @@ public class GameEntity implements Serializable, Name {
         toGetSmallBlind.setBlind(Blind.SMALL);
         toGetBigBlind.setBlind(Blind.BIG);
         setUserThatRaisedLast(toGetBigBlind);
-
         pot.addMoney(toGetBigBlind, toGetBigBlind.removeMoney(200));
         pot.addMoney(toGetSmallBlind, toGetSmallBlind.removeMoney(100));
+    }
+
+    private User getNewRole(int index){
+        var toGetRole = allUsers.get(Math.abs((index - 1 + allUsers.size()) % (allUsers.size())));
+        do {
+            index--;
+            toGetRole = allUsers.get(Math.abs((index - 1 + allUsers.size()) % (allUsers.size())));
+        } while (toGetRole.getMoney() <= 0); //While small blind has no money, he is out and the blind role is given to next user
+        return toGetRole;
     }
 
     private void distributeBlindsFirstTime() {
