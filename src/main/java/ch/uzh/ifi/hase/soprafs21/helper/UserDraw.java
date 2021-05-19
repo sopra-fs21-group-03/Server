@@ -1,6 +1,8 @@
 package ch.uzh.ifi.hase.soprafs21.helper;
 
+import ch.uzh.ifi.hase.soprafs21.constant.MessageType;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
+import ch.uzh.ifi.hase.soprafs21.game.protocol.ProtocolElement;
 
 import java.io.Serializable;
 import java.util.*;
@@ -32,14 +34,16 @@ public class UserDraw implements Serializable {
         return usersInDraw.isEmpty();
     }
 
-    public void addMoneyAndDistribute(int amount) {
+    public List<ProtocolElement> addMoneyAndDistribute(int amount) {
+        var protocolElements = new ArrayList<ProtocolElement>();
         Set<User> users = usersInDraw.keySet();
         int size = users.size();
         int share = amount / size;
 
         for (User user : users) {
+            protocolElements.add(new ProtocolElement(MessageType.LOG, user, "User "+user.getUsername()+" receives "+share+"." +
+                    " He previously had " + user.getMoney() + " and now has "+(user.getMoney()+share)+"."));
             user.addMoney(share);
-
         }
         List<User> toBeRemoved = new ArrayList<>();
         for (User user : users) {
@@ -50,6 +54,7 @@ public class UserDraw implements Serializable {
         for (User user : toBeRemoved) {
             usersInDraw.remove(user);
         }
+        return protocolElements;
     }
 
     public void subtract(int amount) {

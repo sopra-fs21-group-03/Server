@@ -32,11 +32,6 @@ class ChatServiceTest {
 
     private GameEntity testGame;
 
-
-    int raiseamountpossible;
-    int raiseamounttoomuch;
-
-
     @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
@@ -103,23 +98,8 @@ class ChatServiceTest {
 
         testGame.setActiveUsers(testActiveUsers);
         testGame.setAllUsers(testAllUsers);
-
-
         testGame.setCheckcounter(0);
-
-
-        try {
-            testGame.setup();
-
-        }
-        catch (Exception e) {
-            fail();
-        }
-
-
-        raiseamountpossible = 5;
-        raiseamounttoomuch = 14000;
-
+        testGame.setup();
         // when -> any object is being save in the gameRepository -> return the dummy testGame
         Mockito.when(gameRepository.save(Mockito.any())).thenReturn(testGame);
         Mockito.when(gameRepository.findById(testGame.getId())).thenReturn(Optional.ofNullable(testGame));
@@ -132,13 +112,13 @@ class ChatServiceTest {
         chatService.addChatMessage(testGame, testUser3, "Sali!");
         chatService.addChatMessage(testGame, testUser4, "Hoi!");
         chatService.addChatMessage(testGame, testUser5, "Ciao!");
-        assertEquals(6, chatService.getProtocol(testGame.getId()).size());
-        assertEquals("New Gameround starts", testGame.getProtocol().get(0).getMessage());
-        assertEquals("User testUsername1 says: Hello there :D", testGame.getProtocol().get(1).getMessage());
-        assertEquals("User testUsername2 says: Sali zeme!", testGame.getProtocol().get(2).getMessage());
-        assertEquals("User testUsername3 says: Sali!", testGame.getProtocol().get(3).getMessage());
-        assertEquals("User testUsername4 says: Hoi!", testGame.getProtocol().get(4).getMessage());
-        assertEquals("User testUsername5 says: Ciao!", testGame.getProtocol().get(5).getMessage());
+        assertEquals(8, chatService.getProtocol(testGame.getId()).size());
+        assertEquals("New Gameround starts", testGame.getProtocol().get(2).getMessage());
+        assertEquals("User testUsername1 says: Hello there :D", testGame.getProtocol().get(3).getMessage());
+        assertEquals("User testUsername2 says: Sali zeme!", testGame.getProtocol().get(4).getMessage());
+        assertEquals("User testUsername3 says: Sali!", testGame.getProtocol().get(5).getMessage());
+        assertEquals("User testUsername4 says: Hoi!", testGame.getProtocol().get(6).getMessage());
+        assertEquals("User testUsername5 says: Ciao!", testGame.getProtocol().get(7).getMessage());
 
     }
 

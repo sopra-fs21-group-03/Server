@@ -1,10 +1,12 @@
 package ch.uzh.ifi.hase.soprafs21.helper;
 
+import ch.uzh.ifi.hase.soprafs21.constant.MessageType;
 import ch.uzh.ifi.hase.soprafs21.constant.Rank;
 import ch.uzh.ifi.hase.soprafs21.constant.Suit;
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.game.cards.Card;
+import ch.uzh.ifi.hase.soprafs21.game.protocol.ProtocolElement;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +21,10 @@ public class CardRanking {
 
         List<User> activeUsers = game.getActiveUsers();
         for (User user : activeUsers) {
-            usersAndCombination.put(user, new UserCombination(user, game.getRiver().getCards()));
+            var combo = new UserCombination(user, game.getRiver().getCards());
+            usersAndCombination.put(user, combo);
+            game.addProtocolElement(new ProtocolElement(MessageType.LOG, game, "The User "+user.getUsername()+ " has "+combo.message));
+
         }
 
         //all users that have a hand as good as others are collected in a UserDraw and added to the unsorted ranking list
@@ -102,57 +107,60 @@ public class CardRanking {
         private Combination combination;
         private ArrayList<Card> cards;
         private ArrayList<Card> finalCards = new ArrayList<>(); //5 best cards
+        private String message;
 
-        UserCombination(User user, List<Card> river) {
+        public UserCombination(User user, List<Card> river) {
             cards = new ArrayList<>(river);
             cards.addAll(user.getCards());
-            calcCombination();
+            message = calcCombination();
         }
 
         public Combination getCombination() {
             return combination;
         }
 
-        private void calcCombination() {
+        private String calcCombination() {
             if (isRoyalFlush()) {
                 combination = Combination.ROYAL_FLUSH;
-                return;
+                return "a royal flush of "+finalCards.get(0).getSuit().toString()+"!!!";
             }
             if (isStraightFlush()) {
                 combination = Combination.STRAIGHT_FLUSH;
-                return;
+                return "a straight flush of "+finalCards.get(0).getSuit().toString()+". The highest Card of this Straight Flush is a "+
+                        finalCards.get(0).getRank().toString()+"!";
             }
             if (isFourOfAKind()) {
                 combination = Combination.FOUR_OF_A_KIND;
-                return;
+                return "a combination of four of a kind of "+finalCards.get(0).getRank().toString()+".";
             }
             if (isFullHouse()) {
                 combination = Combination.FULL_HOUSE;
-                return;
+                return "a full house with three cards of "+finalCards.get(0).getRank().toString()+" and one pair of "+finalCards.get(3).getRank().toString()+".";
             }
             if (isFlush()) {
                 combination = Combination.FLUSH;
-                return;
+                return "a flush of "+finalCards.get(0).getSuit().toString()+".";
             }
             if (isStraight()) {
                 combination = Combination.STRAIGHT;
-                return;
+                return "a straight, where the highest card has a rank of "+finalCards.get(0).getRank().toString()+".";
             }
             if (isThreeOfAKind()) {
                 combination = Combination.THREE_OF_A_KIND;
-                return;
+                return "a combination of three of a kind (three cards of the same rank) of "+finalCards.get(0).getRank().toString()+".";
             }
             if (isTwoPair()) {
                 combination = Combination.TWO_PAIR;
-                return;
+                return "two pair. The first pair consists of 2 "+finalCards.get(0).getRank().toString()+"s and the second one" +
+                        " consists of 2 "+finalCards.get(2).getRank().toString()+"s.";
             }
             if (isPair()) {
                 combination = Combination.ONE_PAIR;
-                return;
+                return "one pair which consists of 2 "+finalCards.get(0).getRank().toString()+"s.";
             }
             combination = Combination.HIGH_CARD;
             setFinalCardsForHighCard();
-
+            return "a high card with "+finalCards.get(0).getRank().toString()+".";
         }
 
         private boolean isRoyalFlush() {
@@ -309,11 +317,14 @@ public class CardRanking {
                     cardList.add(card);
                     countThree++;
                 }
-                else if (countPair < 2 && card.getRank() == rankOfPair) {
+            }
+            for (Card card: this.cards) {
+                if (countPair < 2 && card.getRank() == rankOfPair) {
                     cardList.add(card);
                     countPair++;
                 }
             }
+
             finalCards = cardList;
         }
 
@@ -519,7 +530,7 @@ public class CardRanking {
             finalCards = cardList;
         }
 
-        private Card removeLowestRankCard(ArrayList<Card> cards) {
+        private void removeLowestRankCard(ArrayList<Card> cards) {
             var lowest = cards.get(0);
             for (Card card : cards) {
                 if (card.getRank().ordinal() < lowest.getRank().ordinal()) {
@@ -527,7 +538,6 @@ public class CardRanking {
                 }
             }
             cards.remove(lowest);
-            return lowest;
         }
 
         private Card getHighestCard(ArrayList<Card> cards) {

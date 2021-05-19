@@ -18,7 +18,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
-import java.util.Random;
+import java.security.SecureRandom;
 import java.util.Optional;
 
 
@@ -359,9 +359,13 @@ public class GameEntity implements Serializable, Name {
             //GIVE HIM HIS MONEY
             var winnerUserDraw = new UserDraw();
             winnerUserDraw.addUser(activeUsers.get(0), pot.getUserContributionOfAUser(activeUsers.get(0)));
+            var winnerUser = activeUsers.get(0);
             ArrayList<UserDraw> winner = new ArrayList<>();
             winner.add(winnerUserDraw);
-            pot.distribute(winner);
+            protocol.add(new ProtocolElement(MessageType.LOG, this, "Now, the Pot will be distributed. We have the following Winner: "+winnerUser.getUsername()+". He won" +
+                    " because he is the only player who stayed in this Game Round"));
+
+            protocol.addAll(pot.distribute(winner));
             //then: a new gameround starts
             setup();
         }
@@ -490,41 +494,26 @@ public class GameEntity implements Serializable, Name {
         if (round == Round.PREFLOP) {
             round = Round.FLOP;
             userThatRaisedLast = null;
-            try {
-                river.addCard(deck.draw());
-                river.addCard(deck.draw());
-                river.addCard(deck.draw());
-                this.protocol.add(new ProtocolElement(MessageType.LOG, this, "Three cards are dealt."));
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
+            river.addCard(deck.draw());
+            river.addCard(deck.draw());
+            river.addCard(deck.draw());
+            this.protocol.add(new ProtocolElement(MessageType.LOG, this, "Three cards are dealt."));
             handlePlayerWhoStartsAtNewRound();
         }
 
         else if (round == Round.FLOP) {
             round = Round.TURNCARD;
             userThatRaisedLast = null;
-            try {
-                river.addCard(deck.draw());
-                this.protocol.add(new ProtocolElement(MessageType.LOG, this, ONE_MORE_CARD_MESSAGE));
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
+            river.addCard(deck.draw());
+            this.protocol.add(new ProtocolElement(MessageType.LOG, this, ONE_MORE_CARD_MESSAGE));
             handlePlayerWhoStartsAtNewRound();
         }
 
         else if (round == Round.TURNCARD) {
             round = Round.RIVERCARD;
             userThatRaisedLast = null;
-            try {
-                river.addCard(deck.draw());
-                this.protocol.add(new ProtocolElement(MessageType.LOG, this, ONE_MORE_CARD_MESSAGE));
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
+            river.addCard(deck.draw());
+            this.protocol.add(new ProtocolElement(MessageType.LOG, this, ONE_MORE_CARD_MESSAGE));
             handlePlayerWhoStartsAtNewRound();
         }
         /**
@@ -538,18 +527,10 @@ public class GameEntity implements Serializable, Name {
             firstTimeNextUserInShowdown();
         }
         else if (round == Round.SHOWDOWN) {
-            try {
-                allUsers.forEach(user -> user.setWantsToShow(Show.NOT_DECIDED));
-                setup();
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-            finally {
-                removeUserWithNoMoney();
-            }
+            allUsers.forEach(user -> user.setWantsToShow(Show.NOT_DECIDED));
+            setup();
+            removeUserWithNoMoney();
         }
-
     }
 
     private void firstTimeNextUserInShowdown() {
@@ -740,7 +721,7 @@ public class GameEntity implements Serializable, Name {
         /*
          * Assumption that we made but which is not always true: that this onTurn User is active (therefore, this User still has money)
          */
-        index = allUsers.indexOf(toGetBigBlind) +1 ;
+        index = allUsers.indexOf(toGetBigBlind) + 1;
         var onTurnUser = getNewRole(index);
 
         onTurn = new OnTurnGetDTO();
@@ -752,11 +733,13 @@ public class GameEntity implements Serializable, Name {
         toGetSmallBlind.setBlind(Blind.SMALL);
         toGetBigBlind.setBlind(Blind.BIG);
         setUserThatRaisedLast(toGetBigBlind);
+        protocol.add(new ProtocolElement(MessageType.LOG, this, toGetSmallBlind.getUsername()+" is the new Small Blind. 100 will be removed from his savings."));
+        protocol.add(new ProtocolElement(MessageType.LOG, this, toGetBigBlind.getUsername()+" is the new Big Blind. 200 will be removed from his savings."));
         pot.addMoney(toGetBigBlind, toGetBigBlind.removeMoney(200));
         pot.addMoney(toGetSmallBlind, toGetSmallBlind.removeMoney(100));
     }
 
-    private User getNewRole(int index){
+    private User getNewRole(int index) {
         do {
             index--;
         } while (allUsers.get(Math.abs((index - 1 + allUsers.size()) % (allUsers.size()))).getMoney() <= 0);
@@ -770,9 +753,8 @@ public class GameEntity implements Serializable, Name {
         // default value
         var randomInt = 1;
         // Generate random integer between 1 and 4
-        var random = new Random();
+        var random = new SecureRandom();
         OptionalInt optionalRandomInt = random.ints(0, allUsers.size()).findFirst();
-
         if (optionalRandomInt.isPresent()) {
             randomInt = optionalRandomInt.getAsInt();
         }
@@ -782,6 +764,8 @@ public class GameEntity implements Serializable, Name {
         toGetSmallBlind.setBlind(Blind.SMALL);
         onTurn = new OnTurnGetDTO();
         onTurn.setUsername(allUsers.get(Math.abs((randomInt - 1) + allUsers.size()) % (allUsers.size())).getUsername());
+        protocol.add(new ProtocolElement(MessageType.LOG, this, toGetSmallBlind.getUsername()+" is the first Small Blind. 100 will be removed from his savings."));
+        protocol.add(new ProtocolElement(MessageType.LOG, this, toGetBigBlind.getUsername()+" is the first Big Blind. 200 will be removed from his savings."));
         pot.addMoney(toGetBigBlind, toGetBigBlind.removeMoney(200));
         pot.addMoney(toGetSmallBlind, toGetSmallBlind.removeMoney(100));
         setUserThatRaisedLast(toGetBigBlind);
@@ -837,7 +821,19 @@ public class GameEntity implements Serializable, Name {
     public void distributePot() {
         activeUsers.removeIf(user -> user.getWantsToShow() != Show.SHOW);
         List<UserDraw> ranking = new CardRanking().getRanking(this);
-        pot.distribute(ranking);
+        var index = 1;
+        protocol.add(new ProtocolElement(MessageType.LOG, this, "Now, the Pot will be distributed. We have the following Winners of this Game Round:"));
+        for(UserDraw userdrawers: ranking){
+            for (User theUser: userdrawers.getUsers()){
+                if(userdrawers.getUsers().size() == 1){
+                    protocol.add(new ProtocolElement(MessageType.LOG, this, "User "+theUser.getUsername()+" is the "+ index +". winner"));
+                } else{
+                    protocol.add(new ProtocolElement(MessageType.LOG, this, "User "+theUser.getUsername()+" is, together with others, a "+ index +". winner"));
+                }
+            }
+            index++;
+        }
+        protocol.addAll(pot.distribute(ranking));
     }
 
     /**

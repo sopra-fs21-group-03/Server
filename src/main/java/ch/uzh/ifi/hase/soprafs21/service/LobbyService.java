@@ -198,8 +198,8 @@ public class LobbyService {
                 gameService.startTurnTimer(game.getId());
                 gameRepository.saveAndFlush(game);
             }
-            catch (Exception e) {
-                e.printStackTrace();
+            catch (Exception ignored) {
+
             }
         }
     }
