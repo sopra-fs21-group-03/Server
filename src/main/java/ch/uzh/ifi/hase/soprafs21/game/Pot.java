@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs21.game;
 
 import ch.uzh.ifi.hase.soprafs21.entity.User;
+import ch.uzh.ifi.hase.soprafs21.game.protocol.ProtocolElement;
 import ch.uzh.ifi.hase.soprafs21.helper.UserDraw;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
@@ -86,7 +87,8 @@ public class Pot implements Serializable {
     }
 
     //function receives an ordered array sorted by user with best cards to user with worst cards
-    public void distribute(List<UserDraw> ranking) {
+    public List<ProtocolElement> distribute(List<UserDraw> ranking) {
+        var protocolElements = new ArrayList<ProtocolElement>();
         Set<User> enemies = userContribution.keySet();
 
         //gets next best user and gets all the money it is allowed to get, until no money is left in pot
@@ -98,7 +100,7 @@ public class Pot implements Serializable {
                 for (User enemy : enemies) {
                     receives += collect(enemy, invested);
                 }
-                user.addMoneyAndDistribute(receives);
+                protocolElements.addAll(user.addMoneyAndDistribute(receives));
                 for (UserDraw userDraw : ranking) {
                     userDraw.subtract(invested);
                 }
@@ -115,6 +117,7 @@ public class Pot implements Serializable {
         }
 
         total = 0;
+        return protocolElements;
     }
 
     private int collect(User user, int amount) {
