@@ -179,9 +179,7 @@ public class GameController {
         var userWhoWantsToFetch = new User();
         userWhoWantsToFetch.setToken(token);
 
-        User player = gameService.getOwnGameData(gameId, userId, userWhoWantsToFetch);
-
-        return DTOMapper.INSTANCE.convertEntityToPlayerInGameGetDTO(player);
+        return gameService.getOwnGameData(gameId, userId, userWhoWantsToFetch);
     }
 
     /**

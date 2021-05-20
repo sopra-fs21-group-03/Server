@@ -9,6 +9,7 @@ public class PlayerInGameGetDTO {
     private int money;
     private Blind blind;
     private List<Card> cards;
+    public boolean folded;
 
     public String getUsername() {
         return username;
@@ -40,5 +41,13 @@ public class PlayerInGameGetDTO {
 
     public void setCards(List<Card> cards) {
         this.cards = cards;
+    }
+
+    public boolean isFolded() {
+        return folded;
+    }
+
+    public void setFolded(boolean folded) {
+        this.folded = folded;
     }
 }

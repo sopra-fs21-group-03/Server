@@ -446,7 +446,7 @@ public class GameService {
      * @param userWhoWantsToFetch needs a token set
      * @return User Entity of the requested data
      */
-    public User getOwnGameData(Long gameID, Long userID, User userWhoWantsToFetch) {
+    public PlayerInGameGetDTO getOwnGameData(Long gameID, Long userID, User userWhoWantsToFetch) {
         Optional<GameEntity> optionalGame = gameRepository.findById(gameID);
         var valid = false;
 
@@ -478,7 +478,11 @@ public class GameService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Player not logged in");
         }
 
-        return player;
+        var playerReturn = DTOMapper.INSTANCE.convertEntityToPlayerInGameGetDTO(player);
+
+        playerReturn.setFolded(!game.getActiveUsers().contains(player) && game.getAllUsers().contains(player));
+
+        return playerReturn;
     }
 
     /**

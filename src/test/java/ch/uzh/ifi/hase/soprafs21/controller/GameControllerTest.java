@@ -91,7 +91,9 @@ class GameControllerTest {
 
         gameEntity.setPlayersInTurnOrder(playersInGame);
 
-        given(gameService.getOwnGameData(Mockito.anyLong(), Mockito.anyLong(), Mockito.any())).willReturn(user1);
+        var mapped1 = DTOMapper.INSTANCE.convertEntityToPlayerInGameGetDTO(user1);
+
+        given(gameService.getOwnGameData(Mockito.anyLong(), Mockito.anyLong(), Mockito.any())).willReturn(mapped1);
 
         //when
         MockHttpServletRequestBuilder getRequest = get("/games/1/1")
@@ -143,7 +145,9 @@ class GameControllerTest {
 
         gameEntity.setPlayersInTurnOrder(playersInGame);
 
-        given(gameService.getOwnGameData(Mockito.anyLong(), Mockito.anyLong(), Mockito.any())).willReturn(user1);
+        var mapped1 = DTOMapper.INSTANCE.convertEntityToPlayerInGameGetDTO(user1);
+
+        given(gameService.getOwnGameData(Mockito.anyLong(), Mockito.anyLong(), Mockito.any())).willReturn(mapped1);
 
         //when
         MockHttpServletRequestBuilder getRequest = get("/games/1/1")

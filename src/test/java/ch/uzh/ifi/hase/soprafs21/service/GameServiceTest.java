@@ -7,6 +7,7 @@ import ch.uzh.ifi.hase.soprafs21.game.cards.Deck;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs21.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.PlayerInGameGetDTO;
+import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -323,9 +324,14 @@ class GameServiceTest {
      */
     @Test
     void getOwnGameData_success() {
-        User mock = gameService.getOwnGameData(testGame.getId(), testUser.getId(), testUser);
+        var mock = gameService.getOwnGameData(testGame.getId(), testUser.getId(), testUser);
 
-        assertEquals(testUser, mock);
+
+        assertEquals(testUser.getUsername(), mock.getUsername());
+        assertEquals(testUser.getBlind(), mock.getBlind());
+        assertEquals(testUser.getCards(), mock.getCards());
+        assertEquals(testUser.getMoney(), mock.getMoney());
+        assertFalse(mock.isFolded());
     }
 
     /**
