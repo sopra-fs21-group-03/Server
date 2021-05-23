@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs21.controller;
 
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.UserGetDTO;
+import ch.uzh.ifi.hase.soprafs21.rest.dto.UserLoginGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.UserPutDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.mapper.DTOMapper;
@@ -83,12 +84,12 @@ public class LoginController {
     @PutMapping("/users")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public Map<String, String> loginUser(@RequestBody UserPostDTO userPostDTO){
+    public UserLoginGetDTO loginUser(@RequestBody UserPostDTO userPostDTO){
         var userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
 
         // If successful userStatus is set to online
-        String token = loginService.checkLoginCredentials(userInput);
-        return Collections.singletonMap("token", token);
+        User fetched = loginService.checkLoginCredentials(userInput);
+        return DTOMapper.INSTANCE.convertEntityToUserLoginGetDTO(fetched);
     }
 
     /**

@@ -99,9 +99,9 @@ class LoginServiceTest {
         // when -> setup additional mocks for UserRepository
         Mockito.when(userRepository.findByUsername(Mockito.any())).thenReturn(testUser);
 
-        String loggedInToken = loginService.checkLoginCredentials(userInputs);
+        User loggedInToken = loginService.checkLoginCredentials(userInputs);
 
-        assertEquals(loggedInToken, testUser.getToken());
+        assertEquals(loggedInToken.getToken(), testUser.getToken());
     }
 
     @Test

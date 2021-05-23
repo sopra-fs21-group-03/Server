@@ -65,7 +65,7 @@ public class LoginService {
      * @param userToLogin Converted UserInput of the user who wants to login
      * @return Token of the found user if credentials are checked successfully
      */
-    public String checkLoginCredentials(User userToLogin) {
+    public User checkLoginCredentials(User userToLogin) {
         var fetched = userRepository.findByUsername(userToLogin.getUsername());
 
         // Check if password and username match
@@ -77,8 +77,7 @@ public class LoginService {
         }
 
         fetched.setStatus(UserStatus.ONLINE);
-        userRepository.save(fetched);
-        return fetched.getToken();
+        return fetched;
     }
 
     /**

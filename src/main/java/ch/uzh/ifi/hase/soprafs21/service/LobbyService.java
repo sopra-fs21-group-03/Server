@@ -76,8 +76,13 @@ public class LobbyService {
                 if (!gameEntity.getAllUsers().contains(userToBeAdded) && !gameEntity.getSpectators().contains(userToBeAdded)) {
                     gameEntity.addUserToAll(userToBeAdded);
                     gameEntity.addUserToActive(userToBeAdded);
+
+                    // Convert long to Integer & add it to user
+                    userToBeAdded.setGameId(gameEntity.getId().intValue());
+                    userRepository.save(userToBeAdded);
                     gameRepository.save(gameEntity);
                     gameRepository.flush();
+                    userRepository.flush();
                 }
             }
             else {
@@ -120,6 +125,9 @@ public class LobbyService {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "You can not leave this lobby since you are not part of this lobby to begin with");
             }
             userFound.setGamestatus(GameStatus.NOTREADY);
+            userFound.setGameId(null);
+            userRepository.saveAndFlush(userFound);
+
             gameEntity.removeUserFromActive(userFound.getId());
             gameEntity.removeUserFromAll(userFound.getId());
             gameRepository.save(gameEntity);

@@ -132,7 +132,7 @@ class LoginControllerTest {
         user.setToken("1");
         user.setStatus(UserStatus.OFFLINE);
 
-        given(loginService.checkLoginCredentials(Mockito.any())).willReturn(user.getToken());
+        given(loginService.checkLoginCredentials(Mockito.any())).willReturn(user);
 
         UserPostDTO userPostDTO = new UserPostDTO();
         userPostDTO.setPassword("TestPassword");

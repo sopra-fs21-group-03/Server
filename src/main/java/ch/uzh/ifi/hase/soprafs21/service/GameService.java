@@ -645,6 +645,8 @@ public class GameService {
 
         }
 
+        realUser.setGameId(null);
+        userRepository.saveAndFlush(realUser);
         saveFlushUserRepoForUsersInAllUsersAndSpectators(gameEntity);
         gameRepository.saveAndFlush(gameEntity);
     }

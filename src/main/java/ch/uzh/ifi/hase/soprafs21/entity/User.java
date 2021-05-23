@@ -58,6 +58,9 @@ public class User implements Serializable, Name{
     @Column
     private Show wantsToShow = Show.NOT_DECIDED;
 
+    @Column
+    private Integer gameId = null;
+
     public Blind getBlind() {
         return blind;
     }
@@ -160,5 +163,13 @@ public class User implements Serializable, Name{
 
     public String getName() {
         return this.username;
+    }
+
+    public Integer getGameId() {
+        return gameId;
+    }
+
+    public void setGameId(Integer gameId) {
+        this.gameId = gameId;
     }
 }

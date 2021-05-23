@@ -65,4 +65,8 @@ public interface DTOMapper {
     @Mapping(source = "lobbyplayers", target = "players")
     @Mapping(source = "gameCanStart", target = "gameCanStart")
     SpecificLobbyGetDTO convertEntityToSpecificLobbyGetDTO(GameEntity gameEntity);
+
+    @Mapping(source = "token", target = "token")
+    @Mapping(source = "gameId", target = "gameId")
+    UserLoginGetDTO convertEntityToUserLoginGetDTO(User user);
 }
