@@ -9,7 +9,7 @@ public class PlayerInGameGetDTO {
     private int money;
     private Blind blind;
     private List<Card> cards;
-    public boolean folded;
+    private boolean folded;
 
     public String getUsername() {
         return username;
