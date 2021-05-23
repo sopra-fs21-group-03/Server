@@ -52,6 +52,60 @@ class GameControllerTest {
 
     private User testUser;
 
+
+    @Test
+    void leaveGame_success() throws Exception {
+        GameEntity gameEntity = new GameEntity(1L);
+        var user1 = new User();
+        user1.setUsername("user1");
+        user1.setPassword("test");
+        user1.setToken("1");
+        gameEntity.addUserToAll(user1);
+        gameEntity.addUserToActive(user1);
+
+        var user1Put = new UserPutDTO();
+        user1Put.setToken(user1.getToken());
+
+        given(gameService.getUserByIdInAllUsersAndSpectators(Mockito.any(), Mockito.any())).willReturn(user1);
+
+        MockHttpServletRequestBuilder putRequest = put("/games/1/1/leave")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(user1Put));
+
+        mockMvc.perform(putRequest).andExpect(status().isNoContent());
+    }
+
+    @Test
+    void leaveGame_notFound() throws Exception {
+
+        var user1Put = new UserPutDTO();
+
+        given(gameService.getUserByIdInAllUsersAndSpectators(Mockito.any(), Mockito.any()))
+                .willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        MockHttpServletRequestBuilder putRequest = put("/games/1/1/leave")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(user1Put));
+
+        mockMvc.perform(putRequest).andExpect(status().isNotFound());
+
+    }
+
+    @Test
+    void leaveGame_unauthorized() throws Exception {
+
+        var user1Put = new UserPutDTO();
+
+        given(gameService.getUserByIdInAllUsersAndSpectators(Mockito.any(), Mockito.any()))
+                .willThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+
+        MockHttpServletRequestBuilder putRequest = put("/games/1/1/leave")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(user1Put));
+
+        mockMvc.perform(putRequest).andExpect(status().isUnauthorized());
+    }
+
     
     /**
      * Test if own gameData could be fetched
