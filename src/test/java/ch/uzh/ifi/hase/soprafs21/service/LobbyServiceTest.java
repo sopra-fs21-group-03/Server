@@ -15,6 +15,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,6 +45,7 @@ class LobbyServiceTest {
     private GameEntity testGameNotFull;
 
     private ArrayList<User> testAllUsersFull;
+    private List<GameEntity> testListForGameEntities;
 
 
     @BeforeEach
@@ -114,7 +116,7 @@ class LobbyServiceTest {
         testGameFull.setGameName("FullGame");
         testGameNotFull.setGameName("NotFull");
 
-        var testListForGameEntities = new ArrayList<GameEntity>();
+        testListForGameEntities = new ArrayList<>();
         testListForGameEntities.add(testGameFull);
         testListForGameEntities.add(testGameNotFull);
 
@@ -164,9 +166,7 @@ class LobbyServiceTest {
             lobbyService.addUserToGame(user, testGameFull);
             lobbyService.setUserToReady(user);
         }
-        lobbyService.setUpGame(testGameFull);
-
-
+        testGameFull.setup();
         // Now an exception should be thrown, because you can only leave via the leave endpoint in the gamecontroller
         assertThrows(ResponseStatusException.class, () -> lobbyService.leaveLobby(testUser, testGameFull));
     }
@@ -193,7 +193,7 @@ class LobbyServiceTest {
 
     @Test
     void checkIfUserExists_ByToken_userNotFound(){
-        assertThrows(ResponseStatusException.class, () -> lobbyService.checkIfUserExists_ByToken("novalidtoken"));
+        assertThrows(ResponseStatusException.class, () -> lobbyService.checkIfUserExistsByToken("novalidtoken"));
 
     }
 
@@ -285,7 +285,7 @@ class LobbyServiceTest {
     void getUserInSpecificGameSessionInAllUsers_fail_userNotFound(){
         lobbyService.addUserToGame(testUser, testGameFull);
         var entity = lobbyService.findGameEntity(testGameFull.getId());
-        assertThrows(ResponseStatusException.class, () ->lobbyService.getUserInSpecificGameSessionInAllUsers(testUser2.getId(), entity));
+        assertThrows(ResponseStatusException.class, () ->lobbyService.getUserInSpecificGameSessionInAllUsers(2L, entity));
     }
 
     @Test
@@ -309,35 +309,35 @@ class LobbyServiceTest {
     @Test
     void checkIfUserIsInLobbySession_success_userIsInAllUsers(){
         lobbyService.addUserToGame(testUser2, testGameNotFull);
-        assertDoesNotThrow(() ->lobbyService.checkIfUserIsInGameSession(testUser2.getToken(), testGameNotFull.getId()));
+        assertDoesNotThrow(() ->lobbyService.checkIfUserIsInGameSession("2", testGameNotFull));
     }
 
     @Test
     void checkIfUserIsInLobbySession_success_userInSpectators(){
         testGameNotFull.getSpectators().add(testUser2);
-        assertDoesNotThrow(() ->lobbyService.checkIfUserIsInGameSession(testUser2.getToken(), testGameNotFull.getId()));
+        assertDoesNotThrow(() ->lobbyService.checkIfUserIsInGameSession("2", testGameNotFull));
     }
 
     @Test
     void checkIfUserIsInLobbySession_fail_notFound(){
-        assertThrows(ResponseStatusException.class, () ->lobbyService.checkIfUserIsInGameSession(testUser4.getToken(), testGameFull.getId()));
+        assertThrows(ResponseStatusException.class, () ->lobbyService.checkIfUserIsInGameSession("4", testGameFull));
     }
 
     @Test
     void checkIfUserIsAlreadyInAnotherLobby_success_heIsNot(){
-        assertDoesNotThrow(()-> lobbyService.checkIfUserIsAlreadyInAnOtherLobby(testUser4.getToken(), testGameFull.getId()));
+        assertDoesNotThrow(()-> lobbyService.checkIfUserIsAlreadyInAnOtherLobby(testUser4.getToken(), 1L, testListForGameEntities));
     }
 
     @Test
     void checkIfUserIsAlreadyInAnotherLobby_fail_heIsInAllUsersInAnOtherLobby(){
         lobbyService.addUserToGame(testUser, testGameFull);
-        assertThrows(ResponseStatusException.class,()-> lobbyService.checkIfUserIsAlreadyInAnOtherLobby(testUser.getToken(), testGameNotFull.getId()));
+        assertThrows(ResponseStatusException.class,()-> lobbyService.checkIfUserIsAlreadyInAnOtherLobby("1", 2L, testListForGameEntities));
     }
 
     @Test
     void checkIfUserIsAlreadyInAnotherLobby_fail_heIsInSpectatorInAnOtherLobby(){
         testGameNotFull.getSpectators().add(testUser2);
-        assertThrows(ResponseStatusException.class,()-> lobbyService.checkIfUserIsAlreadyInAnOtherLobby(testUser2.getToken(), testGameFull.getId()));
+        assertThrows(ResponseStatusException.class,()-> lobbyService.checkIfUserIsAlreadyInAnOtherLobby("2", 1L, testListForGameEntities));
     }
 
 

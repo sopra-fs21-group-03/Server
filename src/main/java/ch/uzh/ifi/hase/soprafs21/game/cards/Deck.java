@@ -19,7 +19,7 @@ public class Deck implements Serializable {
     private final List<Card> theDeck;
 
     public Deck() {
-        theDeck = new ArrayList<Card>();
+        theDeck = new ArrayList<>();
         for (Suit suit : Suit.values()){
             for(Rank rank: Rank.values()){
                 var newCard = new Card(rank, suit);
@@ -33,13 +33,13 @@ public class Deck implements Serializable {
         return theDeck.size();
     }
 
-    public Card draw() throws Exception {
+    public Card draw() throws IllegalStateException {
         if(size() > 0){
         var drawCard = new Card(theDeck.get(0).getRank(), theDeck.get(0).getSuit());
         theDeck.remove(0);
         return drawCard;}
         else{
-            throw new Exception("No Cards are left!");
+            throw new IllegalStateException("No Cards are left!");
         }
     }
 

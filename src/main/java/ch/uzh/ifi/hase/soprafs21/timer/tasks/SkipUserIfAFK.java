@@ -3,19 +3,11 @@ package ch.uzh.ifi.hase.soprafs21.timer.tasks;
 import ch.uzh.ifi.hase.soprafs21.constant.Round;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs21.service.GameService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class SkipUserIfAFK implements Runnable {
     private final GameRepository gameRepository;
     private final GameService gameService;
     private final long gameID;
-
-    private static final Logger log = LoggerFactory.getLogger(SkipUserIfAFK.class);
-
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
     public SkipUserIfAFK(GameRepository gameRepository, GameService gameService, long gameID) {
         this.gameRepository = gameRepository;
@@ -33,7 +25,6 @@ public class SkipUserIfAFK implements Runnable {
         }
 
         var trueGame = game.get();
-
         var onTurn = trueGame.getOnTurn();
 
         if (onTurn == null) {
@@ -45,13 +36,11 @@ public class SkipUserIfAFK implements Runnable {
                 if (trueGame.getRound() == Round.SHOWDOWN){
                     gameService.show(trueGame, user, false);
                 } else {
-                    gameService.userFolds(this.gameID, user.getId());
+                    gameService.userFolds(trueGame, user.getId());
                 }
                 break;
             }
         }
-        // Log date to see if timer is working
-        log.info("The time is now {}", dateFormat.format(new Date()));
     }
 
 }

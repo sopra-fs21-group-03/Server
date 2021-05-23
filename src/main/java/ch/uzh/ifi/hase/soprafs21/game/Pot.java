@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs21.game;
 
 import ch.uzh.ifi.hase.soprafs21.entity.User;
+import ch.uzh.ifi.hase.soprafs21.game.protocol.ProtocolElement;
 import ch.uzh.ifi.hase.soprafs21.helper.UserDraw;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
@@ -11,7 +12,6 @@ import javax.persistence.Embeddable;
 import javax.persistence.Transient;
 import java.util.*;
 import java.io.Serializable;
-
 
 
 @Embeddable
@@ -60,8 +60,9 @@ public class Pot implements Serializable {
 
     public Map<String, Integer> getContribution() {
         contribution = new HashMap<>();
-        for (User user : userContribution.keySet()){
-            contribution.put(user.getUsername(), userContribution.get(user));
+
+        for (Map.Entry<User, Integer> entry : userContribution.entrySet()) {
+            contribution.put(entry.getKey().getUsername(), entry.getValue());
         }
 
         return contribution;
@@ -72,56 +73,58 @@ public class Pot implements Serializable {
     }
 
     public void addUser(User user) {
-        if(userContribution.containsKey(user)) {
+        if (userContribution.containsKey(user)) {
             throw new IllegalArgumentException("user already registered in pot");
         }
         userContribution.put(user, 0);
     }
 
     public void removeUser(User user) {
-        if(!userContribution.containsKey(user)) {
+        if (!userContribution.containsKey(user)) {
             throw new IllegalArgumentException("user not registered in pot");
         }
         userContribution.remove(user);
     }
 
     //function receives an ordered array sorted by user with best cards to user with worst cards
-    public void distribute(List<UserDraw> ranking) {
+    public List<ProtocolElement> distribute(List<UserDraw> ranking) {
+        var protocolElements = new ArrayList<ProtocolElement>();
         Set<User> enemies = userContribution.keySet();
 
         //gets next best user and gets all the money it is allowed to get, until no money is left in pot
-        for(UserDraw user: ranking) {
-            while(!user.empty()) {
+        for (UserDraw user : ranking) {
+            while (!user.empty()) {
                 int invested = user.getMinimum();
                 var receives = 0;
                 //user collects money for all users - including himself - from the pot
                 for (User enemy : enemies) {
                     receives += collect(enemy, invested);
                 }
-                user.addMoneyAndDistribute(receives);
-                for(UserDraw userDraw: ranking) {
+                protocolElements.addAll(user.addMoneyAndDistribute(receives));
+                for (UserDraw userDraw : ranking) {
                     userDraw.subtract(invested);
                 }
             }
-            if(total == 0) {
+            if (total == 0) {
                 break;
             }
         }
-        if(total != 0) {
-            for( User user: userContribution.keySet()) {
-                user.addMoney(userContribution.get(user));
-                userContribution.put(user, 0);
+        if (total != 0) {
+            for (Map.Entry<User, Integer> entry : userContribution.entrySet()) {
+                entry.getKey().addMoney(entry.getValue());
+                userContribution.put(entry.getKey(), 0);
             }
         }
 
         total = 0;
+        return protocolElements;
     }
 
     private int collect(User user, int amount) {
         int invested = userContribution.get(user);
         //common case, where the user that collects money, will receive all of a users money
         //also where a user should be collecting from what he put in the pot himself
-        if(amount >= invested) {
+        if (amount >= invested) {
             userContribution.put(user, 0);
             total -= invested;
             return invested;

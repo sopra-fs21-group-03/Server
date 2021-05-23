@@ -18,7 +18,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
-import java.util.Random;
+import java.security.SecureRandom;
 import java.util.Optional;
 
 
@@ -27,11 +27,10 @@ import java.util.Optional;
 public class GameEntity implements Serializable, Name {
 
     private static final long serialVersionUID = 1L;
+    private static final String ONE_MORE_CARD_MESSAGE = "One more card is dealt.";
 
     @Id
     private Long id;
-
-    //private Dealer dealer; maybe not necessary?!
 
     @Column
     private String gameName;
@@ -52,7 +51,7 @@ public class GameEntity implements Serializable, Name {
     private List<OpponentInGameGetDTO> playersInTurnOrder;
 
     @ElementCollection
-    private List <PlayerInLobbyGetDTO> lobbyplayers;
+    private List<PlayerInLobbyGetDTO> lobbyplayers;
 
     @OneToMany
     private List<User> rawPlayersInTurnOrder;
@@ -66,7 +65,7 @@ public class GameEntity implements Serializable, Name {
     @OneToOne
     private User userThatRaisedLast;
 
-    @Column // Maybe don't needed idk
+    @Column
     private OnTurnGetDTO onTurn;
 
     @Column
@@ -86,6 +85,7 @@ public class GameEntity implements Serializable, Name {
 
     @Column
     private boolean bigblindspecialcase;
+
 
     @ElementCollection
     @LazyCollection(LazyCollectionOption.FALSE)
@@ -116,10 +116,8 @@ public class GameEntity implements Serializable, Name {
         bigblindspecialcase = true;
         protocol = new ArrayList<>();
         gameName = String.format("%d", id);
-
         deck = new Deck();
         pot = new Pot();
-
         round = Round.NOTSTARTED;
     }
 
@@ -131,16 +129,13 @@ public class GameEntity implements Serializable, Name {
     /* Getter and setter */
 
     public boolean getInGame() {
-        if(this.round == Round.NOTSTARTED) {
-            return false;
-        }
-        return true;
+        return this.round != Round.NOTSTARTED;
     }
 
-    public boolean getGameCanStart(){
-        int readyCounter = 0;
-        for (User user : allUsers){
-            if(user.getGamestatus() == GameStatus.READY){
+    public boolean getGameCanStart() {
+        var readyCounter = 0;
+        for (User user : allUsers) {
+            if (user.getGamestatus() == GameStatus.READY) {
                 readyCounter++;
             }
         }
@@ -195,7 +190,7 @@ public class GameEntity implements Serializable, Name {
         return activeUsers;
     }
 
-    public void setActiveUsers(ArrayList<User> activeUsers) {
+    public void setActiveUsers(List<User> activeUsers) {
         this.activeUsers = activeUsers;
     }
 
@@ -307,7 +302,7 @@ public class GameEntity implements Serializable, Name {
     public String getUsernameOfPotentialNextUserInTurn(User theUser) {
         if (activeUsers.size() > 1) {
             int indexOfPotentialNextUserInTurn;
-            User user = getUserInActiveUsersWithId(theUser.getId());
+            var user = getUserInActiveUsersWithId(theUser.getId());
             int index = -1;
             do {
                 indexOfPotentialNextUserInTurn = Math.abs(activeUsers.indexOf(user) + index + activeUsers.size()) % activeUsers.size();
@@ -342,7 +337,7 @@ public class GameEntity implements Serializable, Name {
         if (activeUsers.size() > 1) {
             if (checkcounter < getNumberOfActiveUsersWithMoney()) {
                 int indexOfPotentialNextUserInTurn;
-                User user = getUserInActiveUsersWithUsername(usernameOfPotentialNextUserInTurn);
+                var user = getUserInActiveUsersWithUsername(usernameOfPotentialNextUserInTurn);
                 indexOfPotentialNextUserInTurn = activeUsers.indexOf(user);
                 //if there is a user that raised last and its the user that is potentially next in turn -> he won't be in turn, because the next round has to start.
                 if (userThatRaisedLast != null && activeUsers.get(indexOfPotentialNextUserInTurn).getUsername().equals(userThatRaisedLast.getUsername())) {
@@ -364,17 +359,15 @@ public class GameEntity implements Serializable, Name {
             //GIVE HIM HIS MONEY
             var winnerUserDraw = new UserDraw();
             winnerUserDraw.addUser(activeUsers.get(0), pot.getUserContributionOfAUser(activeUsers.get(0)));
-            ArrayList<UserDraw> winner = new ArrayList<UserDraw>();
+            var winnerUser = activeUsers.get(0);
+            ArrayList<UserDraw> winner = new ArrayList<>();
             winner.add(winnerUserDraw);
-            pot.distribute(winner);
-            //then: a new gameround starts
-            try {
-                setup();
-            }
-            catch (Exception e) {
-                System.out.println(e.getMessage());
-            }
+            protocol.add(new ProtocolElement(MessageType.LOG, this, "Now, the Pot will be distributed. We have the following Winner: "+winnerUser.getUsername()+". He won" +
+                    " because he is the only player who stayed in this Game Round"));
 
+            protocol.addAll(pot.distribute(winner));
+            //then: a new gameround starts
+            setup();
         }
         else {
             throw new IllegalStateException("There should always be atleast one active user!");
@@ -383,7 +376,7 @@ public class GameEntity implements Serializable, Name {
     }
 
     public int getNumberOfActiveUsersWithMoney() {
-        int counter = 0;
+        var counter = 0;
         for (User user : activeUsers) {
             if (user.getMoney() > 0) {
                 counter++;
@@ -435,19 +428,7 @@ public class GameEntity implements Serializable, Name {
 
             //Everybody went All-In or everybody except one person went All-In
             if (nomoneycounter == activeUsers.size() || nomoneycounter == (activeUsers.size() - 1)) {
-                while (river.getCards().size() < 5) {
-                    try {
-                        river.addCard(deck.draw());
-                        this.protocol.add(new ProtocolElement(MessageType.LOG, this, "One more card is dealt."));
-                    }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                //we directly get to the showdown
-                round = Round.RIVERCARD;
-                setNextRound();
-
+                allInHandlerAtNewRound();
             }
             //Not everyone went All-In -> find the next User that is on turn
             else {
@@ -461,6 +442,16 @@ public class GameEntity implements Serializable, Name {
 
         }
 
+    }
+
+    private void allInHandlerAtNewRound() {
+        while (river.getCards().size() < 5) {
+            river.addCard(deck.draw());
+            this.protocol.add(new ProtocolElement(MessageType.LOG, this, ONE_MORE_CARD_MESSAGE));
+        }
+        //we directly get to the showdown
+        round = Round.RIVERCARD;
+        setNextRound();
     }
 
     //this always happens at the begin of a new round
@@ -503,41 +494,26 @@ public class GameEntity implements Serializable, Name {
         if (round == Round.PREFLOP) {
             round = Round.FLOP;
             userThatRaisedLast = null;
-            try {
-                river.addCard(deck.draw());
-                river.addCard(deck.draw());
-                river.addCard(deck.draw());
-                this.protocol.add(new ProtocolElement(MessageType.LOG, this, "Three cards are dealt."));
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
+            river.addCard(deck.draw());
+            river.addCard(deck.draw());
+            river.addCard(deck.draw());
+            this.protocol.add(new ProtocolElement(MessageType.LOG, this, "Three cards are dealt."));
             handlePlayerWhoStartsAtNewRound();
         }
 
         else if (round == Round.FLOP) {
             round = Round.TURNCARD;
             userThatRaisedLast = null;
-            try {
-                river.addCard(deck.draw());
-                this.protocol.add(new ProtocolElement(MessageType.LOG, this, "One more card is dealt."));
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
+            river.addCard(deck.draw());
+            this.protocol.add(new ProtocolElement(MessageType.LOG, this, ONE_MORE_CARD_MESSAGE));
             handlePlayerWhoStartsAtNewRound();
         }
 
         else if (round == Round.TURNCARD) {
             round = Round.RIVERCARD;
             userThatRaisedLast = null;
-            try {
-                river.addCard(deck.draw());
-                this.protocol.add(new ProtocolElement(MessageType.LOG, this, "One more card is dealt."));
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
+            river.addCard(deck.draw());
+            this.protocol.add(new ProtocolElement(MessageType.LOG, this, ONE_MORE_CARD_MESSAGE));
             handlePlayerWhoStartsAtNewRound();
         }
         /**
@@ -551,34 +527,23 @@ public class GameEntity implements Serializable, Name {
             firstTimeNextUserInShowdown();
         }
         else if (round == Round.SHOWDOWN) {
-            try {
-                allUsers.forEach(user -> user.setWantsToShow(Show.NOT_DECIDED));
-                setup();
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-            finally {
-                removeUserWithNoMoney();
-            }
+            allUsers.forEach(user -> user.setWantsToShow(Show.NOT_DECIDED));
+            setup();
+            removeUserWithNoMoney();
         }
-
     }
 
     private void firstTimeNextUserInShowdown() {
         var user = getUserInAllUsersByName(onTurn.getUsername());
-        if (user.isEmpty()) {
-            return;
-        }
         if (user.isPresent()) {
             var u = user.get();
             int i = allUsers.indexOf(u);
             do {
                 i = (i + allUsers.size() - 1) % allUsers.size();
             } while (!activeUsers.contains(allUsers.get(i)) && allUsers.get(i) != u);
-            var onTurn = new OnTurnGetDTO();
-            onTurn.setUsername(allUsers.get(i).getUsername());
-            setOnTurn(onTurn);
+            var onTurnNew = new OnTurnGetDTO();
+            onTurnNew.setUsername(allUsers.get(i).getUsername());
+            setOnTurn(onTurnNew);
         }
     }
 
@@ -589,8 +554,7 @@ public class GameEntity implements Serializable, Name {
                 user = u;
             }
         }
-        Optional<User> o = Optional.ofNullable(user);
-        return o;
+        return Optional.ofNullable(user);
     }
 
 
@@ -598,7 +562,7 @@ public class GameEntity implements Serializable, Name {
      * Setup function
      * Gets called when all players are in the game
      */
-    public void setup() throws Exception {
+    public void setup() {
         if (firstGameSetup) {
             setStartingPotForUsers();
             pot = new Pot();
@@ -616,7 +580,7 @@ public class GameEntity implements Serializable, Name {
             showdown = false;
             bigblindspecialcase = true;
             protocol.add(new ProtocolElement(MessageType.LOG, this, "The GameSession has ended! User " + usernameOfUserWhoWon() + " has won!"));
-            for (User user: rawPlayersInTurnOrder){
+            for (User user : rawPlayersInTurnOrder) {
                 user.setGamestatus(GameStatus.NOTREADY);
             }
         }
@@ -749,35 +713,16 @@ public class GameEntity implements Serializable, Name {
         int index;
         //Clone allUsers back into activeUsers to keep turn order right
         activeUsers = new ArrayList<>(allUsers);
-        var user = getSmallBlindInAllUsers();
-        index = allUsers.indexOf(user) + 1; //+1 becaus in the do while loop it is incremented in the beginning
-        var toGetSmallBlind = user;
-        var toGetBigBlind = user;
-        do {
-            index--;
-            toGetSmallBlind = allUsers.get(Math.abs((index - 1 + allUsers.size()) % (allUsers.size())));
-            if (toGetSmallBlind == user) {
-                break;
-            }
-        } while (toGetSmallBlind.getMoney() <= 0); //While small blind has no money, he is out and the blind role is given to next user
-
-        do {
-            toGetBigBlind = allUsers.get(Math.abs((index - 2 + allUsers.size()) % (allUsers.size())));
-            if (toGetBigBlind == user) {
-                break;
-            }
-            index--;
-        } while (toGetBigBlind.getMoney() <= 0);
+        var smallie = getSmallBlindInAllUsers();
+        index = allUsers.indexOf(smallie) + 1; //+1 because in the do while loop it is incremented in the beginning
+        var toGetSmallBlind = getNewRole(index);
+        index = allUsers.indexOf(toGetSmallBlind) + 1;
+        var toGetBigBlind = getNewRole(index);
         /*
          * Assumption that we made but which is not always true: that this onTurn User is active (therefore, this User still has money)
          */
-        index = allUsers.indexOf(toGetBigBlind);
-        User onTurnUser;
-        do {
-            onTurnUser = allUsers.get(Math.abs((index - 1 + allUsers.size()) % (allUsers.size())));
-            index--;
-        } while (onTurnUser.getMoney() <= 0);
-
+        index = allUsers.indexOf(toGetBigBlind) + 1;
+        var onTurnUser = getNewRole(index);
 
         onTurn = new OnTurnGetDTO();
         onTurn.setUsername(onTurnUser.getUsername());
@@ -788,9 +733,17 @@ public class GameEntity implements Serializable, Name {
         toGetSmallBlind.setBlind(Blind.SMALL);
         toGetBigBlind.setBlind(Blind.BIG);
         setUserThatRaisedLast(toGetBigBlind);
-
+        protocol.add(new ProtocolElement(MessageType.LOG, this, toGetSmallBlind.getUsername()+" is the new Small Blind. 100 will be removed from his savings."));
+        protocol.add(new ProtocolElement(MessageType.LOG, this, toGetBigBlind.getUsername()+" is the new Big Blind. 200 will be removed from his savings."));
         pot.addMoney(toGetBigBlind, toGetBigBlind.removeMoney(200));
         pot.addMoney(toGetSmallBlind, toGetSmallBlind.removeMoney(100));
+    }
+
+    private User getNewRole(int index) {
+        do {
+            index--;
+        } while (allUsers.get(Math.abs((index - 1 + allUsers.size()) % (allUsers.size()))).getMoney() <= 0);
+        return allUsers.get(Math.abs((index - 1 + allUsers.size()) % (allUsers.size())));
     }
 
     private void distributeBlindsFirstTime() {
@@ -800,9 +753,8 @@ public class GameEntity implements Serializable, Name {
         // default value
         var randomInt = 1;
         // Generate random integer between 1 and 4
-        var random = new Random();
+        var random = new SecureRandom();
         OptionalInt optionalRandomInt = random.ints(0, allUsers.size()).findFirst();
-
         if (optionalRandomInt.isPresent()) {
             randomInt = optionalRandomInt.getAsInt();
         }
@@ -812,6 +764,8 @@ public class GameEntity implements Serializable, Name {
         toGetSmallBlind.setBlind(Blind.SMALL);
         onTurn = new OnTurnGetDTO();
         onTurn.setUsername(allUsers.get(Math.abs((randomInt - 1) + allUsers.size()) % (allUsers.size())).getUsername());
+        protocol.add(new ProtocolElement(MessageType.LOG, this, toGetSmallBlind.getUsername()+" is the first Small Blind. 100 will be removed from his savings."));
+        protocol.add(new ProtocolElement(MessageType.LOG, this, toGetBigBlind.getUsername()+" is the first Big Blind. 200 will be removed from his savings."));
         pot.addMoney(toGetBigBlind, toGetBigBlind.removeMoney(200));
         pot.addMoney(toGetSmallBlind, toGetSmallBlind.removeMoney(100));
         setUserThatRaisedLast(toGetBigBlind);
@@ -819,7 +773,7 @@ public class GameEntity implements Serializable, Name {
 
     }
 
-    private void distributeCards() throws Exception {
+    private void distributeCards() {
 
         for (User user : allUsers) {
             if (user.getCards().size() == 2) {
@@ -839,7 +793,7 @@ public class GameEntity implements Serializable, Name {
     }
 
     private int numberOfBrokeUsersInAllUsers() {
-        int number = 0;
+        var number = 0;
         for (User user : allUsers) {
             if (user.getMoney() == 0) {
                 number++;
@@ -854,7 +808,7 @@ public class GameEntity implements Serializable, Name {
      * @return username of user who won
      */
     private String usernameOfUserWhoWon() {
-        String name = "Nobody";
+        var name = "Nobody";
         for (User user : allUsers) {
             if (user.getMoney() > 0) {
                 name = user.getUsername();
@@ -867,17 +821,29 @@ public class GameEntity implements Serializable, Name {
     public void distributePot() {
         activeUsers.removeIf(user -> user.getWantsToShow() != Show.SHOW);
         List<UserDraw> ranking = new CardRanking().getRanking(this);
-        pot.distribute(ranking);
+        var index = 1;
+        protocol.add(new ProtocolElement(MessageType.LOG, this, "Now, the Pot will be distributed. We have the following Winners of this Game Round:"));
+        for(UserDraw userdrawers: ranking){
+            for (User theUser: userdrawers.getUsers()){
+                if(userdrawers.getUsers().size() == 1){
+                    protocol.add(new ProtocolElement(MessageType.LOG, this, "User "+theUser.getUsername()+" is the "+ index +". winner"));
+                } else{
+                    protocol.add(new ProtocolElement(MessageType.LOG, this, "User "+theUser.getUsername()+" is, together with others, a "+ index +". winner"));
+                }
+            }
+            index++;
+        }
+        protocol.addAll(pot.distribute(ranking));
     }
 
     /**
      * changes the onTurn user
      */
-    public void nextTurnInShowdown(User user) throws Exception {
+    public void nextTurnInShowdown(User user) throws IllegalStateException {
         if (!activeUsers.contains(user)) {
-            throw new Exception("User that played was not onTurn.");
+            throw new IllegalStateException("User that played was not onTurn.");
         }
-        String username = this.getOnTurn().getUsername();
+
         int currentIndex = activeUsers.indexOf(user);
         int nextIndex = Math.abs(currentIndex - 1 + activeUsers.size()) % activeUsers.size();
         onTurn.setUsername(activeUsers.get(nextIndex).getUsername());

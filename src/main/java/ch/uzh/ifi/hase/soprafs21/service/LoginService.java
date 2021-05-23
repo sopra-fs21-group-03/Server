@@ -2,9 +2,7 @@ package ch.uzh.ifi.hase.soprafs21.service;
 
 import ch.uzh.ifi.hase.soprafs21.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs21.constant.UserStatus;
-import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
-import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs21.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,21 +29,17 @@ public class LoginService {
     private final Logger log = LoggerFactory.getLogger(LoginService.class);
 
     private final UserRepository userRepository;
-    private final GameRepository gameRepository;
-    private final GameService gameService;
 
     @Autowired
-    public LoginService(@Qualifier("userRepository") UserRepository userRepository, @Qualifier("gameRepository") GameRepository gameRepository, GameService gameService) {
+    public LoginService(@Qualifier("userRepository") UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.gameRepository = gameRepository;
-        this.gameService = gameService;
     }
 
     public List<User> getUsers() {
         return this.userRepository.findAll();
     }
 
-    public User getUserByToken(String token){
+    public User getUserByToken(String token) {
         return userRepository.findByToken(token);
     }
 

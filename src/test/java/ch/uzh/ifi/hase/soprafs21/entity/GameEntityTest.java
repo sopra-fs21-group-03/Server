@@ -182,17 +182,6 @@ class GameEntityTest {
 
     }
 
-    @Test
-    void getUsernameOfPotentialNextUserInTurn() {
-    }
-
-    @Test
-    void setNextUserOrNextRoundOrSomeoneHasAlreadyWon() {
-    }
-
-    @Test
-    void setupTest() {
-    }
 
     @Test
     void spectator() {

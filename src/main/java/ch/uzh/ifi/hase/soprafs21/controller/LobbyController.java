@@ -1,7 +1,6 @@
 package ch.uzh.ifi.hase.soprafs21.controller;
 
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
-import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.LobbyGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.SpecificLobbyGetDTO;
 import ch.uzh.ifi.hase.soprafs21.rest.dto.UserPutDTO;
@@ -18,6 +17,7 @@ import java.util.List;
 public class LobbyController {
 
     private final LobbyService lobbyService;
+    private static final String NOT_FOUND_MESSAGE = "User is not registered or logged in";
 
 
     public LobbyController(LobbyService lobbyService) {
@@ -28,7 +28,7 @@ public class LobbyController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public List<LobbyGetDTO> getLobbies(@RequestHeader(value = "Authorization") String token) {
-        lobbyService.checkIfUserExists_ByToken(token);
+        lobbyService.checkIfUserExistsByToken(token);
         var games = lobbyService.getAllGames();
         List<LobbyGetDTO> lobbies = new ArrayList<>();
         for (GameEntity game : games) {
@@ -41,8 +41,9 @@ public class LobbyController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public void addUserToLobby(@PathVariable Long lobbyID, @RequestBody UserPutDTO userPutDTO) {
-        lobbyService.checkIfUserExists_ByToken(userPutDTO.getToken());
-        lobbyService.checkIfUserIsAlreadyInAnOtherLobby(userPutDTO.getToken(),lobbyID);
+        lobbyService.checkIfUserExistsByToken(userPutDTO.getToken());
+        var list = lobbyService.getAllGames();
+        lobbyService.checkIfUserIsAlreadyInAnOtherLobby(userPutDTO.getToken(),lobbyID, list);
         var userfound = lobbyService.getUserByTokenInUserRepository(userPutDTO.getToken());
         var entity = lobbyService.findGameEntity(lobbyID);
         /*
@@ -60,7 +61,7 @@ public class LobbyController {
 
 
         if (!userfound.getToken().equals(userPutDTO.getToken())){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not registered or logged in");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_FOUND_MESSAGE);
         }
 
         /*
@@ -80,7 +81,7 @@ public class LobbyController {
         var userFound = lobbyService.getUserInSpecificGameSessionInAllUsers(userID, entity);
 
         if (!userFound.getToken().equals(userPutDTO.getToken())){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not registered or logged in");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_FOUND_MESSAGE);
         }
 
         lobbyService.setUserToUnready(userFound);
@@ -93,7 +94,7 @@ public class LobbyController {
         var userFound = lobbyService.getUserInSpecificGameSessionInAllUsers(userID, entity);
 
         if (!userFound.getToken().equals(userPutDTO.getToken())){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not registered or logged in");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, NOT_FOUND_MESSAGE);
         }
 
         lobbyService.leaveLobby(userFound, entity);
@@ -104,8 +105,9 @@ public class LobbyController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public SpecificLobbyGetDTO getSpecificLobbyInformation(@PathVariable Long lobbyID, @RequestHeader(value = "Authorization") String token) {
-        lobbyService.checkIfUserExists_ByToken(token);
-        lobbyService.checkIfUserIsInGameSession(token, lobbyID);
+        lobbyService.checkIfUserExistsByToken(token);
+        var entity = lobbyService.findGameEntity(lobbyID);
+        lobbyService.checkIfUserIsInGameSession(token, entity);
         var game = lobbyService.getSpecificLobbyData(lobbyID);
         return DTOMapper.INSTANCE.convertEntityToSpecificLobbyGetDTO(game);
     }
