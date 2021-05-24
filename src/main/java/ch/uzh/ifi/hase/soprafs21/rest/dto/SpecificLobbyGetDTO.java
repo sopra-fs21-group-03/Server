@@ -7,6 +7,7 @@ public class SpecificLobbyGetDTO {
     private String name;
     private List<PlayerInLobbyGetDTO> players;
     private boolean gameCanStart;
+    private boolean inGame;
 
     public String getName() {
         return name;
@@ -30,5 +31,13 @@ public class SpecificLobbyGetDTO {
 
     public void setGameCanStart(boolean gameCanStart) {
         this.gameCanStart = gameCanStart;
+    }
+
+    public boolean isInGame() {
+        return inGame;
+    }
+
+    public void setInGame(boolean inGame) {
+        this.inGame = inGame;
     }
 }

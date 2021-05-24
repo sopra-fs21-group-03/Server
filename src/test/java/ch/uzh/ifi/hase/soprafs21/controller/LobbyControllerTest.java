@@ -247,7 +247,8 @@ class LobbyControllerTest {
                 .andExpect(jsonPath("$.name", is("2")))
                 .andExpect(jsonPath("$.players[0].username", is("6")))
                 .andExpect(jsonPath("$.players[0].readyStatus", is(GameStatus.NOTREADY.toString())))
-                .andExpect(jsonPath("$.gameCanStart", is(false)));}
+                .andExpect(jsonPath("$.gameCanStart", is(false)))
+                .andExpect(jsonPath("$.inGame", is(false)));}
         catch(Exception e){
             fail();
         }
