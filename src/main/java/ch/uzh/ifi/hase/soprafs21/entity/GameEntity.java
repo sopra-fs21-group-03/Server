@@ -127,7 +127,7 @@ public class GameEntity implements Serializable, Name {
     /* Getter and setter */
 
     public boolean getInGame() {
-        return this.round != Round.NOTSTARTED;
+        return this.round != Round.NOTSTARTED && this.round != Round.ENDED;
     }
 
     public boolean getGameCanStart() {
