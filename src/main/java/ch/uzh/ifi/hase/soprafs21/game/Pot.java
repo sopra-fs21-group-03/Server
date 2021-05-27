@@ -120,6 +120,14 @@ public class Pot implements Serializable {
         return protocolElements;
     }
 
+    public void redistribute(){
+        for (Map.Entry<User, Integer> entry : userContribution.entrySet()){
+            entry.getKey().addMoney(entry.getValue());
+            userContribution.put(entry.getKey(), 0);
+        }
+        total = 0;
+    }
+
     private int collect(User user, int amount) {
         int invested = userContribution.get(user);
         //common case, where the user that collects money, will receive all of a users money

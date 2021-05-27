@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs21.timer.tasks;
 
+import ch.uzh.ifi.hase.soprafs21.constant.Show;
 import ch.uzh.ifi.hase.soprafs21.entity.GameEntity;
 import ch.uzh.ifi.hase.soprafs21.entity.User;
 import ch.uzh.ifi.hase.soprafs21.repository.GameRepository;
@@ -24,7 +25,21 @@ public class PotDistributor implements Runnable{
 
     @Override
     public void run() {
-        gameEntity.distributePot();
+        var normalDistribution = false;
+
+        for (var user: gameEntity.getActiveUsers()){
+            if (user.getWantsToShow() == Show.SHOW){
+                normalDistribution = true;
+                break;
+            }
+        }
+
+        if (normalDistribution){
+            gameEntity.distributePot();
+        } else{
+            gameEntity.redistributePot();
+        }
+
         gameEntity.setNextRound();
 
         // Save all changes made to the repos
@@ -42,5 +57,7 @@ public class PotDistributor implements Runnable{
 
         gameRepository.saveAndFlush(gameEntity);
 
+
     }
+
 }

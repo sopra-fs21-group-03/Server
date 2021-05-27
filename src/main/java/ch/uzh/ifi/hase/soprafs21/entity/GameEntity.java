@@ -15,11 +15,8 @@ import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.OptionalInt;
+import java.util.*;
 import java.security.SecureRandom;
-import java.util.Optional;
 
 
 @Entity
@@ -820,6 +817,7 @@ public class GameEntity implements Serializable, Name {
 
     public void distributePot() {
         activeUsers.removeIf(user -> user.getWantsToShow() != Show.SHOW);
+
         List<UserDraw> ranking = new CardRanking().getRanking(this);
         var index = 1;
         protocol.add(new ProtocolElement(MessageType.LOG, this, "Now, the Pot will be distributed. We have the following Winners of this Game Round:"));
@@ -866,6 +864,12 @@ public class GameEntity implements Serializable, Name {
         for (User user : newSpectators) {
             protocol.add(new ProtocolElement(MessageType.LOG, this, String.format("User %s is now spectating", user.getUsername())));
         }
+    }
+
+    public void redistributePot() {
+        pot.redistribute();
+
+        protocol.add(new ProtocolElement(MessageType.LOG, this, "No one wanted to show, everyone gets their money back"));
     }
 }
 
