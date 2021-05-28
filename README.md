@@ -136,7 +136,7 @@ We have no external database that needs to be running or external dependencies.
 
 ### Releases 
 
-When you want to publish a release, create a tag on GitHub for the repository
+When you want to publish a release, create a tag on GitHub for the repository.
 
 ## Roadmap 
 
