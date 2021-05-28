@@ -178,6 +178,7 @@ public class GameService {
             String usernameOfPotentialNextUserInTurn = theGame.getUsernameOfPotentialNextUserInTurn(user);
             //User folds -> he gets removed from the ActiveUsers List, not from the AllUsers List
             theGame.getActiveUsers().remove(user);
+            gameRepository.saveAndFlush(theGame);
             //then, set the next User on turn or the next round or declare a winner.
             theGame.roundHandler(usernameOfPotentialNextUserInTurn);
 
