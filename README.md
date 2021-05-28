@@ -1,4 +1,4 @@
-### Poker Game from Group 03, SoPra FS 21 
+# Poker Game from Group 03, SoPra FS 21 
 
 ## Introduction
 
@@ -32,7 +32,7 @@ https://github.com/sopra-fs21-group-03/Server/blob/master/src/main/java/ch/uzh/i
 
 ## Launch & Deployment
 
-# Getting started with Spring Boot
+### Getting started with Spring Boot
 
 -   Documentation: https://docs.spring.io/spring-boot/docs/current/reference/html/index.html
 -   Guides: http://spring.io/guides
@@ -48,7 +48,7 @@ Download your IDE of choice: (e.g., [Eclipse](http://www.eclipse.org/downloads/)
 
 To build right click the `build.gradle` file and choose `Run Build`
 
-# VS Code
+### VS Code
 The following extensions will help you to run it more easily:
 -   `pivotal.vscode-spring-boot`
 -   `vscjava.vscode-spring-initializr`
@@ -58,7 +58,7 @@ The following extensions will help you to run it more easily:
 
 **Note:** You'll need to build the project first with Gradle, just click on the `build` command in the _Gradle Tasks_ extension. Then check the _Spring Boot Dashboard_ extension if it already shows `soprafs21` and hit the play button to start the server. If it doesn't show up, restart VS Code and check again.
 
-# Building with Gradle
+### Building with Gradle
 
 You can use the local Gradle Wrapper to build the application.
 
@@ -70,25 +70,25 @@ Plattform-Prefix:
 
 More Information about [Gradle Wrapper](https://docs.gradle.org/current/userguide/gradle_wrapper.html) and [Gradle](https://gradle.org/docs/).
 
-# Build
+### Build
 
 ```bash
 ./gradlew build
 ```
 
-# Run
+### Run
 
 ```bash
 ./gradlew bootRun
 ```
 
-# Test
+### Test
 
 ```bash
 ./gradlew test
 ```
 
-# Development Mode
+### Development Mode
 
 You can start the backend in development mode, this will automatically trigger a new build and reload the application
 once the content of a file has been changed and you save the file.
@@ -105,13 +105,13 @@ If you want to avoid running all tests with every change, use the following comm
 
 `./gradlew build --continuous -xtest`
 
-# API Endpoint Testing
+### API Endpoint Testing
 
-# Postman
+### Postman
 
 -   We highly recommend to use [Postman](https://www.getpostman.com) in order to test your API Endpoints.
 
-# Debugging
+### Debugging
 
 If something is not working and/or you don't know what is going on. We highly recommend that you use a debugger and step
 through the process step-by-step.
@@ -126,15 +126,15 @@ do the following:
 5. Set breakpoints in the application where you need it
 6. Step through the process one step at a time
 
-# Testing
+### Testing
 
 Have a look here: https://www.baeldung.com/spring-boot-testing
 
-# External Dependencies 
+### External Dependencies 
 
 We have no external database that needs to be running or external dependencies. 
 
-# Releases 
+### Releases 
 
 When you want to publish a release, create a tag on GitHub for the repository
 
