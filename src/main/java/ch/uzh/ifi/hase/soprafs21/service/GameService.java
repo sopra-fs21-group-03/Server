@@ -632,7 +632,7 @@ public class GameService {
                 toChange.setBlind(Blind.SMALL);
             }
 
-            if (gameEntity.getOnTurn().getUsername().equals(realUser.getUsername())) {
+            if (gameEntity.getOnTurn().getUsername().equals(realUser.getUsername()) && !(gameEntity.getActiveUsers().size() == 1)) {
                 var username = gameEntity.getUsernameOfPotentialNextUserInTurn(realUser);
                 gameEntity.roundHandler(username);
             }
@@ -640,6 +640,11 @@ public class GameService {
             gameEntity.removeUserFromAll(userID);
             gameEntity.removeUserFromActive(userID);
             gameEntity.removeUserFromSpectators(userID);
+
+            if (gameEntity.getActiveUsers().size() == 1){
+                gameEntity.redistributePot();
+                gameEntity.setRound(Round.ENDED);
+            }
 
             var protocol = new ProtocolElement(MessageType.LOG, realUser, String.format("User %s has left the table", realUser.getUsername()));
             gameEntity.addProtocolElement(protocol);
