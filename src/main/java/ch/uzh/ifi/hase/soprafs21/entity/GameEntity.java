@@ -50,7 +50,7 @@ public class GameEntity implements Serializable, Name {
     @ElementCollection
     private List<PlayerInLobbyGetDTO> lobbyplayers;
 
-    @OneToMany
+    @ManyToMany
     @LazyCollection(LazyCollectionOption.FALSE)
     private List<User> rawPlayersInTurnOrder;
 

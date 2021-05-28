@@ -601,7 +601,9 @@ public class GameService {
             gameEntity.removeUserFromAll(userID);
             gameEntity.removeUserFromActive(userID);
             gameEntity.removeUserFromSpectators(userID);
-            gameEntity.removeUserFromRawPlayers(userID);
+
+            // Clear raw players since game has ended
+            gameEntity.setRawPlayersInTurnOrder(new ArrayList<>());
 
             if (!gameEntity.isFirstGameSetup()) {
                 gameEntity.setFirstGameSetup(true);
