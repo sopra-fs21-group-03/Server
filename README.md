@@ -1,5 +1,17 @@
 # SoPra RESTful Service Template FS21
 
+## Introduction
+
+The goal of this project was to create a Poker game with a lobby system, so that Users can register or login to our system, can chose a lobby where they want to play and, once 5 players are in a specific lobby and are ready, can play Poker. If the User does not have an account yet in our system, he must register to be considered as a valid User. Once he is registered, he can login again with his chosen username and password, if he was offline before. Our Poker game contains a Poker-Instructions page for User that do not know how to play Poker. When playing, a User can click on a button where the poker hands are shown. Therefore, a User can get guidance if he needs some. When playing and on turn, a User can raise, check, fold or call. A game session also contains a chat/log window, where Users can chat or see what events happened in the game. Once a game round is finished, the Server determines the winner(s) and organizes the next game round. A User can always, if he likes, leave a game session and chose in the lobby selection screen a different lobby where he wants to play.
+
+## Technologies
+
+Server (BackEnd):
+-	Spring Boot
+-	Hibernate
+-	Java
+
+
 ## Getting started with Spring Boot
 
 -   Documentation: https://docs.spring.io/spring-boot/docs/current/reference/html/index.html
