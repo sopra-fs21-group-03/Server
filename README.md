@@ -150,7 +150,7 @@ New developers could add:
 
 ## Authors and acknowledgment 
 
-Group leader: Jonas Graze 
+Group leader: Jonas Graze, 
 Github: sanoj765 
 
 Carlos Kirchdorfer  
