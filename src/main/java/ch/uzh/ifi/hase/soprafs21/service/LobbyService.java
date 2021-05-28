@@ -203,8 +203,8 @@ public class LobbyService {
         if (game.getGameCanStart() && game.isFirstGameSetup()) {
             try {
                 game.setup();
-                gameService.startTurnTimer(game.getId());
                 gameRepository.saveAndFlush(game);
+                gameService.startTurnTimer(game.getId());
             }
             catch (Exception ignored) {
 
